@@ -1,0 +1,180 @@
+{
+    "layer": "top",
+    "position": "top",
+    "margin-top": 10,
+    "margin-left": 10,
+    "margin-right": 10,
+    "margin-bottom": 0,
+    "height": 35,
+    "spacing": 0,
+
+    "modules-left": [
+        "hyprland/workspaces",
+        "custom/wofi",
+        "tray"
+    ],
+
+    "modules-center": [
+        "custom/weather",
+        "clock"
+    ],
+
+    "modules-right": [
+        "cpu",
+        "memory",
+        "temperature#cpu",
+        "temperature#gpu",
+        "pulseaudio",
+        "bluetooth",
+        "network",
+        "custom/power"
+    ],
+
+   "custom/wofi": {
+      "format": "󱗼",
+      "tooltip": true,
+      "tooltip-format": "Application Launcher",
+      "on-click": "wofi --style ~/.config/wofi/style.css --allow-images --show drun"
+   },
+
+    "tray": {
+    "icon-size": 16,
+    "spacing": 8,
+    "show-passive-items": true
+},
+
+    "network": {
+    "interval": 3,
+    "format-wifi": "󰖩  {signalStrength}%",
+    "format-ethernet": "󰈀",
+    "format-disconnected": "󰖪  Off",
+    "format-linked": "󰈀  No IP",
+    "tooltip-format-wifi": "  {essid}\n  {signalStrength}%\n󰩟  {ipaddr}/{cidr}\n󰁅  {bandwidthDownBytes}\n󰁝  {bandwidthUpBytes}\n󰈀  {ifname}",
+    "tooltip-format-ethernet": "󰈀  Wired\n󰩟  {ipaddr}/{cidr}\n󰁅  {bandwidthDownBytes}\n󰁝  {bandwidthUpBytes}\n󰈀  {ifname}",
+    "tooltip-format-disconnected": "󰖪  Disconnected",
+    "on-click": "nm-connection-editor"
+},
+
+    // ── Workspaces ──────────────────────────────────────────
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "active": "",
+            "default": "",
+            "empty": ""
+        },
+        "on-click": "activate",
+        "sort-by-number": true,
+        "persistent-workspaces": {
+            "*": 3
+        }
+    },
+
+    // ── Clock ───────────────────────────────────────────────
+    "clock": {
+        "format": "{:%H:%M}",
+        "format-alt": "{:%A, %B %d, %Y  │  %H:%M:%S}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>",
+        "interval": 1,
+        "calendar": {
+            "mode": "year",
+            "mode-mon-col": 3,
+            "weeks-pos": "right",
+            "format": {
+                "months": "<span color='#f5f5f5'><b>{}</b></span>",
+                "days": "<span color='#b0b0b0'>{}</span>",
+                "weeks": "<span color='#6e6e6e'>W{}</span>",
+                "weekdays": "<span color='#cccccc'><b>{}</b></span>",
+                "today": "<span color='#ffffff'><b><u>{}</u></b></span>"
+            }
+        }
+    },
+
+    // ── Weather ─────────────────────────────────────────────
+    "custom/weather": {
+        "format": "{}",
+        "tooltip": true,
+        "interval": 900,
+        "exec": "curl -s 'wttr.in/Ivoti,RS,Brazil?format=%c+%t' 2>/dev/null | sed 's/+//g' || echo '  N/A'",
+        "return-type": "",
+        "on-click": "xdg-open 'https://wttr.in'"
+    },
+
+    // ── CPU Usage ───────────────────────────────────────────
+    "cpu": {
+        "format": "   {usage}%",
+        "interval": 2,
+        "tooltip": true,
+        "on-click": "foot -e btop"
+    },
+
+    // ── RAM Usage ───────────────────────────────────────────
+    "memory": {
+        "format": "   {percentage}%",
+        "interval": 2,
+        "tooltip-format": "{used:0.1f}GB / {total:0.1f}GB used",
+        "on-click": "foot -e btop"
+    },
+
+    // ── CPU Temp (AMD - k10temp / zenpower) ─────────────────
+    "temperature#cpu": {
+        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+        "input-filename": "temp1_input",
+        "format": "  {temperatureC}°C",
+        "format-critical": "  {temperatureC}°C",
+        "critical-threshold": 85,
+        "interval": 3,
+        "tooltip-format": "CPU: {temperatureC}°C"
+    },
+
+    // ── GPU Temp (AMD - amdgpu) ─────────────────────────────
+    "temperature#gpu": {
+        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon",
+        "input-filename": "temp1_input",
+        "format": "󰢮  {temperatureC}°C",
+        "format-critical": "󰢮  {temperatureC}°C",
+        "critical-threshold": 90,
+        "interval": 3,
+         "tooltip-format": "GPU: {temperatureC}°C"
+    },
+
+    // ── Sound ───────────────────────────────────────────────
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-bluetooth": "  {volume}%",
+        "format-muted": "",
+        "format-icons": {
+            "headphone": "󰥰",
+            "hands-free": "󰥰",
+            "headset": "󰥰",
+            "phone": "󰏳",
+            "portable": "󰦢",
+            "car": "",
+            "default": ["", "", " does"]
+        },
+        "scroll-step": 4,
+        "on-click": "pavucontrol",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "tooltip-format": "{desc}: {volume}%"
+    },
+
+    // ── Bluetooth ───────────────────────────────────────────
+    "bluetooth": {
+        "format": "󰂯",
+        "format-connected": "󰂯 {device_alias}",
+        "format-connected-battery": "󰂯  {device_alias}  󰥈  {device_battery_percentage}%",
+        "format-disabled": "󰂲",
+        "format-off": "󰂲",
+        "tooltip-format": "{controller_alias}\t{controller_address}",
+        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+        "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+        "on-click": "blueman-manager"
+    },
+
+   // ── Power Button ────────────────────────────────────────
+   "custom/power": {
+      "format": "󰤂",
+      "tooltip": true,
+      "tooltip-format": "Power Menu",
+      "on-click": "/home/calirko/.config/waybar/wofi-power-menu.sh"
+   }}

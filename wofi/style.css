@@ -1,0 +1,28 @@
+window {
+   border-radius: 10px;
+   border: none;
+   background: rgba(24, 24, 24, 0.80);
+   overflow: hidden;
+}
+
+#entry {
+   padding: 10px;
+   border: none;
+   background-color: transparent;
+   border-radius: 10px;
+}
+
+#input {
+   border-radius: 10px;
+   margin: 10px;
+   background-color: rgb(40, 40, 40);
+}
+
+#outer-box {
+   padding: 8px;
+}
+
+#img {
+   height: 10px;
+   margin-right: 10px;
+}

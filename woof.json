@@ -1,0 +1,3 @@
+{
+   "packages": ["hyprland", "git", "woof", "wl-clipboard", "mako", "wofi"]
+}

@@ -1,0 +1,10 @@
+show=drun
+width=450
+height=400
+prompt=Search...
+allow_images=false
+insensitive=true
+no_actions=true
+hide_scroll=true
+columns=1
+matching=fuzzy

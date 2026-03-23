@@ -1,0 +1,26 @@
+# ── General ──────────────────────────────
+max-visible=3
+sort=-time
+layer=overlay
+anchor=top-right
+
+# ── Appearance ───────────────────────────
+background-color=#181818cc
+text-color=#ffffff
+border-size=0
+border-radius=8
+padding=15
+margin=11,10
+width=350
+height=150
+font=Font Awesome 6 Free
+
+# ── Icons ────────────────────────────────
+icons=1
+max-icon-size=48
+icon-location=left
+
+# ── Behavior ─────────────────────────────
+default-timeout=5000
+ignore-timeout=0
+group-by=app-name

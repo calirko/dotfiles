@@ -1,0 +1,126 @@
+/* ══════════════════════════════════════════════════════════
+   WAYBAR – Pure White, No Background, Minimal
+   ══════════════════════════════════════════════════════════ */
+
+* {
+   border: none;
+   border-radius: 0;
+   font-family: "Font Awesome 6 Free", sans-serif;
+   font-size: 13px;
+   font-weight: 500;
+   min-height: 0;
+   color: #eaeaea;
+}
+
+window#waybar {
+   border: none;
+   background-color: rgba(30, 30, 30, 0.85);
+   border-radius: 9px;
+}
+
+tooltip {
+   border: none;
+   border-radius: 9px;
+   color: #eaeaea;
+}
+
+tooltip label {
+   color: #eaeaea;
+}
+
+
+
+/* ── Shared Module Styling ──────────────────────────────── */
+#cpu,
+#memory,
+#temperature,
+#pulseaudio,
+#bluetooth,
+#clock,
+#custom-weather,
+#custom-power,
+#network,
+#tray {
+   padding: 0 10px;
+   margin: 0px 4px;
+   color: #eaeaea;
+   border-radius: 9px;
+}
+
+#custom-wofi {
+   padding: 0 10px;
+   margin: 0px;
+   margin-left: 8px;
+   margin-right: 4px;
+   color: #eaeaea;
+   border-radius: 9px;
+}
+
+#network {
+   padding: 0px 10px;
+   padding-right: 13px;
+}
+
+#custom-power {
+   padding: 0 14px;
+}
+
+/* ── Workspaces ─────────────────────────────────────────── */
+#workspaces {
+   margin: 0px 0px;
+   padding: 0 0px;
+   border-radius: 9px;
+}
+
+#workspaces button {
+   padding: 0 6px;
+   margin: 0px 3px;
+   color: rgba(255, 255, 255, 0.30);
+   background: transparent;
+   border: none;
+   border-radius: 50%;
+   font-size: 10px;
+   min-width: 16px;
+   min-height: 16px;
+   transition: all 0.25s ease;
+}
+
+#workspaces button:hover {
+   color: rgba(255, 255, 255, 0.60);
+}
+
+#workspaces button.active {
+   color: #eaeaea;
+}
+
+#workspaces button.urgent {
+   color: #eaeaea;
+}
+
+/* ── Clock ──────────────────────────────────────────────── */
+#clock {
+   font-weight: 500;
+}
+
+/* ── Power Button ───────────────────────────────────────── */
+#custom-power {
+   font-weight: 500;
+   padding-left: 11px;
+}
+
+/* ── Shared Blur & Opacity ──────────────────────────────── */
+
+#cpu,
+#memory,
+#temperature,
+#pulseaudio,
+#bluetooth,
+#clock,
+#custom-weather,
+#custom-power,
+#network,
+#tray,
+#custom-wofi,
+#workspaces {
+   background: transparent;
+}
