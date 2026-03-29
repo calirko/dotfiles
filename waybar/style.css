@@ -5,7 +5,7 @@
 * {
    border: none;
    border-radius: 0;
-   font-family: "Font Awesome 6 Free", sans-serif;
+   font-family: "Inter", "Font Awesome 6 Free", sans-serif;
    font-size: 13px;
    font-weight: 500;
    min-height: 0;
@@ -14,18 +14,20 @@
 
 window#waybar {
    border: none;
-   background-color: rgba(30, 30, 30, 0.85);
-   border-radius: 9px;
+   background-color: #141414;
+   border-radius: 0px;
 }
 
 tooltip {
    border: none;
-   border-radius: 9px;
+   border-radius: 0px;
+   background-color: #141414;
    color: #eaeaea;
 }
 
 tooltip label {
    color: #eaeaea;
+   background-color: #141414;
 }
 
 
@@ -39,6 +41,7 @@ tooltip label {
 #clock,
 #custom-weather,
 #custom-power,
+#custom-vpn,
 #network,
 #tray {
    padding: 0 10px;
@@ -100,6 +103,7 @@ tooltip label {
 /* ── Clock ──────────────────────────────────────────────── */
 #clock {
    font-weight: 500;
+   font-size: 13px;
 }
 
 /* ── Power Button ───────────────────────────────────────── */
@@ -108,7 +112,7 @@ tooltip label {
    padding-left: 11px;
 }
 
-/* ── Shared Blur & Opacity ──────────────────────────────── */
+/* ── Module Backgrounds ─────────────────────────────────── */
 
 #cpu,
 #memory,
@@ -118,6 +122,7 @@ tooltip label {
 #clock,
 #custom-weather,
 #custom-power,
+#custom-vpn,
 #network,
 #tray,
 #custom-wofi,

@@ -18,6 +18,7 @@ echo -e "${BLUE}Dotfiles Uninstaller${NC}"
 echo "Repo: $REPO_DIR"
 echo "Target: $CONFIG_DIR"
 echo ""
+echo ""
 
 # Array of config directories to unlink
 CONFIGS=("hypr" "kitty" "mako" "waybar" "wofi")
@@ -26,7 +27,7 @@ CONFIGS=("hypr" "kitty" "mako" "waybar" "wofi")
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
 read -p "Continue? (y/n) " -n 1 -r
 echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+if [[ ! $REPLY =~ ^[Yy]$ ]]; the#n
     echo "Cancelled."
     exit 0
 fi

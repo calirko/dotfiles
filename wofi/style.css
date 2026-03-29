@@ -1,28 +1,55 @@
 window {
-   border-radius: 10px;
+   border-radius: 0px;
    border: none;
-   background: rgba(24, 24, 24, 0.80);
+   background: #141414;
    overflow: hidden;
+   color: #eaeaea;
+   font-family: "Inter", sans-serif;
+}
+
+#outer-box {
+   padding: 20px;
 }
 
 #entry {
    padding: 10px;
    border: none;
    background-color: transparent;
-   border-radius: 10px;
+   border-radius: 0px;
+   color: #eaeaea;
+}
+
+#entry:selected {
+   border-radius: 0px;
+   background-color: rgb(23, 23, 23);
+   outline: none;
+   border: none;
+   border-radius: 0px;
+   color: #eaeaea;
 }
 
 #input {
-   border-radius: 10px;
-   margin: 10px;
-   background-color: rgb(40, 40, 40);
+   border-radius: 0px;
+   margin: 0px;
+   margin-bottom: 20px;
+   background-color: transparent;
+   outline: none;
+   border: none;
+   box-shadow: none;
+   color: #eaeaea;
 }
 
-#outer-box {
-   padding: 8px;
+#input:focus {
+   border-radius: 0px;
+   background-color: rgb(23, 23, 23);
+   outline: none;
+   border: none;
+   box-shadow: none;
+   color: #eaeaea;
 }
 
 #img {
    height: 10px;
    margin-right: 10px;
+   background-color: rgb(23, 23, 23);
 }

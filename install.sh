@@ -6,6 +6,8 @@ set -e
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
+SKIP_PACKAGES=false
+ICON_THEME_NAME="Adwaita"
 
 # Color output
 RED='\033[0;31m'
@@ -13,13 +15,89 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --skip-packages)
+            SKIP_PACKAGES=true
+            shift
+            ;;
+        --help)
+            echo "Usage: $0 [options]"
+            echo "Options:"
+            echo "  --skip-packages    Skip package installation from woof.json"
+            echo "  --help             Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 echo -e "${GREEN}Dotfiles Installer${NC}"
 echo "Repo: $REPO_DIR"
 echo "Target: $CONFIG_DIR"
 echo ""
 
-# Array of config directories to link
-CONFIGS=("hypr" "kitty" "mako" "waybar" "wofi")
+# Install packages from woof.json
+if [ "$SKIP_PACKAGES" = false ]; then
+    if command -v jq &> /dev/null; then
+        echo -e "${YELLOW}Installing packages from woof.json...${NC}"
+        PACKAGES=$(jq -r '.packages[]' "$REPO_DIR/woof.json")
+        if [ -n "$PACKAGES" ]; then
+            yay -S --noconfirm $(echo "$PACKAGES" | tr '\n' ' ')
+            echo -e "${GREEN}✓ Packages installed${NC}"
+        fi
+        echo ""
+    else
+        echo -e "${YELLOW}⊘ jq not found, skipping package installation${NC}"
+        echo ""
+    fi
+else
+    echo -e "${YELLOW}⊘ Skipping package installation (--skip-packages)${NC}"
+    echo ""
+fi
+
+# Configure fontconfig to use Inter as default font
+echo -e "${YELLOW}Configuring Inter as default system font...${NC}"
+FONTCONFIG_DIR="$HOME/.config/fontconfig"
+mkdir -p "$FONTCONFIG_DIR"
+
+cat > "$FONTCONFIG_DIR/fonts.conf" << 'EOF'
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+    <!-- Set Inter as default sans-serif font -->
+    <alias>
+        <family>sans-serif</family>
+        <prefer>
+            <family>Inter</family>
+        </prefer>
+    </alias>
+    
+    <!-- Enable font antialias and hinting for better rendering -->
+    <match target="font">
+        <edit name="antialias" mode="assign">
+            <bool>true</bool>
+        </edit>
+        <edit name="hinting" mode="assign">
+            <bool>true</bool>
+        </edit>
+        <edit name="hintstyle" mode="assign">
+            <const>hintslight</const>
+        </edit>
+        <edit name="rgba" mode="assign">
+            <const>rgb</const>
+        </edit>
+    </match>
+</fontconfig>
+EOF
+
+echo -e "${GREEN}✓ Inter configured as default system font${NC}"
+echo ""
 
 # Create symlinks
 for config in "${CONFIGS[@]}"; do

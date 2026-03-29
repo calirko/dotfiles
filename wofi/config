@@ -8,3 +8,4 @@ no_actions=true
 hide_scroll=true
 columns=1
 matching=fuzzy
+single_click=true

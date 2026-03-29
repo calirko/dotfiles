@@ -20,6 +20,7 @@
     ],
 
     "modules-right": [
+        "custom/vpn",
         "cpu",
         "memory",
         "temperature#cpu",
@@ -38,7 +39,7 @@
    },
 
     "tray": {
-    "icon-size": 16,
+   //  "icon-size": 16,   
     "spacing": 8,
     "show-passive-items": true
 },
@@ -79,11 +80,10 @@
         "calendar": {
             "mode": "year",
             "mode-mon-col": 3,
-            "weeks-pos": "right",
+            "weeks-pos": "off",
             "format": {
                 "months": "<span color='#f5f5f5'><b>{}</b></span>",
                 "days": "<span color='#b0b0b0'>{}</span>",
-                "weeks": "<span color='#6e6e6e'>W{}</span>",
                 "weekdays": "<span color='#cccccc'><b>{}</b></span>",
                 "today": "<span color='#ffffff'><b><u>{}</u></b></span>"
             }
@@ -94,10 +94,23 @@
     "custom/weather": {
         "format": "{}",
         "tooltip": true,
-        "interval": 900,
-        "exec": "curl -s 'wttr.in/Ivoti,RS,Brazil?format=%c+%t' 2>/dev/null | sed 's/+//g' || echo '  N/A'",
-        "return-type": "",
+        "interval": 1200,
+        "exec": "~/.config/waybar/get-weather.sh",
+        "return-type": "text",
         "on-click": "xdg-open 'https://wttr.in'"
+    },
+
+    // ── VPN (WireGuard) ──────────────────────────────────────
+    "custom/vpn": {
+        "format": "{}",
+        "interval": 5,
+        "exec": "~/.config/waybar/vpn-menu.sh status",
+        "exec-if": "command -v wg",
+        "return-type": "text",
+        "tooltip": true,
+        "tooltip-format": "{}",
+        "exec-tooltip": "~/.config/waybar/vpn-menu.sh tooltip",
+        "on-click": "~/.config/waybar/vpn-menu.sh menu"
     },
 
     // ── CPU Usage ───────────────────────────────────────────
@@ -110,7 +123,7 @@
 
     // ── RAM Usage ───────────────────────────────────────────
     "memory": {
-        "format": "   {percentage}%",
+        "format": "\uefc5   {percentage}%",
         "interval": 2,
         "tooltip-format": "{used:0.1f}GB / {total:0.1f}GB used",
         "on-click": "foot -e btop"
@@ -131,7 +144,7 @@
     "temperature#gpu": {
         "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon",
         "input-filename": "temp1_input",
-        "format": "󰢮  {temperatureC}°C",
+        "format": "󰢮   {temperatureC}°C",
         "format-critical": "󰢮  {temperatureC}°C",
         "critical-threshold": 90,
         "interval": 3,
@@ -140,7 +153,7 @@
 
     // ── Sound ───────────────────────────────────────────────
     "pulseaudio": {
-        "format": "{icon}  {volume}%",
+        "format": "{icon}   {volume}%",
         "format-bluetooth": "  {volume}%",
         "format-muted": "",
         "format-icons": {
