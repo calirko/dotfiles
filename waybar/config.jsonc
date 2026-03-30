@@ -1,9 +1,10 @@
 {
     "layer": "top",
     "position": "top",
+    "output": ["DP-1"],
     "margin-top": 10,
-    "margin-left": 10,
-    "margin-right": 10,
+    "margin-left": 11,
+    "margin-right": 11,
     "margin-bottom": 0,
     "height": 35,
     "spacing": 0,
@@ -21,10 +22,7 @@
 
     "modules-right": [
         "custom/vpn",
-        "cpu",
-        "memory",
-        "temperature#cpu",
-        "temperature#gpu",
+        "custom/system-stats",
         "pulseaudio",
         "bluetooth",
         "network",
@@ -113,42 +111,13 @@
         "on-click": "~/.config/waybar/vpn-menu.sh menu"
     },
 
-    // ── CPU Usage ───────────────────────────────────────────
-    "cpu": {
-        "format": "   {usage}%",
-        "interval": 2,
-        "tooltip": true,
-        "on-click": "foot -e btop"
-    },
-
-    // ── RAM Usage ───────────────────────────────────────────
-    "memory": {
-        "format": "\uefc5   {percentage}%",
-        "interval": 2,
-        "tooltip-format": "{used:0.1f}GB / {total:0.1f}GB used",
-        "on-click": "foot -e btop"
-    },
-
-    // ── CPU Temp (AMD - k10temp / zenpower) ─────────────────
-    "temperature#cpu": {
-        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
-        "input-filename": "temp1_input",
-        "format": "  {temperatureC}°C",
-        "format-critical": "  {temperatureC}°C",
-        "critical-threshold": 85,
+    // ── System Stats (CPU temp + detailed tooltip) ─────────
+    "custom/system-stats": {
+        "format": "{}",
         "interval": 3,
-        "tooltip-format": "CPU: {temperatureC}°C"
-    },
-
-    // ── GPU Temp (AMD - amdgpu) ─────────────────────────────
-    "temperature#gpu": {
-        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:01.1/0000:01:00.0/0000:02:00.0/0000:03:00.0/hwmon",
-        "input-filename": "temp1_input",
-        "format": "󰢮   {temperatureC}°C",
-        "format-critical": "󰢮  {temperatureC}°C",
-        "critical-threshold": 90,
-        "interval": 3,
-         "tooltip-format": "GPU: {temperatureC}°C"
+        "exec": "~/.config/waybar/system-stats.sh",
+        "return-type": "json",
+        "tooltip": true
     },
 
     // ── Sound ───────────────────────────────────────────────

@@ -8,6 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="Adwaita"
+CONFIGS=("hypr" "kitty" "mako" "waybar" "wofi")
 
 # Color output
 RED='\033[0;31m'
@@ -44,16 +45,22 @@ echo ""
 
 # Install packages from woof.json
 if [ "$SKIP_PACKAGES" = false ]; then
-    if command -v jq &> /dev/null; then
+    if [ ! -f "$REPO_DIR/woof.json" ]; then
+        echo -e "${YELLOW}⊘ woof.json not found, skipping package installation${NC}"
+        echo ""
+    elif ! command -v jq &> /dev/null; then
+        echo -e "${YELLOW}⊘ jq not found, skipping package installation${NC}"
+        echo ""
+    elif ! command -v yay &> /dev/null; then
+        echo -e "${YELLOW}⊘ yay not found, skipping package installation${NC}"
+        echo ""
+    else
         echo -e "${YELLOW}Installing packages from woof.json...${NC}"
         PACKAGES=$(jq -r '.packages[]' "$REPO_DIR/woof.json")
         if [ -n "$PACKAGES" ]; then
             yay -S --noconfirm $(echo "$PACKAGES" | tr '\n' ' ')
             echo -e "${GREEN}✓ Packages installed${NC}"
         fi
-        echo ""
-    else
-        echo -e "${YELLOW}⊘ jq not found, skipping package installation${NC}"
         echo ""
     fi
 else

@@ -32,6 +32,11 @@ The installer creates symlinks from your repo to `~/.config/`, so changes in the
 - **waybar/** - Waybar status bar config
 - **wofi/** - Wofi app launcher config
 
+Hyprland extras in this setup:
+- `hyprlock` with a sharp-corner dark theme matching the rest of the UI
+- `hypridle` auto-lock after 20 minutes of inactivity
+- `Super + L` to lock immediately
+
 ## Updating Specific Systems
 Edit files in the repo and they'll automatically sync to `~/.config/`. Reload apps as needed:
 - Hyprland: `Super+Shift+R` or reload manually

@@ -5,12 +5,12 @@ layer=overlay
 anchor=top-right
 
 # ── Appearance ───────────────────────────
-background-color=#181818cc
+background-color=#181818
 text-color=#ffffff
 border-size=0
-border-radius=8
+border-radius=0
 padding=15
-margin=11,10
+margin=11,11
 width=350
 height=150
 font=Inter 11

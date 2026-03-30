@@ -13,10 +13,10 @@ if [[ -n "$selected" ]]; then
     
     # Load and set wallpaper dynamically
     hyprctl hyprpaper preload "$WP_PATH"
-    hyprctl hyprpaper wallpaper "HDMI-A-1,$WP_PATH"
+    hyprctl hyprpaper wallpaper ",$WP_PATH"
     
     # Update hyprpaper.conf to persist the change
     CONF_FILE="$(dirname "$0")/hyprpaper.conf"
     sed -i "s|^preload = .*|preload = $WP_PATH|" "$CONF_FILE"
-    sed -i "s|^    path = .*|    path = $WP_PATH|" "$CONF_FILE"
+    sed -i "s|^wallpaper = .*|wallpaper = ,$WP_PATH|" "$CONF_FILE"
 fi
