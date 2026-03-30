@@ -1,0 +1,157 @@
+; Variables
+(defpoll time :interval "1s"
+`date +"%I:%M %p"`)
+
+(defpoll volume :interval "1s"
+  `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
+
+(defpoll battery-capacity :interval "5s"
+`cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo ""`)
+
+(defpoll battery-status :interval "5s"
+`cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
+
+(defpoll net-status :interval "2s"
+`scripts/network-status.sh`)
+
+(defpoll bt-status :interval "2s"
+`scripts/bluetooth-status.sh`)
+
+; Widgets
+(defwidget menu []
+  (button :class "menu-icon"
+    :onclick "wofi --show drun &"
+  "󰀻"))
+
+(defwidget clock []
+  (label :class "clock"
+  :text time))
+
+(defwidget network []
+  (button :class "network-box"
+    :onclick "kitty -e nmtui &"
+  net-status))
+
+(defwidget bluetooth []
+  (button :class "bluetooth-box"
+    :onclick "blueman-manager &"
+  bt-status))
+
+(defwidget battery []
+  (box :class "battery-box"
+    :visible {battery-capacity != ""}
+    :orientation "horizontal"
+    :space-evenly false
+    :spacing 5
+    (label :text {battery-status == "Charging" ? "󰂄 " :
+      battery-capacity < 20 ? " " :
+      battery-capacity < 40 ? " " :
+      battery-capacity < 60 ? " " :
+    battery-capacity < 80 ? " " : " "})
+    (label :text "${battery-capacity}%")))
+
+(defwidget volume-control []
+  (eventbox :onscroll "sh -c '[ \"{}\" = \"up\" ] && wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ || wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-' &"
+    (button :onclick "pavucontrol &"
+      :class "volume-box"
+      (box :orientation "horizontal"
+        :space-evenly false
+        :spacing 5
+        (label :text {volume == "0" ? " " :
+          volume < 1 ? " " :
+          volume < 30 ? " " :
+        volume < 70 ? " " : " "})
+        (label :text "${volume}%")))))
+
+(defwidget left []
+  (box :class "left"
+    :orientation "horizontal"
+    :halign "start"
+    :space-evenly false
+    (menu)))
+
+(defwidget center []
+  (box :class "center"
+    :orientation "horizontal"
+    :halign "center"
+    :space-evenly false
+    (clock)))
+
+(defwidget right []
+  (box :class "right"
+    :orientation "horizontal"
+    :halign "end"
+    :space-evenly false
+    :spacing 10
+    (network)
+    (bluetooth)
+    (battery)
+    (volume-control)
+    (button :class "power-icon"
+      :onclick "scripts/toggle-menu.sh &"
+    "")))
+
+(defwidget bar []
+  (centerbox :class "bar"
+    :orientation "horizontal"
+    (left)
+    (center)
+    (right)))
+
+(defwidget bar-wrapper []
+  (box :class "bar-wrapper"
+    :orientation "vertical"
+    (bar)))
+
+; Window
+(defwindow bar
+  :monitor "DP-1"
+  :geometry (geometry :x "11px"
+    :y "11px"
+    :width "100%"
+    :height "35px"
+  :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :namespace "eww-bar"
+  (bar-wrapper))
+
+
+; Top Right Menu
+(defwidget top-right-menu-content []
+  (box :class "top-right-menu"
+    :orientation "horizontal"
+    :space-evenly true
+    :spacing 10
+    (button :class "menu-btn lock" :onclick "scripts/menu-action.sh lock &" "")
+    (button :class "menu-btn logout" :onclick "scripts/menu-action.sh logout &" "")
+    (button :class "menu-btn reboot" :onclick "scripts/menu-action.sh reboot &" "")
+    (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "")))
+
+(defwindow top_right_menu
+  :monitor "DP-1"
+  :geometry (geometry :x "11px"
+    :y "11px" ; Below the 35px height + 11px padding bar + some gap
+    :width "190px"
+    :height "40px"
+  :anchor "top right")
+  :stacking "fg"
+  ;   :exclusive false
+  ;   :focusable true
+  :namespace "eww-menu"
+  (top-right-menu-content))
+
+(defwidget menu-scrim []
+  (eventbox :onclick "scripts/close-menu.sh &"
+    :onrightclick "scripts/close-menu.sh &"
+    :onmiddleclick "scripts/close-menu.sh &"
+    (box :class "scrim-box" :hexpand true :vexpand true)))
+
+(
+  defwindow menu_scrim
+  :monitor "DP-1"
+  :geometry (geometry :x "0%" :y "0%" :width "100%" :height "100%" :anchor "center")
+  :stacking "fg"
+  :focusable false
+  :namespace "eww-scrim"
+  (menu-scrim))

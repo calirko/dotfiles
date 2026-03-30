@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="Adwaita"
-CONFIGS=("hypr" "kitty" "mako" "waybar" "wofi")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi")
 
 # Color output
 RED='\033[0;31m'

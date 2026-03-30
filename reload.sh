@@ -18,15 +18,17 @@ echo -e "${GREEN}Dotfiles Config Reload${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Reload Waybar
-echo -e "${YELLOW}→ Reloading Waybar...${NC}"
-if command -v waybar &> /dev/null; then
-    pkill -f waybar || true
+# Reload Eww
+echo -e "${YELLOW}→ Reloading Eww...${NC}"
+if command -v eww &> /dev/null; then
+    eww close-all || true
+    pkill -f "eww daemon" || true
     sleep 1
-    waybar &
-    echo -e "${GREEN}✓ Waybar reloaded${NC}"
+    eww daemon
+    eww open bar
+    echo -e "${GREEN}✓ Eww reloaded${NC}"
 else
-    echo -e "${RED}✗ Waybar not found${NC}"
+    echo -e "${RED}✗ Eww not found${NC}"
 fi
 echo ""
 

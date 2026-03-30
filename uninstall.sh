@@ -21,13 +21,13 @@ echo ""
 echo ""
 
 # Array of config directories to unlink
-CONFIGS=("hypr" "kitty" "mako" "waybar" "wofi")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
 read -p "Continue? (y/n) " -n 1 -r
 echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; the#n
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "Cancelled."
     exit 0
 fi

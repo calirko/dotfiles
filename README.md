@@ -29,7 +29,7 @@ The installer creates symlinks from your repo to `~/.config/`, so changes in the
 - **hypr/** - Hyprland window manager config
 - **kitty/** - Kitty terminal config
 - **mako/** - Mako notification daemon config
-- **waybar/** - Waybar status bar config
+- **eww/** - Eww status bar + top-right quick menu
 - **wofi/** - Wofi app launcher config
 
 Hyprland extras in this setup:

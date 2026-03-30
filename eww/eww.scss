@@ -1,0 +1,61 @@
+* {
+   all: unset;
+   font-family: "Inter", monospace;
+   font-size: 13.3px;
+}
+
+.bar {
+   margin: 0 11px;
+   color: #eaeaea;
+}
+
+.bar-wrapper {
+   background-color: #141414;
+}
+
+.menu-icon {
+   font-size: 18px;
+   padding: 0 10px;
+
+   &:hover {
+      color: #ffffff;
+   }
+}
+
+.clock {
+   font-weight: bold;
+}
+
+.volume-box,
+.network-box,
+.bluetooth-box,
+.battery-box,
+.power-icon {
+   padding: 0 5px;
+   // background-color: red;
+
+   button {
+      font-size: 16px;
+      margin-right: 5px;
+   }
+}
+
+.power-icon {
+   padding: 0 14px;
+}
+
+.top-right-menu {
+   background-color: #141414;
+   padding: 0;
+   border-radius: 0px;
+}
+
+.menu-btn {
+   // background-color: red;
+   padding: 0;
+   margin: 0;
+}
+
+// .scrim-box {
+//    background-color: red;
+// }
