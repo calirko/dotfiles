@@ -1,6 +1,7 @@
 * {
    all: unset;
    font-family: "Inter", monospace;
+   font-weight: 600;
    font-size: 13.3px;
 }
 
@@ -10,7 +11,7 @@
 }
 
 .bar-wrapper {
-   background-color: #141414;
+   background: rgba(0, 0, 0, 0.70);
 }
 
 .menu-icon {
@@ -24,6 +25,10 @@
 
 .clock {
    font-weight: bold;
+}
+
+.weather-box {
+   padding: 0;
 }
 
 .volume-box,
@@ -45,14 +50,14 @@
 }
 
 .top-right-menu {
-   background-color: #141414;
-   padding: 0;
+   background-color: rgba(0, 0, 0, 0.76);
+   padding: 10px;
    border-radius: 0px;
 }
 
 .menu-btn {
    // background-color: red;
-   padding: 0;
+   padding: 30px;
    margin: 0;
 }
 

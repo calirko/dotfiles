@@ -16,11 +16,30 @@ if [[ -f "$CACHE_FILE" ]]; then
   fi
 fi
 
-weather=$(curl -s 'wttr.in/Ivoti,RS,Brazil?format=%c+%t' 2>/dev/null | sed 's/+//g')
+condition=$(curl -s 'wttr.in/Ivoti,RS,Brazil?format=%C' 2>/dev/null)
+temp=$(curl -s 'wttr.in/Ivoti,RS,Brazil?format=%t' 2>/dev/null | sed 's/+//g')
 
-if [[ -z "$weather" ]]; then
-  weather="N/A"
+if [[ -z "$condition" || -z "$temp" ]]; then
+  result=" N/A"
+else
+  cond="${condition,,}"
+  case "$cond" in
+    *"sunny"*|*"clear"*)            icon="" ;;
+    *"partly cloudy"*)              icon="" ;;
+    *"cloudy"*|*"overcast"*)        icon="" ;;
+    *"mist"*|*"fog"*|*"haze"*)     icon="󰖑" ;;
+    *"patchy rain"*|*"light rain"*|*"light drizzle"*|*"drizzle"*)
+                                    icon="" ;;
+    *"heavy rain"*|*"torrential"*)  icon="" ;;
+    *"moderate rain"*|*"rain"*)     icon="" ;;
+    *"thundery"*|*"thunder"*)       icon="" ;;
+    *"snow"*|*"blizzard"*)          icon="󰖘" ;;
+    *"sleet"*|*"ice"*|*"freezing"*) icon="󰖒" ;;
+    *"windy"*)                      icon="" ;;
+    *)                              icon="󰖐" ;;
+  esac
+  result="$icon    $temp"
 fi
 
-echo "$weather" > "$CACHE_FILE"
-echo "$weather"
+echo "$result" > "$CACHE_FILE"
+echo "$result"

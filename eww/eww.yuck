@@ -27,6 +27,13 @@
   (label :class "clock"
   :text time))
 
+(defpoll weather :interval "20m"
+`scripts/get-weather.sh`)
+
+(defwidget weather-widget []
+  (button :class "weather-box"
+    (label :text weather)))
+
 (defwidget network []
   (button :class "network-box"
     :onclick "kitty -e nmtui &"
@@ -81,7 +88,9 @@
   (box :class "center"
     :orientation "horizontal"
     :halign "center"
+    :spacing 10
     :space-evenly false
+    (weather-widget)
     (clock)))
 
 (defwidget right []
