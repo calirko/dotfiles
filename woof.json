@@ -1,3 +1,26 @@
 {
-   "packages": ["hyprland", "hyprpolkitagent", "kitty", "nautilus",  "hyprlock", "hypridle", "git", "wl-clipboard", "mako", "wofi", "eww", "inter-font", "ttf-jetbrains-mono-nerd", "xdg-desktop-portal-hyprland", "hyprshot"]
+   "packages": [
+      "hyprland",
+      "hyprpolkitagent",
+      "kitty",
+      "nautilus",
+      "hyprlock",
+      "hypridle",
+      "git",
+      "wl-clipboard",
+      "mako",
+      "wofi",
+      "eww",
+      "inter-font",
+      "ttf-jetbrains-mono-nerd",
+      "xdg-desktop-portal-hyprland",
+      "hyprshot"
+   ],
+   "system_packages": [
+      "pipewire",
+      "wireplumber",
+      "xdg-desktop-portal-hyprland",
+      "xdg-desktop-portal-gtk",
+      "hyprpicker"
+   ]
 }

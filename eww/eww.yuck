@@ -2,7 +2,7 @@
 (defpoll time :interval "1s"
 `date +"%I:%M %p"`)
 
-(defpoll volume :interval "1s"
+(defpoll volume :interval "100ms"
   `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
 
 (defpoll battery-capacity :interval "5s"
@@ -20,7 +20,7 @@
 ; Widgets
 (defwidget menu []
   (button :class "menu-icon"
-    :onclick "wofi --show drun &"
+    :onclick "wofi --style ~/.config/wofi/style.css --allow-images --show drun &"
   "󰀻"))
 
 (defwidget clock []
@@ -68,7 +68,14 @@
     :orientation "horizontal"
     :halign "start"
     :space-evenly false
-    (menu)))
+    :spacing 10
+    (menu)
+    (systray
+      :orientation "horizontal"
+      :space-evenly false
+      :spacing 6
+    :icon-size 15)
+  ))
 
 (defwidget center []
   (box :class "center"
@@ -105,7 +112,7 @@
 
 ; Window
 (defwindow bar
-  :monitor "DP-1"
+  :monitor 2
   :geometry (geometry :x "11px"
     :y "11px"
     :width "100%"
@@ -129,7 +136,7 @@
     (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "")))
 
 (defwindow top_right_menu
-  :monitor "DP-1"
+  :monitor 2
   :geometry (geometry :x "11px"
     :y "11px" ; Below the 35px height + 11px padding bar + some gap
     :width "190px"
@@ -149,7 +156,7 @@
 
 (
   defwindow menu_scrim
-  :monitor "DP-1"
+  :monitor 2
   :geometry (geometry :x "0%" :y "0%" :width "100%" :height "100%" :anchor "center")
   :stacking "fg"
   :focusable false
