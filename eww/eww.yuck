@@ -2,6 +2,12 @@
 (defpoll time :interval "1s"
 `date +"%I:%M %p"`)
 
+;; ── Sensors polling ──────────────────────────────────────────
+(defpoll sensors
+  :interval "1s"
+  :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}'
+`~/.config/eww/scripts/sensors.sh`)
+
 (defpoll volume :interval "100ms"
   `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
 
@@ -70,6 +76,11 @@
         volume < 70 ? " " : " "})
         (label :text "${volume}%")))))
 
+(defwidget sensors-icon []
+  (button :class "sensors-icon"
+    :onclick "scripts/toggle-sensors.sh &"
+  ""))
+
 (defwidget left []
   (box :class "left"
     :orientation "horizontal"
@@ -99,6 +110,7 @@
     :halign "end"
     :space-evenly false
     :spacing 10
+    (sensors-icon)
     (network)
     (bluetooth)
     (battery)
@@ -121,7 +133,7 @@
 
 ; Window
 (defwindow bar
-  :monitor 2
+  :monitor 0
   :geometry (geometry :x "11px"
     :y "11px"
     :width "100%"
@@ -145,7 +157,7 @@
     (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "")))
 
 (defwindow top_right_menu
-  :monitor 2
+  :monitor 0
   :geometry (geometry :x "11px"
     :y "11px" ; Below the 35px height + 11px padding bar + some gap
     :width "190px"
@@ -165,9 +177,69 @@
 
 (
   defwindow menu_scrim
-  :monitor 2
+  :monitor 0
   :geometry (geometry :x "0%" :y "0%" :width "100%" :height "100%" :anchor "center")
   :stacking "fg"
   :focusable false
   :namespace "eww-scrim"
   (menu-scrim))
+
+;; ── Sensor graph card ────────────────────────────────────────
+(defwidget sensor-graph [label value unit color max-val]
+  (box :class "sensor-card" :orientation "v" :space-evenly false :spacing 4
+    (box :class "sensor-header" :orientation "h" :space-evenly true
+      (label :class "sensor-label" :halign "start" :text label)
+      (label :class "sensor-value" :halign "end"
+        :text "${round(value, 0)}${unit}"))
+    (graph
+      :class "sensor-graph sensor-graph-${label}"
+      :value value
+      :thickness 2.5
+      :time-range "60s"
+      :min 0
+      :max max-val
+      :dynamic false
+      :line-style "round"
+    :style "color: ${color};")))
+
+;; ── Sensors panel ────────────────────────────────────────────
+(defwidget sensors-panel []
+  (box :class "sensors-panel" :orientation "v" :space-evenly false :spacing 12
+    (label :class "sensors-title" :halign "center" :text "System Sensors")
+    (sensor-graph
+      :label "CPU"
+      :value {sensors.cpu}
+      :unit "%"
+      :color "#b9b9b9"
+    :max-val 100)
+    (sensor-graph
+      :label "RAM"
+      :value {sensors.ram}
+      :unit "%"
+      :color "#b9b9b9"
+    :max-val 100)
+    (sensor-graph
+      :label "CPU°"
+      :value {sensors.cpu_temp}
+      :unit "°C"
+      :color "#b9b9b9"
+    :max-val 100)
+    (sensor-graph
+      :label "GPU°"
+      :value {sensors.gpu_temp}
+      :unit "°C"
+      :color "#b9b9b9"
+    :max-val 100)))
+
+;; ── Sensors window ───────────────────────────────────────────
+(defwindow sensors
+  :monitor 0
+  :geometry (geometry
+    :x "11px"
+    :y "11px"
+    :width "320px"
+    :height "300px"
+  :anchor "top right")
+  :stacking "fg"
+  :namespace "eww-sensors"
+  (sensors-panel))

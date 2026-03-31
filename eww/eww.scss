@@ -35,8 +35,9 @@
 .network-box,
 .bluetooth-box,
 .battery-box,
+.sensors-icon,
 .power-icon {
-   padding: 0 5px;
+   padding: 0 7px;
    // background-color: red;
 
    button {
@@ -52,7 +53,6 @@
 .top-right-menu {
    background-color: rgba(0, 0, 0, 0.76);
    padding: 10px;
-   border-radius: 0px;
 }
 
 .menu-btn {
@@ -67,4 +67,40 @@
 
 .systray {
    background: #141414;
+}
+
+// ── Sensors panel ──────────────────────────────────────────
+.sensors-panel {
+   background-color: rgba(0, 0, 0, 0.76);
+   padding: 16px;
+}
+
+.sensors-title {
+   font-weight: 700;
+   color: #eaeaea;
+   margin-top: 4px;
+}
+
+.sensor-card {
+   padding: 10px 12px;
+}
+
+.sensor-header {
+   margin-bottom: 4px;
+}
+
+.sensor-label {
+   font-weight: 600;
+   color: #eaeaea;
+}
+
+.sensor-value {
+   font-weight: 500;
+   font-family: "JetBrains Mono", monospace;
+   color: #eaeaea;
+}
+
+.sensor-graph {
+   min-height: 50px;
+   background-color: rgba(24, 24, 37, 0.5);
 }
