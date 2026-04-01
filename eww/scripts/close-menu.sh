@@ -2,5 +2,7 @@
 
 set -euo pipefail
 
-eww close top_right_menu || true
+eww close power_menu || true
 eww close menu_scrim || true
+eww close sensors || true
+eww close vpn_panel || true

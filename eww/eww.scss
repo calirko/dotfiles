@@ -23,12 +23,12 @@
    }
 }
 
-.clock {
-   font-weight: bold;
-}
-
 .weather-box {
    padding: 0;
+}
+
+.clock {
+   font-weight: bold;
 }
 
 .volume-box,
@@ -36,6 +36,7 @@
 .bluetooth-box,
 .battery-box,
 .sensors-icon,
+.vpn-icon,
 .power-icon {
    padding: 0 7px;
    // background-color: red;
@@ -50,7 +51,7 @@
    padding: 0 14px;
 }
 
-.top-right-menu {
+.power-menu {
    background-color: rgba(0, 0, 0, 0.76);
    padding: 10px;
 }
@@ -75,12 +76,6 @@
    padding: 16px;
 }
 
-.sensors-title {
-   font-weight: 700;
-   color: #eaeaea;
-   margin-top: 4px;
-}
-
 .sensor-card {
    padding: 10px 12px;
 }
@@ -103,4 +98,22 @@
 .sensor-graph {
    min-height: 50px;
    background-color: rgba(24, 24, 37, 0.5);
+}
+
+.vpn-panel {
+   background-color: rgba(0, 0, 0, 0.76);
+   padding: 12px;
+}
+
+.vpn-status {
+   color: #eaeaea;
+}
+
+.vpn-manage-btn {
+   color: #eaeaea;
+   padding-top: 2px;
+
+   &:hover {
+      color: #ffffff;
+   }
 }

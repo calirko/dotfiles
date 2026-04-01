@@ -23,6 +23,9 @@
 (defpoll bt-status :interval "2s"
 `scripts/bluetooth-status.sh`)
 
+(defpoll vpn-status :interval "2s"
+`scripts/vpn-status.sh`)
+
 ; Widgets
 (defwidget menu []
   (button :class "menu-icon"
@@ -30,8 +33,9 @@
   "󰀻"))
 
 (defwidget clock []
-  (label :class "clock"
-  :text time))
+  (button :class "clock-box"
+    :onclick "gnome-calendar &"
+    (label :class "clock" :text time)))
 
 (defpoll weather :interval "20m"
 `scripts/get-weather.sh`)
@@ -81,6 +85,11 @@
     :onclick "scripts/toggle-sensors.sh &"
   ""))
 
+(defwidget vpn-icon []
+  (button :class "vpn-icon"
+    :onclick "scripts/toggle-vpn.sh &"
+  ""))
+
 (defwidget left []
   (box :class "left"
     :orientation "horizontal"
@@ -111,6 +120,7 @@
     :space-evenly false
     :spacing 10
     (sensors-icon)
+    (vpn-icon)
     (network)
     (bluetooth)
     (battery)
@@ -146,8 +156,8 @@
 
 
 ; Top Right Menu
-(defwidget top-right-menu-content []
-  (box :class "top-right-menu"
+(defwidget power-menu-content []
+  (box :class "power-menu"
     :orientation "horizontal"
     :space-evenly true
     :spacing 10
@@ -156,7 +166,7 @@
     (button :class "menu-btn reboot" :onclick "scripts/menu-action.sh reboot &" "")
     (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "")))
 
-(defwindow top_right_menu
+(defwindow power_menu
   :monitor 0
   :geometry (geometry :x "11px"
     :y "11px" ; Below the 35px height + 11px padding bar + some gap
@@ -167,7 +177,7 @@
   ;   :exclusive false
   ;   :focusable true
   :namespace "eww-menu"
-  (top-right-menu-content))
+  (power-menu-content))
 
 (defwidget menu-scrim []
   (eventbox :onclick "scripts/close-menu.sh &"
@@ -205,7 +215,6 @@
 ;; ── Sensors panel ────────────────────────────────────────────
 (defwidget sensors-panel []
   (box :class "sensors-panel" :orientation "v" :space-evenly false :spacing 12
-    (label :class "sensors-title" :halign "center" :text "System Sensors")
     (sensor-graph
       :label "CPU"
       :value {sensors.cpu}
@@ -231,6 +240,12 @@
       :color "#b9b9b9"
     :max-val 100)))
 
+;; ── VPN panel ───────────────────────────────────────────────
+(defwidget vpn-panel-content []
+  (box :class "vpn-panel" :orientation "v" :space-evenly false :spacing 8
+    (label :class "vpn-status" :text {vpn-status == "" ? "VPN: Disconnected" : "VPN: ${vpn-status}"})
+    (button :class "vpn-manage-btn" :onclick "scripts/vpn-menu.sh menu &" "Manage VPN")))
+
 ;; ── Sensors window ───────────────────────────────────────────
 (defwindow sensors
   :monitor 0
@@ -238,8 +253,20 @@
     :x "11px"
     :y "11px"
     :width "320px"
-    :height "300px"
+    :height "240px"
   :anchor "top right")
   :stacking "fg"
   :namespace "eww-sensors"
   (sensors-panel))
+
+(defwindow vpn_panel
+  :monitor 0
+  :geometry (geometry
+    :x "11px"
+    :y "11px"
+    :width "240px"
+    :height "70px"
+  :anchor "top right")
+  :stacking "fg"
+  :namespace "eww-vpn"
+  (vpn-panel-content))

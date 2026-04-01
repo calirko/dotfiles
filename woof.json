@@ -21,6 +21,7 @@
       "wireplumber",
       "xdg-desktop-portal-hyprland",
       "xdg-desktop-portal-gtk",
-      "hyprpicker"
+      "hyprpicker",
+      "gnome-calendar"
    ]
 }
