@@ -88,7 +88,7 @@
 (defwidget vpn-icon []
   (button :class "vpn-icon"
     :onclick "scripts/toggle-vpn.sh &"
-  ""))
+    (label :text vpn-status)))
 
 (defwidget left []
   (box :class "left"
@@ -144,8 +144,8 @@
 ; Window
 (defwindow bar
   :monitor 0
-  :geometry (geometry :x "11px"
-    :y "11px"
+  :geometry (geometry :x "10px"
+    :y "10px"
     :width "100%"
     :height "35px"
   :anchor "top center")
@@ -168,8 +168,8 @@
 
 (defwindow power_menu
   :monitor 0
-  :geometry (geometry :x "11px"
-    :y "11px" ; Below the 35px height + 11px padding bar + some gap
+  :geometry (geometry :x "10px"
+    :y "10px" ; Below the 35px height + 10px padding bar + some gap
     :width "190px"
     :height "40px"
   :anchor "top right")
@@ -243,15 +243,15 @@
 ;; ── VPN panel ───────────────────────────────────────────────
 (defwidget vpn-panel-content []
   (box :class "vpn-panel" :orientation "v" :space-evenly false :spacing 8
-    (label :class "vpn-status" :text {vpn-status == "" ? "VPN: Disconnected" : "VPN: ${vpn-status}"})
+    (label :class "vpn-status" :text "VPN: ${vpn-status}")
     (button :class "vpn-manage-btn" :onclick "scripts/vpn-menu.sh menu &" "Manage VPN")))
 
 ;; ── Sensors window ───────────────────────────────────────────
 (defwindow sensors
   :monitor 0
   :geometry (geometry
-    :x "11px"
-    :y "11px"
+    :x "10px"
+    :y "10px"
     :width "320px"
     :height "240px"
   :anchor "top right")
@@ -262,8 +262,8 @@
 (defwindow vpn_panel
   :monitor 0
   :geometry (geometry
-    :x "11px"
-    :y "11px"
+    :x "10px"
+    :y "10px"
     :width "240px"
     :height "70px"
   :anchor "top right")

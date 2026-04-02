@@ -2,11 +2,11 @@
    all: unset;
    font-family: "Inter", monospace;
    font-weight: 600;
-   font-size: 13.3px;
+   font-size: 12px;
 }
 
 .bar {
-   margin: 0 11px;
+   margin: 0 10px;
    color: #eaeaea;
 }
 
@@ -15,7 +15,6 @@
 }
 
 .menu-icon {
-   font-size: 18px;
    padding: 0 10px;
 
    &:hover {
@@ -38,22 +37,27 @@
 .sensors-icon,
 .vpn-icon,
 .power-icon {
-   padding: 0 7px;
+   padding: 0 8px;
    // background-color: red;
 
    button {
-      font-size: 16px;
       margin-right: 5px;
    }
 }
 
 .power-icon {
    padding: 0 14px;
+   padding-left: 10px;
 }
 
 .power-menu {
    background-color: rgba(0, 0, 0, 0.76);
    padding: 10px;
+}
+
+.vpn-icon,
+.network-box {
+   padding-left: 5px;
 }
 
 .menu-btn {
