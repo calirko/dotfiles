@@ -100,7 +100,7 @@
     (systray
       :orientation "horizontal"
       :space-evenly false
-      :spacing 6
+      :spacing 10
     :icon-size 15)
   ))
 
