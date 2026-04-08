@@ -26,11 +26,19 @@
 (defpoll vpn-status :interval "2s"
 `scripts/vpn-status.sh`)
 
+(defpoll kb-layout :interval "1s"
+`scripts/kb-layout-status.sh`)
+
 ; Widgets
 (defwidget menu []
   (button :class "menu-icon"
     :onclick "wofi --style ~/.config/wofi/style.css --allow-images --show drun &"
   "󰀻"))
+
+(defwidget kb-layout-button []
+  (button :class "kb-layout-icon"
+    :onclick "scripts/kb-layout-toggle.sh &"
+    (label :text kb-layout)))
 
 (defwidget clock []
   (button :class "clock-box"
@@ -122,6 +130,7 @@
     (sensors-icon)
     (vpn-icon)
     (network)
+    (kb-layout-button)
     (bluetooth)
     (battery)
     (volume-control)
