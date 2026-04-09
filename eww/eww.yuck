@@ -5,6 +5,8 @@
 (defpoll date_now :interval "30s"
   `date +"%a, %d %b %Y"`)
 
+(defpoll volume-muted :interval "1s"
+  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q 'MUTED' && echo 'true' || echo 'false'")
 
 (defpoll has-brightness :interval "5s"
   `[ -r /sys/class/backlight/*/brightness ] && echo "1" || echo "0"`)
@@ -16,6 +18,35 @@
   `cat /sys/class/backlight/*/brightness 2>/dev/null | head -n1 || echo "0"`)
 
 (defvar brightness-step 5)
+
+(defpoll kb-backlight-has :interval "10s"
+  `[ -d /sys/class/leds ] && ls /sys/class/leds | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" && echo "1" || echo "0"`)
+
+(defpoll kb-backlight-max :interval "10s"
+  `for d in /sys/class/leds/*; do
+     [ -r "$d/max_brightness" ] || continue
+     b=$(basename "$d")
+     echo "$b" | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" || continue
+     cat "$d/max_brightness"
+     exit 0
+   done
+   echo "0"`)
+
+(defpoll kb-backlight-value :interval "1s"
+  `for d in /sys/class/leds/*; do
+     [ -r "$d/brightness" ] || continue
+     b=$(basename "$d")
+     echo "$b" | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" || continue
+     cat "$d/brightness"
+     exit 0
+   done
+   echo "0"`)
+
+(defpoll power-profile-label :interval "2s"
+  `powerprofilesctl get 2>/dev/null || echo "unknown"`)
+
+(defpoll mako-paused :interval "2s"
+  `makoctl mode 2>/dev/null | grep -qi "do-not-disturb" && echo "1" || echo "0"`)
 
 ;; ── Sensors polling ──────────────────────────────────────────
 (defpoll sensors
@@ -137,6 +168,12 @@
     :spacing 6
     (kb-layout-button)
     (network)
+    (button :class "qm-vol-icon"
+      :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
+      :onscroll "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% && eww update volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')"
+      "${volume-muted == 'true' || volume == 0 ? '' :
+        volume < 33 ? '' :
+        volume < 66 ? '' : ''} ")
     (bluetooth)
     (battery)
     (button :class "quick-menu-icon"
@@ -239,6 +276,35 @@
     (label :class "qm-br-value"
       :text "${round((brightness-raw * 100.0) / brightness-max, 0)}%")))
 
+(defwidget quick-actions-row []
+  (box :class "qm-card qm-actions"
+    :orientation "h"
+    :space-evenly true
+    :spacing 8
+
+    (button :class "qm-action-btn"
+      :visible {kb-backlight-has == "1"}
+      :tooltip "Keyboard backlight"
+      :onclick "~/.config/eww/scripts/cycle-kb-backlight.sh &"
+      "󰌌")
+
+    (button :class "qm-action-btn"
+      :tooltip "Power profile: ${power-profile-label}"
+      :onclick "scripts/cycle-power-profile.sh &"
+      {power-profile-label == "power-saver" ? "" :
+              power-profile-label == "balanced" ? "" :
+              power-profile-label == "performance" ? "󰓅" : ""})
+
+    (button :class "qm-action-btn"
+      :tooltip "Screenshot to clipboard"
+      :onclick "hyprshot -m output --clipboard-only &"
+      "󰄀")
+
+    (button :class "qm-action-btn"
+      :tooltip {mako-paused == "1" ? "Enable notifications" : "Disable notifications"}
+      :onclick "makoctl mode -t do-not-disturb &"
+      {mako-paused == "1" ? "󰪑" : "󰂚"})))
+
 (defwidget quick-menu-content []
   (box :class "quick-menu"
     :orientation "v"
@@ -246,6 +312,10 @@
     :spacing 10
 
     (datetime-two-cols)
+
+    ;; Row 2.5: Utility actions
+    (quick-actions-row)
+
 
     ;; Row 1: VPN (left) + Power (right)
     (box :orientation "h" :space-evenly false :spacing 10
@@ -293,12 +363,14 @@
 
     (brightness-slider)
 
+
     ;; Row 2: Volume slider
     (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
-      (button :class "qm-vol-icon" :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
-         "${volume < 1 ? "" :
-               volume < 50 ? "" :
-               volume < 70 ? "" : ""} ")
+        (button :class "qm-vol-icon"
+          :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
+          "${volume-muted == 'true' || volume == 0 ? '' :
+            volume < 33 ? '' :
+            volume < 66 ? '' : ''} ")
       (scale :class "qm-vol-slider"
         :min 0 :max 100 :value volume
         :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"

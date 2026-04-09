@@ -253,3 +253,29 @@
     color: #eaeaea;
     padding: 8px;
 }
+
+// ── Utility actions row ──────────────────────────────────────
+
+.qm-actions {
+    padding: 10px 12px;
+}
+
+.qm-action-btn {
+    color: #eaeaea;
+    padding: 6px 8px;
+    min-width: 40px;
+
+    &:hover {
+        color: #ffffff;
+    }
+
+    &.active {
+        color: #ffffff;
+    }
+}
+
+.qm-action-state {
+    color: #888888;
+    font-size: 10px;
+    font-family: "JetBrains Mono", monospace;
+}
