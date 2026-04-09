@@ -21,7 +21,7 @@ echo ""
 echo ""
 
 # Array of config directories to unlink
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
@@ -38,12 +38,12 @@ echo ""
 for config in "${CONFIGS[@]}"; do
     target="$CONFIG_DIR/$config"
     source="$REPO_DIR/$config"
-    
+
     if [ -L "$target" ]; then
         if [ "$(readlink "$target")" = "$source" ]; then
             rm "$target"
             echo -e "${GREEN}✓ Removed symlink for $config${NC}"
-            
+
             # Check for backups and ask to restore
             backup=$(ls -t "$CONFIG_DIR/${config}.backup."* 2>/dev/null | head -1)
             if [ -n "$backup" ]; then
@@ -63,6 +63,24 @@ for config in "${CONFIGS[@]}"; do
         echo -e "${YELLOW}⊘ $config not found${NC}"
     fi
 done
+
+# Remove zen symlink
+ZEN_TARGET="/home/calirko/.zen/7310cqpp.Default (release)/chrome"
+ZEN_SOURCE="$REPO_DIR/zen"
+
+echo -e "${YELLOW}→ Removing zen symlink...${NC}"
+if [ -L "$ZEN_TARGET" ]; then
+    if [ "$(readlink "$ZEN_TARGET")" = "$ZEN_SOURCE" ]; then
+        rm "$ZEN_TARGET"
+        echo -e "${GREEN}✓ Removed symlink for zen${NC}"
+    else
+        echo -e "${YELLOW}⊘ zen symlink points elsewhere, skipping${NC}"
+    fi
+elif [ -e "$ZEN_TARGET" ]; then
+    echo -e "${YELLOW}⊘ zen chrome dir exists but is not a symlink, skipping${NC}"
+else
+    echo -e "${YELLOW}⊘ zen chrome dir not found${NC}"
+fi
 
 echo ""
 echo -e "${GREEN}Done!${NC}"

@@ -21,6 +21,7 @@ WP_PATH="$first_wallpaper"
 cat > "$CONF_FILE" <<EOF
 preload = $WP_PATH
 wallpaper = ,$WP_PATH
+splash = false
 EOF
 
 # Kill any existing hyprpaper instance

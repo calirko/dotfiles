@@ -35,6 +35,18 @@
 (defpoll weather :interval "20m"
   `scripts/get-weather.sh`)
 
+(defpoll media-title :interval "1s"
+  `playerctl metadata xesam:title 2>/dev/null || echo ""`)
+
+(defpoll media-artist :interval "1s"
+  `playerctl metadata xesam:artist 2>/dev/null || echo ""`)
+
+(defpoll media-status :interval "1s"
+  `playerctl status 2>/dev/null || echo ""`)
+
+(defpoll media-art-url :interval "2s"
+  `scripts/media-art-path.sh`)
+
 ; ── Bar widgets ──────────────────────────────────────────────
 
 (defwidget menu []
@@ -206,17 +218,44 @@
       (box :class "qm-card qm-power" :orientation "v" :space-evenly false :spacing 6
         (label :class "qm-title" :halign "start" :text "Power")
         (box :orientation "h" :space-evenly true :spacing 4
-          (button :class "menu-btn lock"     :onclick "scripts/menu-action.sh lock &"     "")
-          (button :class "menu-btn logout"   :onclick "scripts/menu-action.sh logout &"   "")
-          (button :class "menu-btn reboot"   :onclick "scripts/menu-action.sh reboot &"   "")
-          (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" ""))))
+          (button :class "menu-btn lock"     :onclick "scripts/menu-action.sh lock &"     "")
+          (button :class "menu-btn logout"   :onclick "scripts/menu-action.sh logout &"   "󰍃")
+          (button :class "menu-btn reboot"   :onclick "scripts/menu-action.sh reboot &"   "󰜉")
+          (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "⏻"))))
+
+    ;; Row 2: Media controls (2 columns)
+    (box :class "qm-card qm-media"
+      :orientation "h"
+      :space-evenly false
+      :spacing 10
+      :visible {media-title != ""}
+
+      ;; Left column: thumbnail (only if present)
+      (box :class "qm-media-art-col"
+        :visible {media-art-url != ""}
+        (image :class "qm-media-art"
+          :path media-art-url
+          :image-width 80
+          :image-height 80
+          :preserve-aspect-ratio true))
+
+      ;; Right column: metadata + controls
+      (box :class "qm-media-main" :orientation "v" :space-evenly false :spacing 6 :hexpand true
+        (label :class "qm-media-title" :halign "start" :limit-width 30 :text media-title)
+        (label :class "qm-media-artist" :halign "start" :limit-width 30 :text media-artist)
+        (box :class "qm-media-controls" :orientation "h" :space-evenly false :spacing 8
+          (button :class "qm-media-btn" :onclick "playerctl previous &" "")
+          (button :class "qm-media-btn" :onclick "playerctl play-pause &"
+            {media-status == "Playing" ? "" : ""})
+          (button :class "qm-media-btn" :onclick "playerctl next &" ""))))
+
 
     ;; Row 2: Volume slider
     (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
       (label :class "qm-vol-icon"
-        :text {volume < 1 ? "" :
+        :text "${volume < 1 ? "" :
                volume < 50 ? "" :
-               volume < 70 ? "" : ""})
+               volume < 70 ? "" : ""} ")
       (scale :class "qm-vol-slider"
         :min 0 :max 100 :value volume
         :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"

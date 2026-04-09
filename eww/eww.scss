@@ -27,7 +27,6 @@
 }
 
 .clock {
-    font-weight: bold;
 }
 
 .network-box,
@@ -78,8 +77,6 @@
 }
 
 .qm-title {
-    font-size: 10px;
-    font-weight: 700;
     color: #888888;
     letter-spacing: 0.6px;
 }
@@ -87,13 +84,11 @@
 // ── VPN ──────────────────────────────────────────────────────
 
 .qm-vpn-status {
-    font-size: 13px;
     color: #eaeaea;
 }
 
 .qm-vpn-btn {
     color: #888888;
-    font-size: 11px;
     margin-top: 4px;
 
     &:hover {
@@ -105,7 +100,6 @@
 
 .menu-btn {
     padding: 8px;
-    font-size: 16px;
     color: #eaeaea;
 
     &:hover {
@@ -124,12 +118,7 @@
 
 // ── Volume ────────────────────────────────────────────────────
 
-.qm-volume {
-    // Centre children vertically
-}
-
 .qm-vol-icon {
-    font-size: 15px;
     color: #eaeaea;
     min-width: 20px;
 }
@@ -138,20 +127,17 @@
     trough {
         background: rgba(255, 255, 255, 0.12);
         min-height: 4px;
-        border-radius: 2px;
     }
 
     highlight {
         background: #eaeaea;
-        border-radius: 2px;
     }
 
     slider {
         background: #eaeaea;
         min-width: 10px;
         min-height: 10px;
-        border-radius: 50%;
-        margin: -3px 0;
+        margin: 0 0;
     }
 }
 
@@ -172,12 +158,10 @@
 }
 
 .sensor-label {
-    font-weight: 600;
     color: #eaeaea;
 }
 
 .sensor-value {
-    font-weight: 500;
     font-family: "JetBrains Mono", monospace;
     color: #eaeaea;
 }
@@ -185,4 +169,40 @@
 .sensor-graph {
     min-height: 40px;
     background-color: rgba(24, 24, 37, 0.5);
+}
+
+// ── Media ─────────────────────────────────────────────────────
+
+.qm-media {
+    padding: 12px 12px;
+}
+
+.qm-media-art-col {
+    min-width: 56px;
+    min-height: 80px;
+}
+
+.qm-media-main {
+    min-width: 0;
+}
+
+.qm-media-title {
+    color: #eaeaea;
+}
+
+.qm-media-artist {
+    color: #888888;
+}
+
+.qm-media-controls {
+    margin-top: 20px;
+}
+
+.qm-media-btn {
+    color: #eaeaea;
+    padding: 2px 6px;
+
+    &:hover {
+        color: #ffffff;
+    }
 }

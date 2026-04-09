@@ -4,7 +4,9 @@
 
 set -e
 
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
+ZEN_CHROME_DIR="/home/calirko/.zen/7310cqpp.Default (release)/chrome"
 
 # Color output
 RED='\033[0;31m'
@@ -60,6 +62,30 @@ if pgrep -f wofi > /dev/null; then
     echo -e "${GREEN}✓ Wofi cleared${NC}"
     echo ""
 fi
+
+# Verify Zed symlink
+echo -e "${YELLOW}→ Checking Zed symlink...${NC}"
+if [ -L "$CONFIG_DIR/zed" ] && [ "$(readlink "$CONFIG_DIR/zed")" = "$REPO_DIR/zed" ]; then
+    echo -e "${GREEN}✓ Zed symlink OK${NC}"
+else
+    echo -e "${YELLOW}⊘ Zed symlink missing or stale, re-linking...${NC}"
+    rm -f "$CONFIG_DIR/zed"
+    ln -s "$REPO_DIR/zed" "$CONFIG_DIR/zed"
+    echo -e "${GREEN}✓ Zed symlink restored${NC}"
+fi
+echo ""
+
+# Verify Zen chrome symlink
+echo -e "${YELLOW}→ Checking Zen chrome symlink...${NC}"
+if [ -L "$ZEN_CHROME_DIR" ] && [ "$(readlink "$ZEN_CHROME_DIR")" = "$REPO_DIR/zen" ]; then
+    echo -e "${GREEN}✓ Zen chrome symlink OK${NC}"
+else
+    echo -e "${YELLOW}⊘ Zen chrome symlink missing or stale, re-linking...${NC}"
+    rm -rf "$ZEN_CHROME_DIR"
+    ln -s "$REPO_DIR/zen" "$ZEN_CHROME_DIR"
+    echo -e "${GREEN}✓ Zen chrome symlink restored${NC}"
+fi
+echo ""
 
 # Reload shell configuration (useful to add to ~/.bashrc or ~/.zshrc)
 echo -e "${YELLOW}→ Reloading shell...${NC}"

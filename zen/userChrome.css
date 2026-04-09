@@ -1,0 +1,23 @@
+:root {
+    --zen-branding-dark: #141414 !important;
+    --zen-primary-color: #141414 !important;
+    --zen-border-radius: 0 !important;
+    --zen-themed-toolbar-bg-transparent: transparent !important;
+    --zen-toolbar-element-bg: #181818 !important;
+}
+
+* {
+    border-radius: 0px !important;
+}
+
+&,
+& .urlbar-background {
+    border-radius: 0px !important;
+    border: none !important;
+    outline: none !important;
+    background-color: #141414 !important;
+}
+
+body {
+    background-color: #141414 !important;
+}
