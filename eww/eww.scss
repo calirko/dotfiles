@@ -1,131 +1,188 @@
 * {
-   all: unset;
-   font-family: "Inter", monospace;
-   font-weight: 600;
-   font-size: 12px;
+    all: unset;
+    font-family: "Inter", monospace;
+    font-weight: 600;
+    font-size: 12px;
 }
 
 .bar {
-   margin: 0 8px;
-   color: #eaeaea;
+    margin: 0 8px;
+    color: #eaeaea;
 }
 
 .bar-wrapper {
-   background: rgba(5, 5, 5, 0.623);
+    background: rgba(5, 5, 5, 0.623);
 }
 
 .menu-icon {
-   padding: 0 10px;
+    padding: 0 10px;
 
-   &:hover {
-      color: #ffffff;
-   }
+    &:hover {
+        color: #ffffff;
+    }
 }
 
 .weather-box {
-   padding: 0;
+    padding: 0;
 }
 
 .clock {
-   font-weight: bold;
+    font-weight: bold;
 }
 
-.volume-box,
 .network-box,
 .bluetooth-box,
-.battery-box,
-.sensors-icon,
-.vpn-icon,
-.power-icon {
-   padding: 0 8px;
-   // background-color: red;
-
-   button {
-      margin-right: 5px;
-   }
+.battery-box {
+    padding: 0 8px;
 }
 
-.power-icon {
-   padding: 0 14px;
-   padding-left: 10px;
-}
-
-.power-menu {
-   background-color: rgba(0, 0, 0, 0.76);
-   padding: 10px;
-}
-
-.vpn-icon,
 .network-box {
-   padding-left: 5px;
+    padding-right: 11px;
 }
 
-.menu-btn {
-   // background-color: red;
-   padding: 30px;
-   margin: 0;
-}
+// Toggle button in the bar
+.quick-menu-icon {
+    padding: 0 14px;
+    padding-left: 10px;
 
-// .scrim-box {
-//    background-color: red;
-// }
-
-.systray {
-   background: #141414;
-}
-
-// ── Sensors panel ──────────────────────────────────────────
-.sensors-panel {
-   background-color: rgba(0, 0, 0, 0.76);
-   padding: 16px;
-}
-
-.sensor-card {
-   padding: 10px 12px;
-}
-
-.sensor-header {
-   margin-bottom: 4px;
-}
-
-.sensor-label {
-   font-weight: 600;
-   color: #eaeaea;
-}
-
-.sensor-value {
-   font-weight: 500;
-   font-family: "JetBrains Mono", monospace;
-   color: #eaeaea;
-}
-
-.sensor-graph {
-   min-height: 50px;
-   background-color: rgba(24, 24, 37, 0.5);
-}
-
-.vpn-panel {
-   background-color: rgba(0, 0, 0, 0.76);
-   padding: 12px;
-}
-
-.vpn-status {
-   color: #eaeaea;
-}
-
-.vpn-manage-btn {
-   color: #eaeaea;
-   padding-top: 2px;
-
-   &:hover {
-      color: #ffffff;
-   }
+    &:hover {
+        color: #ffffff;
+    }
 }
 
 .kb-layout-icon {
-   padding: 0 8px;
+    padding: 0 8px;
 
-   &:hover {
-      color: #ffffff;
-   }
+    &:hover {
+        color: #ffffff;
+    }
+}
+
+.systray {
+    background: #141414;
+}
+
+// ── Quick Menu ──────────────────────────────────────────────
+
+// The window background is transparent so the spacing between
+// cards shows through as a gap the compositor can blur.
+.quick-menu {
+    background: transparent;
+}
+
+// Base card — same colour as the bar so Hyprland's blur rule
+// (layerrule = blur, eww-menu) applies uniformly.
+.qm-card {
+    background: rgba(5, 5, 5, 0.623);
+    padding: 12px 14px;
+}
+
+.qm-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #888888;
+    letter-spacing: 0.6px;
+}
+
+// ── VPN ──────────────────────────────────────────────────────
+
+.qm-vpn-status {
+    font-size: 13px;
+    color: #eaeaea;
+}
+
+.qm-vpn-btn {
+    color: #888888;
+    font-size: 11px;
+    margin-top: 4px;
+
+    &:hover {
+        color: #ffffff;
+    }
+}
+
+// ── Power ─────────────────────────────────────────────────────
+
+.menu-btn {
+    padding: 8px;
+    font-size: 16px;
+    color: #eaeaea;
+
+    &:hover {
+        color: #ffffff;
+    }
+    &.shutdown:hover {
+        color: #ff6b6b;
+    }
+    &.reboot:hover {
+        color: #ffaa55;
+    }
+    &.logout:hover {
+        color: #ffdd55;
+    }
+}
+
+// ── Volume ────────────────────────────────────────────────────
+
+.qm-volume {
+    // Centre children vertically
+}
+
+.qm-vol-icon {
+    font-size: 15px;
+    color: #eaeaea;
+    min-width: 20px;
+}
+
+.qm-vol-slider {
+    trough {
+        background: rgba(255, 255, 255, 0.12);
+        min-height: 4px;
+        border-radius: 2px;
+    }
+
+    highlight {
+        background: #eaeaea;
+        border-radius: 2px;
+    }
+
+    slider {
+        background: #eaeaea;
+        min-width: 10px;
+        min-height: 10px;
+        border-radius: 50%;
+        margin: -3px 0;
+    }
+}
+
+.qm-vol-value {
+    color: #888888;
+    font-family: "JetBrains Mono", monospace;
+    min-width: 34px;
+}
+
+// ── Sensors ───────────────────────────────────────────────────
+
+.sensor-card {
+    padding: 6px 4px;
+}
+
+.sensor-header {
+    margin-bottom: 4px;
+}
+
+.sensor-label {
+    font-weight: 600;
+    color: #eaeaea;
+}
+
+.sensor-value {
+    font-weight: 500;
+    font-family: "JetBrains Mono", monospace;
+    color: #eaeaea;
+}
+
+.sensor-graph {
+    min-height: 40px;
+    background-color: rgba(24, 24, 37, 0.5);
 }

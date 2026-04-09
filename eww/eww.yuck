@@ -1,39 +1,46 @@
 ; Variables
 (defpoll time :interval "1s"
-`date +"%I:%M %p"`)
+  `date +"%I:%M %p"`)
 
 ;; ── Sensors polling ──────────────────────────────────────────
 (defpoll sensors
   :interval "1s"
   :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}'
-`~/.config/eww/scripts/sensors.sh`)
+  `~/.config/eww/scripts/sensors.sh`)
 
-(defpoll volume :interval "100ms"
+(defpoll volume :interval "50ms"
   `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
 
 (defpoll battery-capacity :interval "5s"
-`cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo ""`)
+  `cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo ""`)
 
 (defpoll battery-status :interval "5s"
-`cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
+  `cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
+
+(defpoll ac-status :interval "5s"
+  `cat /sys/class/power_supply/AC/online 2>/dev/null || echo "0"`)
 
 (defpoll net-status :interval "2s"
-`scripts/network-status.sh`)
+  `scripts/network-status.sh`)
 
 (defpoll bt-status :interval "2s"
-`scripts/bluetooth-status.sh`)
+  `scripts/bluetooth-status.sh`)
 
 (defpoll vpn-status :interval "2s"
-`scripts/vpn-status.sh`)
+  `scripts/vpn-status.sh`)
 
 (defpoll kb-layout :interval "1s"
-`scripts/kb-layout-status.sh`)
+  `scripts/kb-layout-status.sh`)
 
-; Widgets
+(defpoll weather :interval "20m"
+  `scripts/get-weather.sh`)
+
+; ── Bar widgets ──────────────────────────────────────────────
+
 (defwidget menu []
   (button :class "menu-icon"
     :onclick "wofi --style ~/.config/wofi/style.css --allow-images --show drun &"
-  "󰀻"))
+    "󰀻"))
 
 (defwidget kb-layout-button []
   (button :class "kb-layout-icon"
@@ -45,9 +52,6 @@
     :onclick "gnome-calendar &"
     (label :class "clock" :text time)))
 
-(defpoll weather :interval "20m"
-`scripts/get-weather.sh`)
-
 (defwidget weather-widget []
   (button :class "weather-box"
     (label :text weather)))
@@ -55,12 +59,12 @@
 (defwidget network []
   (button :class "network-box"
     :onclick "kitty -e nmtui &"
-  net-status))
+    net-status))
 
 (defwidget bluetooth []
   (button :class "bluetooth-box"
     :onclick "blueman-manager &"
-  bt-status))
+    bt-status))
 
 (defwidget battery []
   (box :class "battery-box"
@@ -68,35 +72,13 @@
     :orientation "horizontal"
     :space-evenly false
     :spacing 5
-    (label :text {battery-status == "Charging" ? "󰂄 " :
-      battery-capacity < 20 ? " " :
-      battery-capacity < 40 ? " " :
-      battery-capacity < 60 ? " " :
-    battery-capacity < 80 ? " " : " "})
-    (label :text "${battery-capacity}%")))
-
-(defwidget volume-control []
-  (eventbox :onscroll "sh -c '[ \"{}\" = \"up\" ] && wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ || wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-' &"
-    (button :onclick "pavucontrol &"
-      :class "volume-box"
-      (box :orientation "horizontal"
-        :space-evenly false
-        :spacing 5
-        (label :text {volume == "0" ? " " :
-          volume < 1 ? " " :
-          volume < 30 ? " " :
-        volume < 70 ? " " : " "})
-        (label :text "${volume}%")))))
-
-(defwidget sensors-icon []
-  (button :class "sensors-icon"
-    :onclick "scripts/toggle-sensors.sh &"
-  ""))
-
-(defwidget vpn-icon []
-  (button :class "vpn-icon"
-    :onclick "scripts/toggle-vpn.sh &"
-    (label :text vpn-status)))
+    (button :tooltip "${battery-capacity}%"
+      (label :text {ac-status == "1" ? "󰂄" :
+        battery-status == "Charging" ? "󰂄" :
+        battery-capacity < 20 ? "󰁻" :
+        battery-capacity < 40 ? "󰁾" :
+        battery-capacity < 60 ? "󰂁" :
+        battery-capacity < 80 ? "󰂂" : "󰁹"}))))
 
 (defwidget left []
   (box :class "left"
@@ -109,8 +91,7 @@
       :orientation "horizontal"
       :space-evenly false
       :spacing 10
-    :icon-size 15)
-  ))
+      :icon-size 15)))
 
 (defwidget center []
   (box :class "center"
@@ -126,17 +107,14 @@
     :orientation "horizontal"
     :halign "end"
     :space-evenly false
-    :spacing 10
-    (sensors-icon)
-    (vpn-icon)
-    (network)
+    :spacing 6
     (kb-layout-button)
+    (network)
     (bluetooth)
     (battery)
-    (volume-control)
-    (button :class "power-icon"
+    (button :class "quick-menu-icon"
       :onclick "scripts/toggle-menu.sh &"
-    "")))
+      "")))
 
 (defwidget bar []
   (centerbox :class "bar"
@@ -153,40 +131,19 @@
 ; Window
 (defwindow bar
   :monitor 0
-  :geometry (geometry :x "8px"
+  :geometry (geometry
+    :x "8px"
     :y "8px"
     :width "100%"
     :height "33px"
-  :anchor "top center")
+    :anchor "top center")
   :stacking "fg"
   :exclusive true
   :namespace "eww-bar"
   (bar-wrapper))
 
 
-; Top Right Menu
-(defwidget power-menu-content []
-  (box :class "power-menu"
-    :orientation "horizontal"
-    :space-evenly true
-    :spacing 10
-    (button :class "menu-btn lock" :onclick "scripts/menu-action.sh lock &" "")
-    (button :class "menu-btn logout" :onclick "scripts/menu-action.sh logout &" "")
-    (button :class "menu-btn reboot" :onclick "scripts/menu-action.sh reboot &" "")
-    (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "")))
-
-(defwindow power_menu
-  :monitor 0
-  :geometry (geometry :x "8px"
-    :y "8px" ; Below the 35px height + 10px padding bar + some gap
-    :width "190px"
-    :height "40px"
-  :anchor "top right")
-  :stacking "fg"
-  ;   :exclusive false
-  ;   :focusable true
-  :namespace "eww-menu"
-  (power-menu-content))
+; ── Scrim ────────────────────────────────────────────────────
 
 (defwidget menu-scrim []
   (eventbox :onclick "scripts/close-menu.sh &"
@@ -194,16 +151,22 @@
     :onmiddleclick "scripts/close-menu.sh &"
     (box :class "scrim-box" :hexpand true :vexpand true)))
 
-(
-  defwindow menu_scrim
+(defwindow menu_scrim
   :monitor 0
-  :geometry (geometry :x "0%" :y "0%" :width "100%" :height "100%" :anchor "center")
+  :geometry (geometry
+    :x "0%"
+    :y "0%"
+    :width "100%"
+    :height "100%"
+    :anchor "center")
   :stacking "fg"
   :focusable false
   :namespace "eww-scrim"
   (menu-scrim))
 
-;; ── Sensor graph card ────────────────────────────────────────
+
+; ── Sensor graph card ─────────────────────────────────────────
+
 (defwidget sensor-graph [label value unit color max-val]
   (box :class "sensor-card" :orientation "v" :space-evenly false :spacing 4
     (box :class "sensor-header" :orientation "h" :space-evenly true
@@ -219,63 +182,66 @@
       :max max-val
       :dynamic false
       :line-style "round"
-    :style "color: ${color};")))
+      :style "color: ${color};")))
 
-;; ── Sensors panel ────────────────────────────────────────────
-(defwidget sensors-panel []
-  (box :class "sensors-panel" :orientation "v" :space-evenly false :spacing 12
-    (sensor-graph
-      :label "CPU"
-      :value {sensors.cpu}
-      :unit "%"
-      :color "#b9b9b9"
-    :max-val 100)
-    (sensor-graph
-      :label "RAM"
-      :value {sensors.ram}
-      :unit "%"
-      :color "#b9b9b9"
-    :max-val 100)
-    (sensor-graph
-      :label "CPU°"
-      :value {sensors.cpu_temp}
-      :unit "°C"
-      :color "#b9b9b9"
-    :max-val 100)
-    (sensor-graph
-      :label "GPU°"
-      :value {sensors.gpu_temp}
-      :unit "°C"
-      :color "#b9b9b9"
-    :max-val 100)))
 
-;; ── VPN panel ───────────────────────────────────────────────
-(defwidget vpn-panel-content []
-  (box :class "vpn-panel" :orientation "v" :space-evenly false :spacing 8
-    (label :class "vpn-status" :text "VPN: ${vpn-status}")
-    (button :class "vpn-manage-btn" :onclick "scripts/vpn-menu.sh menu &" "Manage VPN")))
+; ── Quick Menu ───────────────────────────────────────────────
 
-;; ── Sensors window ───────────────────────────────────────────
-(defwindow sensors
+(defwidget quick-menu-content []
+  (box :class "quick-menu"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    ;; Row 1: VPN (left) + Power (right)
+    (box :orientation "h" :space-evenly false :spacing 10
+
+      ;; VPN card
+      (box :class "qm-card qm-vpn" :orientation "v" :space-evenly false :spacing 6 :hexpand true
+        (label :class "qm-title" :halign "start" :text "VPN")
+        (label :class "qm-vpn-status" :halign "start" :text vpn-status)
+        (button :class "qm-vpn-btn" :onclick "scripts/vpn-menu.sh menu &" "Manage"))
+
+      ;; Power card
+      (box :class "qm-card qm-power" :orientation "v" :space-evenly false :spacing 6
+        (label :class "qm-title" :halign "start" :text "Power")
+        (box :orientation "h" :space-evenly true :spacing 4
+          (button :class "menu-btn lock"     :onclick "scripts/menu-action.sh lock &"     "")
+          (button :class "menu-btn logout"   :onclick "scripts/menu-action.sh logout &"   "")
+          (button :class "menu-btn reboot"   :onclick "scripts/menu-action.sh reboot &"   "")
+          (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" ""))))
+
+    ;; Row 2: Volume slider
+    (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
+      (label :class "qm-vol-icon"
+        :text {volume < 1 ? "" :
+               volume < 50 ? "" :
+               volume < 70 ? "" : ""})
+      (scale :class "qm-vol-slider"
+        :min 0 :max 100 :value volume
+        :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"
+        :orientation "h"
+        :hexpand true)
+      (label :class "qm-vol-value" :text "${volume}%"))
+
+    ;; Row 3: Sensors 2x2 grid
+    (box :class "qm-card qm-sensors" :orientation "v" :space-evenly false :spacing 8
+      (label :class "qm-title" :halign "start" :text "System")
+      (box :orientation "h" :space-evenly true :spacing 8
+        (sensor-graph :label "CPU"  :value {sensors.cpu}      :unit "%"  :color "#b9b9b9" :max-val 100)
+        (sensor-graph :label "RAM"  :value {sensors.ram}      :unit "%"  :color "#b9b9b9" :max-val 100))
+      (box :orientation "h" :space-evenly true :spacing 8
+        (sensor-graph :label "CPU°" :value {sensors.cpu_temp} :unit "°C" :color "#b9b9b9" :max-val 100)
+        (sensor-graph :label "GPU°" :value {sensors.gpu_temp} :unit "°C" :color "#b9b9b9" :max-val 100)))))
+
+(defwindow quick_menu
   :monitor 0
   :geometry (geometry
     :x "10px"
     :y "10px"
-    :width "320px"
-    :height "240px"
-  :anchor "top right")
+    :width "340px"
+    :height "400px"
+    :anchor "top right")
   :stacking "fg"
-  :namespace "eww-sensors"
-  (sensors-panel))
-
-(defwindow vpn_panel
-  :monitor 0
-  :geometry (geometry
-    :x "10px"
-    :y "10px"
-    :width "240px"
-    :height "70px"
-  :anchor "top right")
-  :stacking "fg"
-  :namespace "eww-vpn"
-  (vpn-panel-content))
+  :namespace "eww-menu"
+  (quick-menu-content))
