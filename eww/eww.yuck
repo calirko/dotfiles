@@ -2,6 +2,21 @@
 (defpoll time :interval "1s"
   `date +"%I:%M %p"`)
 
+(defpoll date_now :interval "30s"
+  `date +"%a, %d %b %Y"`)
+
+
+(defpoll has-brightness :interval "5s"
+  `[ -r /sys/class/backlight/*/brightness ] && echo "1" || echo "0"`)
+
+(defpoll brightness-max :interval "10s"
+  `cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -n1 || echo "100"`)
+
+(defpoll brightness-raw :interval "200ms"
+  `cat /sys/class/backlight/*/brightness 2>/dev/null | head -n1 || echo "0"`)
+
+(defvar brightness-step 5)
+
 ;; ── Sensors polling ──────────────────────────────────────────
 (defpoll sensors
   :interval "1s"
@@ -102,7 +117,7 @@
     (systray
       :orientation "horizontal"
       :space-evenly false
-      :spacing 10
+      :spacing 17
       :icon-size 15)))
 
 (defwidget center []
@@ -199,11 +214,38 @@
 
 ; ── Quick Menu ───────────────────────────────────────────────
 
+(defwidget datetime-two-cols []
+  (box :class "qm-card qm-datetime" :orientation "h" :space-evenly true :spacing 12
+    (box :orientation "v" :space-evenly false :spacing 2 :hexpand true
+      (label :class "qm-datetime-time" :halign "start" :text time)
+(label :class "qm-datetime-date" :halign "start" :text date_now)
+      )
+        ))
+
+(defwidget brightness-slider []
+  (box :class "qm-card qm-brightness"
+    :orientation "h"
+    :space-evenly false
+    :spacing 10
+    :visible {has-brightness == "1" && brightness-max > 0}
+    (label :class "qm-br-icon" :text "󰃠")
+    (scale :class "qm-br-slider"
+      :min 0
+      :max 100
+      :value {round((brightness-raw * 100.0) / brightness-max, 0)}
+      :onchange "brightnessctl set {}% &"
+      :orientation "h"
+      :hexpand true)
+    (label :class "qm-br-value"
+      :text "${round((brightness-raw * 100.0) / brightness-max, 0)}%")))
+
 (defwidget quick-menu-content []
   (box :class "quick-menu"
     :orientation "v"
     :space-evenly false
     :spacing 10
+
+    (datetime-two-cols)
 
     ;; Row 1: VPN (left) + Power (right)
     (box :orientation "h" :space-evenly false :spacing 10
@@ -215,11 +257,11 @@
         (button :class "qm-vpn-btn" :onclick "scripts/vpn-menu.sh menu &" "Manage"))
 
       ;; Power card
-      (box :class "qm-card qm-power" :orientation "v" :space-evenly false :spacing 6
-        (label :class "qm-title" :halign "start" :text "Power")
-        (box :orientation "h" :space-evenly true :spacing 4
+      (box :class "qm-card qm-power" :orientation "v" :space-evenly true :spacing 8
+        (box :orientation "h" :space-evenly true :spacing 20
           (button :class "menu-btn lock"     :onclick "scripts/menu-action.sh lock &"     "")
-          (button :class "menu-btn logout"   :onclick "scripts/menu-action.sh logout &"   "󰍃")
+          (button :class "menu-btn logout"   :onclick "scripts/menu-action.sh logout &"   "󰍃"))
+        (box :orientation "h" :space-evenly true :spacing 20
           (button :class "menu-btn reboot"   :onclick "scripts/menu-action.sh reboot &"   "󰜉")
           (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "⏻"))))
 
@@ -249,11 +291,12 @@
             {media-status == "Playing" ? "" : ""})
           (button :class "qm-media-btn" :onclick "playerctl next &" ""))))
 
+    (brightness-slider)
 
     ;; Row 2: Volume slider
     (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
-      (label :class "qm-vol-icon"
-        :text "${volume < 1 ? "" :
+      (button :class "qm-vol-icon" :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
+         "${volume < 1 ? "" :
                volume < 50 ? "" :
                volume < 70 ? "" : ""} ")
       (scale :class "qm-vol-slider"
@@ -263,21 +306,23 @@
         :hexpand true)
       (label :class "qm-vol-value" :text "${volume}%"))
 
+
+
     ;; Row 3: Sensors 2x2 grid
     (box :class "qm-card qm-sensors" :orientation "v" :space-evenly false :spacing 8
       (label :class "qm-title" :halign "start" :text "System")
       (box :orientation "h" :space-evenly true :spacing 8
-        (sensor-graph :label "CPU"  :value {sensors.cpu}      :unit "%"  :color "#b9b9b9" :max-val 100)
-        (sensor-graph :label "RAM"  :value {sensors.ram}      :unit "%"  :color "#b9b9b9" :max-val 100))
+        (sensor-graph :label "CPU"  :value {sensors.cpu}      :unit "%"  :color "#888888" :max-val 100)
+        (sensor-graph :label "RAM"  :value {sensors.ram}      :unit "%"  :color "#888888" :max-val 100))
       (box :orientation "h" :space-evenly true :spacing 8
-        (sensor-graph :label "CPU°" :value {sensors.cpu_temp} :unit "°C" :color "#b9b9b9" :max-val 100)
-        (sensor-graph :label "GPU°" :value {sensors.gpu_temp} :unit "°C" :color "#b9b9b9" :max-val 100)))))
+        (sensor-graph :label "CPU°" :value {sensors.cpu_temp} :unit "°C" :color "#888888" :max-val 100)
+        (sensor-graph :label "GPU°" :value {sensors.gpu_temp} :unit "°C" :color "#888888" :max-val 100)))))
 
 (defwindow quick_menu
   :monitor 0
   :geometry (geometry
-    :x "10px"
-    :y "10px"
+    :x "8px"
+    :y "8px"
     :width "340px"
     :height "400px"
     :anchor "top right")

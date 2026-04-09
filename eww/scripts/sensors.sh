@@ -15,16 +15,56 @@ ram_usage() {
 # CPU temp (°C) — adjust thermal zone if needed
 cpu_temp() {
   local temp
-  # Try hwmon first (k10temp / coretemp), fall back to thermal_zone
-  if [[ -f /sys/class/hwmon/hwmon0/temp1_input ]]; then
-    temp=$(cat /sys/class/hwmon/hwmon0/temp1_input)
-    echo $(( temp / 1000 ))
-  elif [[ -f /sys/class/thermal/thermal_zone0/temp ]]; then
-    temp=$(cat /sys/class/thermal/thermal_zone0/temp)
-    echo $(( temp / 1000 ))
-  else
-    echo 0
-  fi
+
+  # Method 1: Search all hwmon devices for CPU temp sensors
+  for hwmon in /sys/class/hwmon/hwmon*/temp*_input; do
+    [[ -f "$hwmon" ]] || continue
+
+    # Get the label file to identify the sensor
+    local label_file="${hwmon%_input}_label"
+    local name_file="$(dirname "$hwmon")/name"
+
+    # Check if this is a CPU/core temp sensor
+    if [[ -f "$label_file" ]]; then
+      local label=$(cat "$label_file" 2>/dev/null)
+      if [[ "$label" =~ ^(Package|Core|Tctl|Tdie|CPU) ]]; then
+        temp=$(cat "$hwmon" 2>/dev/null)
+        if [[ -n "$temp" && "$temp" -gt 0 ]]; then
+          echo $(( temp / 1000 ))
+          return 0
+        fi
+      fi
+    elif [[ -f "$name_file" ]]; then
+      local name=$(cat "$name_file" 2>/dev/null)
+      # Look for coretemp (Intel) or k10temp (AMD)
+      if [[ "$name" == "coretemp" || "$name" == "k10temp" ]]; then
+        temp=$(cat "$hwmon" 2>/dev/null)
+        if [[ -n "$temp" && "$temp" -gt 0 ]]; then
+          echo $(( temp / 1000 ))
+          return 0
+        fi
+      fi
+    fi
+  done
+
+  # Method 2: Try thermal zones
+  for zone in /sys/class/thermal/thermal_zone*/temp; do
+    [[ -f "$zone" ]] || continue
+    local type_file="$(dirname "$zone")/type"
+    if [[ -f "$type_file" ]]; then
+      local type=$(cat "$type_file" 2>/dev/null)
+      # Skip ACPI and other non-CPU zones
+      if [[ "$type" =~ (x86_pkg_temp|acpitz|CPU) ]]; then
+        temp=$(cat "$zone" 2>/dev/null)
+        if [[ -n "$temp" && "$temp" -gt 1000 ]]; then
+          echo $(( temp / 1000 ))
+          return 0
+        fi
+      fi
+    fi
+  done
+
+  echo 0
 }
 
 # GPU temp — tries AMD (amdgpu), then NVIDIA, then Intel

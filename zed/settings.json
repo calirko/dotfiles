@@ -8,10 +8,10 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "agent": {
+    "default_profile": "write",
     "default_model": {
-      "effort": "high",
-      "provider": "copilot_chat",
-      "model": "gpt-5.3-codex",
+      "provider": "zed.dev",
+      "model": "claude-haiku-4-5",
       "enable_thinking": false,
     },
     "favorite_models": [],

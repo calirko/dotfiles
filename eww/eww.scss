@@ -11,7 +11,7 @@
 }
 
 .bar-wrapper {
-    background: rgba(5, 5, 5, 0.623);
+    background: rgba(5, 5, 5, 0.723);
 }
 
 .menu-icon {
@@ -27,6 +27,8 @@
 }
 
 .clock {
+    padding: 0 8px;
+    font-weight: 800;
 }
 
 .network-box,
@@ -72,7 +74,7 @@
 // Base card — same colour as the bar so Hyprland's blur rule
 // (layerrule = blur, eww-menu) applies uniformly.
 .qm-card {
-    background: rgba(5, 5, 5, 0.623);
+    background: rgba(5, 5, 5, 0.723);
     padding: 12px 14px;
 }
 
@@ -143,7 +145,6 @@
 
 .qm-vol-value {
     color: #888888;
-    font-family: "JetBrains Mono", monospace;
     min-width: 34px;
 }
 
@@ -158,11 +159,10 @@
 }
 
 .sensor-label {
-    color: #eaeaea;
+    color: #888888;
 }
 
 .sensor-value {
-    font-family: "JetBrains Mono", monospace;
     color: #eaeaea;
 }
 
@@ -187,7 +187,8 @@
 }
 
 .qm-media-title {
-    color: #eaeaea;
+    font-size: 15px;
+    font-weight: 800;
 }
 
 .qm-media-artist {
@@ -205,4 +206,50 @@
     &:hover {
         color: #ffffff;
     }
+}
+
+.qm-br-icon {
+    color: #eaeaea;
+    min-width: 20px;
+}
+
+.qm-br-slider {
+    trough {
+        background: rgba(255, 255, 255, 0.12);
+        min-height: 4px;
+    }
+
+    highlight {
+        background: #eaeaea;
+    }
+
+    slider {
+        background: #eaeaea;
+        min-width: 10px;
+        min-height: 10px;
+        margin: 0 0;
+    }
+}
+
+.qm-br-value {
+    color: #888888;
+    min-width: 34px;
+}
+
+.qm-datetime-time {
+    color: #eaeaea;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.qm-datetime-date {
+    color: #888888;
+}
+
+.lock,
+.reboot,
+.shutdown,
+.logout {
+    color: #eaeaea;
+    padding: 8px;
 }
