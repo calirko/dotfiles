@@ -1,0 +1,54 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "agent": {
+    "default_model": {
+      "effort": "high",
+      "provider": "zed.dev",
+      "model": "claude-sonnet-4-6",
+      "enable_thinking": true,
+    },
+    "favorite_models": [],
+    "model_parameters": [],
+  },
+  "edit_predictions": {
+    "provider": "copilot",
+    "mode": "eager",
+  },
+  "project_panel": {
+    "sort_mode": "files_first",
+    "dock": "right",
+    "auto_fold_dirs": false,
+  },
+  "minimap": {
+    "show": "never",
+  },
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)",
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "base_keymap": "VSCode",
+  "vim_mode": false,
+  "ui_font_size": 15,
+  "buffer_font_size": 15,
+  "ui_font_family": "Inter",
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "calirko",
+  },
+  "gutter": {
+    "min_line_number_digits": 0,
+  },
+}
