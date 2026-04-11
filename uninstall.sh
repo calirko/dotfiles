@@ -21,7 +21,7 @@ echo ""
 echo ""
 
 # Array of config directories to unlink
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed" "fastfetch")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
@@ -80,6 +80,37 @@ elif [ -e "$ZEN_TARGET" ]; then
     echo -e "${YELLOW}⊘ zen chrome dir exists but is not a symlink, skipping${NC}"
 else
     echo -e "${YELLOW}⊘ zen chrome dir not found${NC}"
+fi
+
+# Remove GTK symlinks
+GTK_SOURCE="$REPO_DIR/gtk/gtk.css"
+GTK3_TARGET="$HOME/.config/gtk-3.0/gtk.css"
+GTK4_TARGET="$HOME/.config/gtk-4.0/gtk.css"
+
+echo -e "${YELLOW}→ Removing GTK symlinks...${NC}"
+
+# GTK 3
+if [ -L "$GTK3_TARGET" ]; then
+    if [ "$(readlink "$GTK3_TARGET")" = "$GTK_SOURCE" ]; then
+        rm "$GTK3_TARGET"
+        echo -e "${GREEN}✓ Removed GTK 3 gtk.css symlink${NC}"
+    else
+        echo -e "${YELLOW}⊘ GTK 3 gtk.css symlink points elsewhere, skipping${NC}"
+    fi
+elif [ -e "$GTK3_TARGET" ]; then
+    echo -e "${YELLOW}⊘ GTK 3 gtk.css exists but is not a symlink, skipping${NC}"
+fi
+
+# GTK 4
+if [ -L "$GTK4_TARGET" ]; then
+    if [ "$(readlink "$GTK4_TARGET")" = "$GTK_SOURCE" ]; then
+        rm "$GTK4_TARGET"
+        echo -e "${GREEN}✓ Removed GTK 4 gtk.css symlink${NC}"
+    else
+        echo -e "${YELLOW}⊘ GTK 4 gtk.css symlink points elsewhere, skipping${NC}"
+    fi
+elif [ -e "$GTK4_TARGET" ]; then
+    echo -e "${YELLOW}⊘ GTK 4 gtk.css exists but is not a symlink, skipping${NC}"
 fi
 
 echo ""

@@ -55,3 +55,9 @@ The script will ask whether to restore backups (if they exist) for each config.
 
 
 sudo pacman -S xdg-desktop-portal-hyprland xdg-desktop-portal pipewire pipewire-pulse wireplumber
+
+
+#### Misc
+
+foreground - #eaeaea
+background - #141414

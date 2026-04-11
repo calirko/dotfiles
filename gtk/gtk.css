@@ -1,0 +1,28 @@
+/* ~/.config/gtk-4.0/gtk.css */
+
+/* accent */
+@define-color accent_bg_color #141414;
+@define-color accent_fg_color #eaeaea;
+
+/* windows */
+@define-color window_bg_color #141414;
+@define-color window_fg_color #eaeaea;
+
+/* views (file lists, text areas) */
+@define-color view_bg_color #141414;
+@define-color view_fg_color #eaeaea;
+
+/* headerbar */
+@define-color headerbar_bg_color #141414;
+@define-color headerbar_fg_color #eaeaea;
+
+/* sidebar */
+@define-color sidebar_bg_color #141414;
+@define-color sidebar_fg_color #eaeaea;
+@define-color sidebar_border_color #141414;
+
+/* cards and popovers */
+@define-color card_bg_color #141414;
+@define-color card_fg_color #eaeaea;
+@define-color popover_bg_color #141414;
+@define-color popover_fg_color #eaeaea;

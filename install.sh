@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="Adwaita"
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed" "fastfetch")
 
 # Color output
 RED='\033[0;31m'
@@ -171,6 +171,92 @@ else
     mkdir -p "$(dirname "$ZEN_TARGET")"
     ln -s "$ZEN_SOURCE" "$ZEN_TARGET"
     echo -e "${GREEN}✓ Linked zen${NC}"
+fi
+
+# Configure PS1 prompt color in ~/.bashrc (managed block)
+BASHRC_FILE="$HOME/.bashrc"
+PS1_VALUE="PS1='\\[\\e[1;37m\\]\\u@\\h\\[\\e[0m\\] \\[\\e[2;37m\\]\\w\\[\\e[0m\\]\\\\$ '"
+PS1_BEGIN="# >>> dotfiles managed ps1 >>>"
+PS1_END="# <<< dotfiles managed ps1 <<<"
+
+echo -e "${YELLOW}Configuring PS1 prompt in $BASHRC_FILE...${NC}"
+
+# Ensure file exists
+touch "$BASHRC_FILE"
+
+# Remove existing managed block if present (replace behavior)
+tmp_file="$(mktemp)"
+awk -v begin="$PS1_BEGIN" -v end="$PS1_END" '
+    $0 == begin {skip=1; next}
+    $0 == end   {skip=0; next}
+    !skip
+' "$BASHRC_FILE" > "$tmp_file"
+mv "$tmp_file" "$BASHRC_FILE"
+
+# Append managed PS1 block
+{
+    echo ""
+    echo "$PS1_BEGIN"
+    echo "$PS1_VALUE"
+    echo "$PS1_END"
+} >> "$BASHRC_FILE"
+
+echo -e "${GREEN}✓ PS1 prompt configured${NC}"
+echo ""
+
+# Symlink gtk.css to GTK 3 and GTK 4 config directories
+GTK_SOURCE="$REPO_DIR/gtk/gtk.css"
+GTK3_TARGET="$HOME/.config/gtk-3.0/gtk.css"
+GTK4_TARGET="$HOME/.config/gtk-4.0/gtk.css"
+
+if [ ! -f "$GTK_SOURCE" ]; then
+    echo -e "${YELLOW}⊘ gtk.css not found in repo, skipping GTK symlink${NC}"
+else
+    echo -e "${YELLOW}→ Linking gtk.css to GTK 3 and 4...${NC}"
+
+    # GTK 3
+    mkdir -p "$HOME/.config/gtk-3.0"
+    if [ -L "$GTK3_TARGET" ]; then
+        if [ "$(readlink "$GTK3_TARGET")" = "$GTK_SOURCE" ]; then
+            echo -e "${GREEN}✓ GTK 3 gtk.css already linked${NC}"
+        else
+            echo -e "${YELLOW}→ Replacing GTK 3 gtk.css symlink${NC}"
+            rm "$GTK3_TARGET"
+            ln -s "$GTK_SOURCE" "$GTK3_TARGET"
+            echo -e "${GREEN}✓ Linked GTK 3${NC}"
+        fi
+    elif [ -e "$GTK3_TARGET" ]; then
+        backup="$GTK3_TARGET.backup.$(date +%s)"
+        echo -e "${YELLOW}→ Backing up existing GTK 3 gtk.css to $backup${NC}"
+        mv "$GTK3_TARGET" "$backup"
+        ln -s "$GTK_SOURCE" "$GTK3_TARGET"
+        echo -e "${GREEN}✓ Linked GTK 3${NC}"
+    else
+        ln -s "$GTK_SOURCE" "$GTK3_TARGET"
+        echo -e "${GREEN}✓ Linked GTK 3${NC}"
+    fi
+
+    # GTK 4
+    mkdir -p "$HOME/.config/gtk-4.0"
+    if [ -L "$GTK4_TARGET" ]; then
+        if [ "$(readlink "$GTK4_TARGET")" = "$GTK_SOURCE" ]; then
+            echo -e "${GREEN}✓ GTK 4 gtk.css already linked${NC}"
+        else
+            echo -e "${YELLOW}→ Replacing GTK 4 gtk.css symlink${NC}"
+            rm "$GTK4_TARGET"
+            ln -s "$GTK_SOURCE" "$GTK4_TARGET"
+            echo -e "${GREEN}✓ Linked GTK 4${NC}"
+        fi
+    elif [ -e "$GTK4_TARGET" ]; then
+        backup="$GTK4_TARGET.backup.$(date +%s)"
+        echo -e "${YELLOW}→ Backing up existing GTK 4 gtk.css to $backup${NC}"
+        mv "$GTK4_TARGET" "$backup"
+        ln -s "$GTK_SOURCE" "$GTK4_TARGET"
+        echo -e "${GREEN}✓ Linked GTK 4${NC}"
+    else
+        ln -s "$GTK_SOURCE" "$GTK4_TARGET"
+        echo -e "${GREEN}✓ Linked GTK 4${NC}"
+    fi
 fi
 
 echo ""

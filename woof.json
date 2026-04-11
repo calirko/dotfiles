@@ -19,6 +19,7 @@
     "wireplumber",
     "xdg-desktop-portal-hyprland",
     "xdg-desktop-portal-gtk",
-    "hyprpicker"
+    "hyprpicker",
+    "adw-gtk-theme"
   ]
 }

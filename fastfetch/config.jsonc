@@ -1,0 +1,27 @@
+{
+  "logo": {
+    "type": "file",
+    "source": "~/.config/fastfetch/ascii.txt",
+  },
+  "display": {
+    "separator": "  ",
+    "color": {
+      "title": "white",
+      "keys": "white",
+      "separator": "white",
+      "values": "white",
+    },
+  },
+  "modules": [
+    "os",
+    "kernel",
+    "uptime",
+    "packages",
+    "wm",
+    "cpu",
+    "gpu",
+    "memory",
+    "disk",
+    "localip",
+  ],
+}
