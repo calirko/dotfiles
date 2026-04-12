@@ -22,6 +22,17 @@
     "hyprpicker",
     "adw-gtk-theme",
     "libsecret",
-    "gnome-keyring"
+    "gnome-keyring",
+    "cliphist",
+    "jq",
+    "playerctl",
+    "brightnessctl",
+    "easyeffects",
+    "inter-font",
+    "ttf-jetbrains-mono-nerd",
+    "bluetui",
+    "pulsemixer",
+    "grim",
+    "slurp"
   ]
 }

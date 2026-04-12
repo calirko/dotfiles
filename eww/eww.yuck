@@ -2,6 +2,12 @@
 (defpoll time :interval "1s"
   `date +"%I:%M %p"`)
 
+(defpoll workspaces :interval "1s"
+  `hyprctl workspaces -j | jq '[.[] | {id: .id, windows: .windows}] | sort_by(.id)'`)
+
+(defpoll active-workspace :interval "1s"
+  `hyprctl activeworkspace -j | jq '.id'`)
+
 (defpoll date_now :interval "30s"
   `date +"%a, %d %b %Y"`)
 
@@ -95,11 +101,6 @@
 
 ; ── Bar widgets ──────────────────────────────────────────────
 
-(defwidget menu []
-  (button :class "menu-icon"
-    :onclick "wofi --style ~/.config/wofi/style.css --allow-images --show drun &"
-    "󰀻"))
-
 (defwidget kb-layout-button []
   (button :class "kb-layout-icon"
     :onclick "scripts/kb-layout-toggle.sh &"
@@ -121,7 +122,7 @@
 
 (defwidget bluetooth []
   (button :class "bluetooth-box"
-    :onclick "blueman-manager &"
+    :onclick "kitty -e bluetui &"
     bt-status))
 
 (defwidget battery []
@@ -138,13 +139,24 @@
         battery-capacity < 60 ? "󰂁" :
         battery-capacity < 80 ? "󰂂" : "󰁹"}))))
 
+(defwidget workspaces []
+  (box :class "workspaces"
+    :orientation "horizontal"
+    :space-evenly false
+    :spacing 4
+    (for ws in workspaces
+      (button
+        :class "ws-btn ${ws.id == active-workspace ? 'ws-active' : ''}"
+        :onclick "hyprctl dispatch workspace ${ws.id} &"
+        {ws.id}))))
+
 (defwidget left []
   (box :class "left"
     :orientation "horizontal"
     :halign "start"
     :space-evenly false
     :spacing 10
-    (menu)
+    (workspaces)
     (systray
       :orientation "horizontal"
       :space-evenly false
