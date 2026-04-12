@@ -20,6 +20,8 @@
     "xdg-desktop-portal-hyprland",
     "xdg-desktop-portal-gtk",
     "hyprpicker",
-    "adw-gtk-theme"
+    "adw-gtk-theme",
+    "libsecret",
+    "gnome-keyring"
   ]
 }

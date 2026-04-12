@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="Adwaita"
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed" "fastfetch")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch")
 
 # Color output
 RED='\033[0;31m'
@@ -146,32 +146,6 @@ for config in "${CONFIGS[@]}"; do
     fi
 done
 
-# Create zen symlink (non-standard path: maps repo/zen -> Zen profile chrome dir)
-ZEN_SOURCE="$REPO_DIR/zen"
-ZEN_TARGET="/home/calirko/.zen/7310cqpp.Default (release)/chrome"
-
-echo -e "${YELLOW}→ Linking zen chrome...${NC}"
-if [ ! -d "$ZEN_SOURCE" ]; then
-    echo -e "${YELLOW}⊘ Skipping zen (not found in repo)${NC}"
-elif [ -L "$ZEN_TARGET" ]; then
-    if [ "$(readlink "$ZEN_TARGET")" = "$ZEN_SOURCE" ]; then
-        echo -e "${GREEN}✓ zen already linked${NC}"
-    else
-        echo -e "${RED}✗ zen symlink points elsewhere${NC}"
-        echo "  Points to: $(readlink "$ZEN_TARGET")"
-        echo "  Should point to: $ZEN_SOURCE"
-    fi
-elif [ -d "$ZEN_TARGET" ] || [ -e "$ZEN_TARGET" ]; then
-    backup="$ZEN_TARGET.backup.$(date +%s)"
-    echo -e "${YELLOW}→ Backing up existing zen chrome dir to $backup${NC}"
-    mv "$ZEN_TARGET" "$backup"
-    ln -s "$ZEN_SOURCE" "$ZEN_TARGET"
-    echo -e "${GREEN}✓ Linked zen${NC}"
-else
-    mkdir -p "$(dirname "$ZEN_TARGET")"
-    ln -s "$ZEN_SOURCE" "$ZEN_TARGET"
-    echo -e "${GREEN}✓ Linked zen${NC}"
-fi
 
 # Configure PS1 prompt color in ~/.bashrc (managed block)
 BASHRC_FILE="$HOME/.bashrc"

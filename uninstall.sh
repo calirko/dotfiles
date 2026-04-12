@@ -21,7 +21,7 @@ echo ""
 echo ""
 
 # Array of config directories to unlink
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "zed" "fastfetch")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
@@ -63,24 +63,6 @@ for config in "${CONFIGS[@]}"; do
         echo -e "${YELLOW}⊘ $config not found${NC}"
     fi
 done
-
-# Remove zen symlink
-ZEN_TARGET="/home/calirko/.zen/7310cqpp.Default (release)/chrome"
-ZEN_SOURCE="$REPO_DIR/zen"
-
-echo -e "${YELLOW}→ Removing zen symlink...${NC}"
-if [ -L "$ZEN_TARGET" ]; then
-    if [ "$(readlink "$ZEN_TARGET")" = "$ZEN_SOURCE" ]; then
-        rm "$ZEN_TARGET"
-        echo -e "${GREEN}✓ Removed symlink for zen${NC}"
-    else
-        echo -e "${YELLOW}⊘ zen symlink points elsewhere, skipping${NC}"
-    fi
-elif [ -e "$ZEN_TARGET" ]; then
-    echo -e "${YELLOW}⊘ zen chrome dir exists but is not a symlink, skipping${NC}"
-else
-    echo -e "${YELLOW}⊘ zen chrome dir not found${NC}"
-fi
 
 # Remove GTK symlinks
 GTK_SOURCE="$REPO_DIR/gtk/gtk.css"
