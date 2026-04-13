@@ -33,12 +33,17 @@
 
 .network-box,
 .bluetooth-box,
+.qm-vol-icon,
 .battery-box {
-    padding: 0 8px;
+    padding-right: 1px;
+}
+
+.qm-vol-icon {
+    padding-right: 5px;
 }
 
 .network-box {
-    padding-right: 11px;
+    padding-right: 5px;
 }
 
 // Toggle button in the bar
@@ -122,7 +127,7 @@
 
 .qm-vol-icon {
     color: #eaeaea;
-    min-width: 20px;
+    /* min-width: 20px; */
 }
 
 .qm-vol-slider {

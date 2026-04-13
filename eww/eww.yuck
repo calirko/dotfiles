@@ -177,7 +177,7 @@
     :orientation "horizontal"
     :halign "end"
     :space-evenly false
-    :spacing 6
+    :spacing 15
     (kb-layout-button)
     (network)
     (button :class "qm-vol-icon"
@@ -185,7 +185,7 @@
       :onscroll "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% && eww update volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')"
       "${volume-muted == 'true' || volume == 0 ? '' :
         volume < 33 ? '' :
-        volume < 66 ? '' : ''} ")
+        volume < 66 ? '' : ''}")
     (bluetooth)
     (battery)
     (button :class "quick-menu-icon"
