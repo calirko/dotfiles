@@ -21,7 +21,7 @@ echo ""
 echo ""
 
 # Array of config directories to unlink
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"

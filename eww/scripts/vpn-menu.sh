@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-VPN_CONFIG_DIR="$HOME/Documents/vpn"
+VPN_CONFIG_DIR="$HOME/Documents/VPN"
 NM_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/dotfiles-vpn"
 ICON_CONNECTED="  "
 ICON_DISCONNECTED=""

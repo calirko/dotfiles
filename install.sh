@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="Adwaita"
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch")
+CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
 
 # Color output
 RED='\033[0;31m'
@@ -68,43 +68,7 @@ else
     echo ""
 fi
 
-# Configure fontconfig to use Inter as default font
-echo -e "${YELLOW}Configuring Inter as default system font...${NC}"
-FONTCONFIG_DIR="$HOME/.config/fontconfig"
-mkdir -p "$FONTCONFIG_DIR"
 
-cat > "$FONTCONFIG_DIR/fonts.conf" << 'EOF'
-<?xml version="1.0"?>
-<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
-<fontconfig>
-    <!-- Set Inter as default sans-serif font -->
-    <alias>
-        <family>sans-serif</family>
-        <prefer>
-            <family>Inter</family>
-        </prefer>
-    </alias>
-
-    <!-- Enable font antialias and hinting for better rendering -->
-    <match target="font">
-        <edit name="antialias" mode="assign">
-            <bool>true</bool>
-        </edit>
-        <edit name="hinting" mode="assign">
-            <bool>true</bool>
-        </edit>
-        <edit name="hintstyle" mode="assign">
-            <const>hintslight</const>
-        </edit>
-        <edit name="rgba" mode="assign">
-            <const>rgb</const>
-        </edit>
-    </match>
-</fontconfig>
-EOF
-
-echo -e "${GREEN}✓ Inter configured as default system font${NC}"
-echo ""
 
 # Create symlinks
 for config in "${CONFIGS[@]}"; do

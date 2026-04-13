@@ -1,54 +1,54 @@
 window {
-   border-radius: 0px;
-   border: none;
-   background: rgba(20, 20, 20, 0.76);
-   overflow: hidden;
-   color: #eaeaea;
-   font-family: "Inter", sans-serif;
+    border-radius: 0px;
+    border: none;
+    background: rgba(20, 20, 20, 0.76);
+    overflow: hidden;
+    color: #eaeaea;
+    font-family: "JetBrainsMono Nerd Font", sans-serif;
 }
 
 #outer-box {
-   padding: 20px;
+    padding: 20px;
 }
 
 #entry {
-   padding: 10px;
-   border: none;
-   background-color: transparent;
-   border-radius: 0px;
-   color: #eaeaea;
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    border-radius: 0px;
+    color: #eaeaea;
 }
 
 #entry:selected {
-   border-radius: 0px;
-   background: rgba(20, 20, 20, 0.4);
-   outline: none;
-   border: none;
-   border-radius: 0px;
-   color: #eaeaea;
+    border-radius: 0px;
+    background: rgba(20, 20, 20, 0.4);
+    outline: none;
+    border: none;
+    border-radius: 0px;
+    color: #eaeaea;
 }
 
 #input {
-   border-radius: 0px;
-   margin: 0px;
-   margin-bottom: 20px;
-   background-color: transparent;
-   outline: none;
-   border: none;
-   box-shadow: none;
-   color: #eaeaea;
+    border-radius: 0px;
+    margin: 0px;
+    margin-bottom: 20px;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    box-shadow: none;
+    color: #eaeaea;
 }
 
 #input:focus {
-   border-radius: 0px;
-   background: rgba(20, 20, 20, 0.4);
-   outline: none;
-   border: none;
-   box-shadow: none;
-   color: #eaeaea;
+    border-radius: 0px;
+    background: rgba(20, 20, 20, 0.4);
+    outline: none;
+    border: none;
+    box-shadow: none;
+    color: #eaeaea;
 }
 
 #img {
-   height: 10px;
-   margin-right: 10px;
+    height: 10px;
+    margin-right: 10px;
 }
