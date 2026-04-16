@@ -3,18 +3,18 @@
 set -euo pipefail
 
 if ! command -v bluetoothctl >/dev/null 2>&1; then
-  echo "󰂲"
+  echo "disabled"
   exit 0
 fi
 
 if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
-  echo "󰂲"
+  echo "disabled"
   exit 0
 fi
 
 connected_alias=$(bluetoothctl devices Connected 2>/dev/null | head -1 | cut -d' ' -f3-)
 if [[ -n "$connected_alias" ]]; then
-  echo "󰂯 $connected_alias"
+  echo "connected"
 else
-  echo "󰂯"
+  echo "disconnected"
 fi

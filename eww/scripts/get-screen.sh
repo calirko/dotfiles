@@ -8,7 +8,7 @@ case "$HOSTNAME" in
   shark)
     echo 0
     ;;
-  fox)
+  bear)
     if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
       if hyprctl monitors -j | jq -e '.[] | select(.name == "eDP-1")' >/dev/null 2>&1; then
         echo 0

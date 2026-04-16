@@ -1,0 +1,424 @@
+; Variables
+(defpoll time :interval "1s"
+  `date +"%I:%M %p"`)
+
+(defpoll workspaces :interval "1s"
+  `hyprctl workspaces -j | jq '[.[] | {id: .id, windows: .windows}] | sort_by(.id)'`)
+
+(defpoll active-workspace :interval "500ms"
+  `hyprctl activeworkspace -j | jq '.id'`)
+
+(defpoll date_now :interval "30s"
+  `date +"%a, %d %b %Y"`)
+
+(defpoll volume-muted :interval "60ms"
+  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q 'MUTED' && echo 'true' || echo 'false'")
+
+(defpoll has-brightness :interval "5s"
+  `[ -r /sys/class/backlight/*/brightness ] && echo "1" || echo "0"`)
+
+(defpoll brightness-max :interval "10s"
+  `cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -n1 || echo "100"`)
+
+(defpoll brightness-raw :interval "200ms"
+  `cat /sys/class/backlight/*/brightness 2>/dev/null | head -n1 || echo "0"`)
+
+(defvar brightness-step 5)
+
+(defpoll kb-backlight-has :interval "10s"
+  `[ -d /sys/class/leds ] && ls /sys/class/leds | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" && echo "1" || echo "0"`)
+
+(defpoll kb-backlight-max :interval "10s"
+  `for d in /sys/class/leds/*; do
+     [ -r "$d/max_brightness" ] || continue
+     b=$(basename "$d")
+     echo "$b" | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" || continue
+     cat "$d/max_brightness"
+     exit 0
+   done
+   echo "0"`)
+
+(defpoll kb-backlight-value :interval "1s"
+  `for d in /sys/class/leds/*; do
+     [ -r "$d/brightness" ] || continue
+     b=$(basename "$d")
+     echo "$b" | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" || continue
+     cat "$d/brightness"
+     exit 0
+   done
+   echo "0"`)
+
+(defpoll power-profile-label :interval "2s"
+  `powerprofilesctl get 2>/dev/null || echo "unknown"`)
+
+(defpoll mako-paused :interval "2s"
+  `makoctl mode 2>/dev/null | grep -qi "do-not-disturb" && echo "1" || echo "0"`)
+
+;; ── Sensors polling ──────────────────────────────────────────
+(defpoll sensors
+  :interval "1s"
+  :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}'
+  `~/.config/eww/scripts/sensors.sh`)
+
+(defpoll volume :interval "30ms"
+  `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
+
+(defpoll battery-capacity :interval "5s"
+  `cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo ""`)
+
+(defpoll battery-status :interval "5s"
+  `cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
+
+(defpoll ac-status :interval "5s"
+  `cat /sys/class/power_supply/AC/online 2>/dev/null || echo "0"`)
+
+(defpoll net-status :interval "2s"
+  `scripts/network-status.sh`)
+
+(defpoll bt-status :interval "2s"
+  `scripts/bluetooth-status.sh`)
+
+(defpoll vpn-status :interval "2s"
+  `scripts/vpn-status.sh`)
+
+(defpoll kb-layout :interval "1s"
+  `scripts/kb-layout-status.sh`)
+
+(defpoll weather :interval "20m"
+  `scripts/get-weather.sh`)
+
+(defpoll media-title :interval "1s"
+  `playerctl metadata xesam:title 2>/dev/null || echo ""`)
+
+(defpoll media-artist :interval "1s"
+  `playerctl metadata xesam:artist 2>/dev/null || echo ""`)
+
+(defpoll media-status :interval "50ms"
+  `playerctl status 2>/dev/null || echo ""`)
+
+(defpoll media-art-url :interval "2s"
+  `scripts/media-art-path.sh`)
+
+; ── Bar widgets ──────────────────────────────────────────────
+
+(defwidget kb-layout-button []
+  (button :class "kb-layout-icon"
+    :onclick "scripts/kb-layout-toggle.sh &"
+    (label :text kb-layout)))
+
+(defwidget clock []
+  (button :class "clock-box"
+    :onclick "gnome-calendar &"
+    (label :class "clock" :text time)))
+
+(defwidget weather-widget []
+  (button :class "weather-box"
+    (label :text weather)))
+
+(defwidget network []
+  (button :class "network-box"
+    :onclick "kitty -e nmtui &"
+    net-status))
+
+(defwidget bluetooth []
+  (button :class "bluetooth-box"
+    :onclick "kitty -e bluetui &"
+    (image :path {bt-status == "connected" ?
+                "icons/bluetooth-connected.svg"
+                : bt-status == "disconnected" ? "icons/bluetooth.svg"
+                : "icons/bluetooth-off.svg"}
+           :image-width 16
+           :image-height 16)))
+
+(defwidget battery []
+  (box :class "battery-box"
+    :visible {battery-capacity != ""}
+    :orientation "horizontal"
+    :space-evenly false
+    :spacing 5
+    (button :tooltip "${battery-capacity}%"
+      (image :path {ac-status == "1" ? "icons/battery-charging.svg" :
+        battery-capacity < 20 ? "icons/battery-low.svg" :
+        battery-capacity < 40 ? "icons/battery.svg" :
+        battery-capacity < 60 ? "icons/battery-medium.svg" :
+        battery-capacity < 80 ? "icons/battery-full.svg" : "icons/battery-full.svg"}
+        :image-width 16
+        :image-height 16))))
+
+(defwidget workspaces []
+  (box :class "workspaces"
+    :orientation "horizontal"
+    :space-evenly false
+    :spacing 4
+    (for ws in workspaces
+      (button
+        :class "ws-btn ${ws.id == active-workspace ? 'ws-active' : ''}"
+        :onclick "hyprctl dispatch workspace ${ws.id} &"
+        {ws.id}))))
+
+(defwidget left []
+  (box :class "left"
+    :orientation "horizontal"
+    :halign "start"
+    :space-evenly false
+    :spacing 10
+    (workspaces)
+    (systray
+      :orientation "horizontal"
+      :space-evenly false
+      :spacing 17
+      :icon-size 15)))
+
+(defwidget center []
+  (box :class "center"
+    :orientation "horizontal"
+    :halign "center"
+    :spacing 10
+    :space-evenly false
+    (weather-widget)
+    (clock)))
+
+(defwidget right []
+  (box :class "right"
+    :orientation "horizontal"
+    :halign "end"
+    :space-evenly false
+    :spacing 15
+    (kb-layout-button)
+    (network)
+    (button :class "qm-vol-icon"
+      :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
+      :onscroll "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% && eww update volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')"
+      (image :path {volume-muted == "true" || volume == 0 ? "icons/volume.svg" :
+                    volume < 33 ? "icons/volume.svg" :
+                    volume < 66 ? "icons/volume.svg" : "icons/volume.svg"}
+             :image-width 16
+             :image-height 16))
+    (bluetooth)
+    (battery)
+    (button :class "quick-menu-icon"
+      :onclick "scripts/toggle-menu.sh &"
+      "")))
+
+(defwidget bar []
+  (centerbox :class "bar"
+    :orientation "horizontal"
+    (left)
+    (center)
+    (right)))
+
+(defwidget bar-wrapper []
+  (box :class "bar-wrapper"
+    :orientation "vertical"
+    (bar)))
+
+; Window
+(defwindow bar
+  :monitor 0
+  :geometry (geometry
+    :x "8px"
+    :y "8px"
+    :width "100%"
+    :height "33px"
+    :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  :namespace "eww-bar"
+  (bar-wrapper))
+
+
+; ── Scrim ────────────────────────────────────────────────────
+
+(defwidget menu-scrim []
+  (eventbox :onclick "scripts/close-menu.sh &"
+    :onrightclick "scripts/close-menu.sh &"
+    :onmiddleclick "scripts/close-menu.sh &"
+    (box :class "scrim-box" :hexpand true :vexpand true)))
+
+(defwindow menu_scrim
+  :monitor 0
+  :geometry (geometry
+    :x "0%"
+    :y "0%"
+    :width "100%"
+    :height "100%"
+    :anchor "center")
+  :stacking "fg"
+  :focusable false
+  :namespace "eww-scrim"
+  (menu-scrim))
+
+
+; ── Sensor graph card ─────────────────────────────────────────
+
+(defwidget sensor-graph [label value unit color max-val]
+  (box :class "sensor-card" :orientation "v" :space-evenly false :spacing 4
+    (box :class "sensor-header" :orientation "h" :space-evenly true
+      (label :class "sensor-label" :halign "start" :text label)
+      (label :class "sensor-value" :halign "end"
+        :text "${round(value, 0)}${unit}"))
+    (graph
+      :class "sensor-graph sensor-graph-${label}"
+      :value value
+      :thickness 2.5
+      :time-range "60s"
+      :min 0
+      :max max-val
+      :dynamic false
+      :line-style "round"
+      :style "color: ${color};")))
+
+
+; ── Quick Menu ───────────────────────────────────────────────
+
+(defwidget datetime-two-cols []
+  (box :class "qm-card qm-datetime" :orientation "h" :space-evenly true :spacing 12
+    (box :orientation "v" :space-evenly false :spacing 2 :hexpand true
+      (label :class "qm-datetime-time" :halign "start" :text time)
+(label :class "qm-datetime-date" :halign "start" :text date_now)
+      )
+        ))
+
+(defwidget brightness-slider []
+  (box :class "qm-card qm-brightness"
+    :orientation "h"
+    :space-evenly false
+    :spacing 10
+    :visible {has-brightness == "1" && brightness-max > 0}
+    (label :class "qm-br-icon" :text "󰃠")
+    (scale :class "qm-br-slider"
+      :min 0
+      :max 100
+      :value {round((brightness-raw * 100.0) / brightness-max, 0)}
+      :onchange "brightnessctl set {}% &"
+      :orientation "h"
+      :hexpand true)
+    (label :class "qm-br-value"
+      :text "${round((brightness-raw * 100.0) / brightness-max, 0)}%")))
+
+(defwidget quick-actions-row []
+  (box :class "qm-card qm-actions"
+    :orientation "h"
+    :space-evenly true
+    :spacing 8
+
+    (button :class "qm-action-btn"
+      :visible {kb-backlight-has == "1"}
+      :tooltip "Keyboard backlight"
+      :onclick "~/.config/eww/scripts/cycle-kb-backlight.sh &"
+      "󰌌")
+
+    (button :class "qm-action-btn"
+      :tooltip "Power profile: ${power-profile-label}"
+      :onclick "scripts/cycle-power-profile.sh &"
+      {power-profile-label == "power-saver" ? "" :
+              power-profile-label == "balanced" ? "" :
+              power-profile-label == "performance" ? "󰓅" : ""})
+
+    (button :class "qm-action-btn"
+      :tooltip "Screenshot to clipboard"
+      :onclick "hyprshot -m output --clipboard-only &"
+      "󰄀")
+
+    (button :class "qm-action-btn"
+      :tooltip {mako-paused == "1" ? "Enable notifications" : "Disable notifications"}
+      :onclick "makoctl mode -t do-not-disturb &"
+      {mako-paused == "1" ? "󰪑" : "󰂚"})))
+
+(defwidget quick-menu-content []
+  (box :class "quick-menu"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    (datetime-two-cols)
+
+    ;; Row 2.5: Utility actions
+    (quick-actions-row)
+
+
+    ;; Row 1: VPN (left) + Power (right)
+    (box :orientation "h" :space-evenly false :spacing 10
+
+      ;; VPN card
+      (box :class "qm-card qm-vpn" :orientation "v" :space-evenly false :spacing 6 :hexpand true
+        (label :class "qm-title" :halign "start" :text "VPN")
+        (label :class "qm-vpn-status" :halign "start" :text vpn-status)
+        (button :class "qm-vpn-btn" :onclick "scripts/vpn-menu.sh menu &" "Manage"))
+
+      ;; Power card
+      (box :class "qm-card qm-power" :orientation "v" :space-evenly true :spacing 8
+        (box :orientation "h" :space-evenly true :spacing 8
+          (button :class "menu-btn lock" :width 36    :onclick "scripts/menu-action.sh lock &"     "")
+          (button :class "menu-btn logout"   :onclick "scripts/menu-action.sh logout &"   "󰍃"))
+        (box :orientation "h" :space-evenly true :spacing 8
+          (button :class "menu-btn reboot"   :onclick "scripts/menu-action.sh reboot &"   "󰜉")
+          (button :class "menu-btn shutdown" :onclick "scripts/menu-action.sh shutdown &" "⏻"))))
+
+    ;; Row 2: Media controls (2 columns)
+    (box :class "qm-card qm-media"
+      :orientation "h"
+      :space-evenly false
+      :spacing 10
+      :visible {media-title != ""}
+
+      ;; Left column: thumbnail (only if present)
+      (box :class "qm-media-art-col"
+        :visible {media-art-url != ""}
+        (image :class "qm-media-art"
+          :path media-art-url
+          :image-width 85
+          :image-height 85
+          :preserve-aspect-ratio true))
+
+      ;; Right column: metadata + controls
+      (box :class "qm-media-main" :orientation "v" :space-evenly false :spacing 10 :hexpand true
+        (box :orientation "v" :space-evenly true :spacing 0 :class "qm-media-labels"
+          (label :class "qm-media-title" :halign "start" :limit-width 30 :text media-title)
+          (label :class "qm-media-artist" :halign "start" :limit-width 30 :text media-artist))
+        (box :class "qm-media-controls" :orientation "h" :space-evenly false :spacing 10
+          (button :class "qm-media-btn" :onclick "playerctl previous &" "")
+          (button :class "qm-media-btn" :onclick "playerctl play-pause &"
+            {media-status == "Playing" ? "" : ""})
+          (button :class "qm-media-btn" :onclick "playerctl next &" ""))))
+
+    (brightness-slider)
+
+
+    ;; Row 2: Volume slider
+    (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
+        (button :class "qm-vol-icon"
+          :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
+          "${volume-muted == 'true' || volume == 0 ? '' :
+            volume < 33 ? '' :
+            volume < 66 ? '' : ''} ")
+      (scale :class "qm-vol-slider"
+        :min 0 :max 100 :value volume
+        :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"
+        :orientation "h"
+        :hexpand true)
+      (label :class "qm-vol-value" :text "${volume}%"))
+
+
+
+    ;; Row 3: Sensors 2x2 grid
+    (box :class "qm-card qm-sensors" :orientation "v" :space-evenly false :spacing 8
+      (label :class "qm-title" :halign "start" :text "System")
+      (box :orientation "h" :space-evenly true :spacing 8
+        (sensor-graph :label "CPU"  :value {sensors.cpu}      :unit "%"  :color "#888888" :max-val 100)
+        (sensor-graph :label "RAM"  :value {sensors.ram}      :unit "%"  :color "#888888" :max-val 100))
+      (box :orientation "h" :space-evenly true :spacing 8
+        (sensor-graph :label "CPU°" :value {sensors.cpu_temp} :unit "°C" :color "#888888" :max-val 100)
+        (sensor-graph :label "GPU°" :value {sensors.gpu_temp} :unit "°C" :color "#888888" :max-val 100)))))
+
+(defwindow quick_menu
+  :monitor 0
+  :geometry (geometry
+    :x "8px"
+    :y "8px"
+    :width "340px"
+    :height "400px"
+    :anchor "top right")
+  :stacking "fg"
+  :namespace "eww-menu"
+  (quick-menu-content))
