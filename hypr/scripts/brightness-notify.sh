@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
 
 action="${1:-}"
@@ -18,5 +17,5 @@ case "$action" in
         ;;
 esac
 
-percent=$(brightnessctl -m | awk -F, '{gsub(/%/, "", $4); print $4}')
-notify-send -a "brightness" -u low -h int:value:"$percent" -h string:x-canonical-private-synchronous:brightness "Brightness" "${percent}%"
+# eww OSD
+~/.config/hypr/scripts/osd-show.sh osd-Brightness 2.5

@@ -2,11 +2,8 @@
 (defpoll time :interval "1s"
   `date +"%I:%M %p"`)
 
-(defpoll workspaces :interval "500ms"
-  `hyprctl workspaces -j | jq '[.[] | {id: .id, windows: .windows}] | sort_by(.id)'`)
-
-(defpoll active-workspace :interval "500ms"
-  `hyprctl activeworkspace -j | jq '.id'`)
+(deflisten workspaces :initial "[]" `scripts/watch-workspaces.sh`)
+(deflisten active-workspace :initial "1" `scripts/watch-active-workspace.sh`)
 
 (defpoll date :interval "1m"
   `date +"%a, %d %b %Y"`)
@@ -17,7 +14,26 @@
   `scripts/get-weather.sh temperature`)
 
 (defpoll weather-icon :interval "20m"
-  `scripts/get-weather.sh condition`)
+  `scripts/get-weather.sh icon`)
+
+; BRIGHTNESS
+
+(defpoll has-brightness :interval "5s"
+  `[ -r /sys/class/backlight/*/brightness ] && echo "1" || echo "0"`)
+
+(defpoll brightness-max :interval "10s"
+  `cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -n1 || echo "100"`)
+
+(defpoll brightness-raw :interval "200ms"
+  `cat /sys/class/backlight/*/brightness 2>/dev/null | head -n1 || echo "0"`)
+
+; QUICK MENU
+
+(defpoll mako-paused :interval "1s"
+  `makoctl mode | grep -q "do-not-disturb" && echo "1" || echo "0"`)
+
+(defpoll has-kb-backlight :interval "10s"
+  `[ -d /sys/class/leds ] && ls /sys/class/leds | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" && echo "1" || echo "0"`)
 
 ; KEYBOARD
 
@@ -26,21 +42,21 @@
 
 ; BATTERY
 
-(defpoll battery-capacity :interval "5s"
+(defpoll battery-capacity :interval "5s" :initial "0"
   `cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo "0"`)
 
-(defpoll battery-status :interval "5s"
+(defpoll battery-status :interval "5s" :initial ""
   `cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
 
-(defpoll ac-status :interval "5s"
+(defpoll ac-status :interval "5s" :initial "0"
   `cat /sys/class/power_supply/AC/online 2>/dev/null || echo "0"`)
 
 ; VOLUME
 
-(defpoll mute :interval "60ms"
+(defpoll mute :interval "60ms" :initial "false"
   "wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q 'MUTED' && echo 'true' || echo 'false'")
 
-(defpoll volume :interval "50ms"
+(defpoll volume :interval "50ms" :initial "0"
   `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
 
 ; BLUETOOTH
@@ -56,6 +72,8 @@
 (defpoll network :interval "2s"
   `scripts/network-status.sh`)
 
+(include "osd.yuck")
+
 ; ITEMS
 
 
@@ -70,7 +88,6 @@
     (button :class "icon-btn"
         :tooltip {tooltip ?: `Battery: ${battery-capacity}%`}
         :onclick {onclick ?: ""}
-        :onscroll {onscroll ?: ""}
         :width 30
     (image :path {ac-status == "1"
             ? "icons/battery-charging.svg"
@@ -86,15 +103,14 @@
     (button :class "icon-btn"
         :tooltip {tooltip ?: `Bluetooth: ${bluetooth-device}`}
         :onclick {onclick ?: "kitty -e bluetui &"}
-        :onscroll {onscroll ?: ""}
         :width 30
     (image :path {bluetooth == "disconnected"
-            ? "icons/bluetooth.svg"
+            ? "icons/bluetooth-x.svg"
             : bluetooth == "connected"
             ? "icons/bluetooth-connected.svg"
-            : "icons/bluetooth-off.svg"}
-           :image-width 15
-           :image-height 15)))
+            : "icons/bluetooth-slash.svg"}
+           :image-width 16
+           :image-height 16)))
 
 (defwidget kb-layout []
   (button :class "icon-btn"
@@ -103,20 +119,20 @@
     (label :text kb-layout)))
 
 (defwidget volume [?tooltip ?onclick ?onscroll]
-    (eventbox
-        :onscroll {onscroll ?: "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%{}"}
-        (button :class "icon-btn"
-          :tooltip {tooltip ?: `Volume: ${volume}%`}
-          :onclick {onclick ?: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"}
-          (image :path {mute == "true"
-                  ? "icons/volume-x.svg"
-                  : volume < 30
-                  ? "icons/volume.svg"
-                  : volume < 50
-                  ? "icons/volume-1.svg"
-                  : "icons/volume-2.svg"}
-                 :image-width 16
-                 :image-height 16))))
+  (button :class "icon-btn"
+    :tooltip {tooltip ?: `Volume: ${volume}%`}
+    :onclick {onclick ?: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"}
+    (image :path {mute == "true"
+            ? "icons/speaker-simple-x.svg"
+            ;; Use (round (number-of volume) 0) to force it to a number
+            ;; or simply ensure volume has a default
+            : (volume ?: 0) < 30
+            ? "icons/speaker-simple-low.svg"
+            : (volume ?: 0) < 50
+            ? "icons/speaker-simple-medium.svg"
+            : "icons/speaker-simple-high.svg"}
+           :image-width 16
+           :image-height 16)))
 
 (defwidget network []
   (box :class "network-status"
@@ -125,37 +141,34 @@
     :spacing 10
     (button :class "icon-btn" :onclick "kitty -e nmtui &"
       (image :path {network == "wifi-offline"
-            ? "icons/wifi-off.svg"
-            : network == "wifi-strength-4"
+            ? "icons/wifi-slash.svg"
+            : network == "wifi-high"
             ? "icons/wifi.svg"
-            : network == "wifi-strength-3"
-            ? "icons/wifi-high.svg"
-            : network == "wifi-strength-2"
-            ? "icons/wifi-high.svg"
-            : network == "wifi-strength-1"
+            : network == "wifi-medium"
+            ? "icons/wifi-medium.svg"
+            : network == "wifi-low"
             ? "icons/wifi-low.svg"
             : network == "wifi-zero"
-            ? "icons/wifi-strength-0.svg"
+            ? "icons/wifi-zero.svg"
             : network == "ethernet-connected"
-            ? "icons/ethernet-port.svg"
-            : "icons/ethernet-port.svg"}
+            ? "icons/network.svg"
+            : "icons/network-slash.svg"}
            :image-width 16
            :image-height 16))))
 
-(defwidget workspaces []
-  (box :class "workspaces"
-    :orientation "horizontal"
-    :space-evenly false
-    :spacing 0
+(defwidget workspaces_widget []
+  (box :class "workspaces-box"
+       :orientation "horizontal"
+       :space-evenly false
     (for ws in workspaces
       (button
-        :class "icon-btn"
-        :onclick "hyprctl dispatch workspace ${ws.id} &"
-        {ws.id}))))
+        :onclick "hyprctl dispatch workspace ${ws.id}"
+        :class "icon-btn ${"${ws.id}" == active-workspace ? 'focused' : ''}"
+        (label :text "${ws.id}")))))
 
 (defwidget menu-btn []
   (button :class "icon-btn" :onclick "scripts/toggle-menu.sh &"
-    (image :path "icons/layout-grid.svg"
+    (image :path "icons/squares-four.svg"
       :image-width 16
       :image-height 16)))
 
@@ -180,10 +193,11 @@
     :space-evenly false
     :spacing 10
     (systray
+      :class "systray"
       :orientation "horizontal"
-      :space-evenly false
-      :spacing 10
-      :icon-size 15)    (workspaces)
+      :space-evenly true
+      :icon-size 15)
+    (workspaces_widget)
 ))
 
 (defwidget center []
@@ -200,7 +214,7 @@
     :orientation "horizontal"
     :halign "end"
     :space-evenly false
-    :spacing 10
+    :spacing 0
     (kb-layout)
     (network)
     (bluetooth)
@@ -244,4 +258,140 @@
   ;          :image-width 16
   ;          :image-height 16)))
 
-; MENU
+; MENU SCRIM
+
+(defwidget menu-scrim []
+  (eventbox :onclick "scripts/close-menu.sh &"
+    :onrightclick "scripts/close-menu.sh &"
+    :onmiddleclick "scripts/close-menu.sh &"
+    (box :class "scrim-box" :hexpand true :vexpand true)))
+
+(defwindow menu_scrim
+  :monitor 0
+  :geometry (geometry
+    :x "0%"
+    :y "0%"
+    :width "100%"
+    :height "100%"
+    :anchor "center")
+  :stacking "fg"
+  :focusable false
+  :namespace "eww-scrim"
+  (menu-scrim))
+
+; QUICK MENU
+
+(defwindow quick_menu
+  :monitor 0
+  :geometry (geometry
+    :x "8px"
+    :y "8px"
+    :width "340px"
+    :height "400px"
+    :anchor "top right")
+  :stacking "fg"
+  :namespace "eww-menu"
+  (quick-menu-content))
+
+(defwidget quick-menu-content []
+  (box :class "quick-menu"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+    (datetime)
+    (quick-actions)
+    (brightness-slider)
+    (volume-slider)
+    ))
+
+; QUICK MENU ITEMS
+
+(defwidget datetime []
+  (box :class "qm-card qm-datetime" :orientation "h" :space-evenly true :spacing 12
+    (box :orientation "v" :space-evenly false :spacing 2 :hexpand true
+      (label :class "qm-datetime-time" :halign "start" :text time)
+      (label :class "qm-datetime-date" :halign "start" :text date)
+      )
+        ))
+
+(defwidget quick-actions []
+  (box :class "qm-card qm-actions"
+    :orientation "h"
+    :space-evenly true
+    :spacing 0
+
+    (button :class "qm-action-btn"
+      :visible {has-kb-backlight == "1"}
+      :tooltip "Keyboard backlight"
+      :onclick "~/.config/eww/scripts/cycle-kb-backlight.sh &"
+      (image
+          :image-width 16
+          :image-height 16
+          :path "icons/keyboard.svg")
+      )
+
+    (button :class "qm-action-btn"
+      :tooltip "Screenshot to clipboard"
+      :onclick "hyprshot -m output --clipboard-only &"
+      (image
+          :image-width 16
+          :image-height 16
+          :path "icons/camera.svg")
+      )
+
+    (button :class "qm-action-btn"
+      :tooltip {mako-paused == "1" ? "Enable notifications" : "Disable notifications"}
+      :onclick "makoctl mode -t do-not-disturb &"
+      (image
+          :image-width 16
+          :image-height 16
+          :path {mako-paused == "0" ? "icons/bell-simple.svg" : "icons/bell-simple-slash.svg"})
+      )
+
+    (button :class "qm-action-btn"
+      :onclick "hyprshutdown -p \"systemctl poweroff\" &"
+      (image
+          :image-width 16
+          :image-height 16
+          :path "icons/power.svg")
+      )
+))
+
+(defwidget brightness-slider []
+  (box :class "qm-card qm-brightness"
+    :orientation "h"
+    :space-evenly false
+    :spacing 10
+    :visible {has-brightness == "1" && brightness-max > 0}
+        (image
+            :image-width 16
+            :image-height 16
+            :path {round((brightness-raw * 100.0) / brightness-max, 0) > 30 ? "icons/sun.svg" : "icons/moon.svg"})
+    (scale :class "qm-br-slider"
+      :min 0
+      :max 100
+      :value {round((brightness-raw * 100.0) / brightness-max, 0)}
+      :onchange "brightnessctl set {}% &"
+      :orientation "h"
+      :hexpand true)
+    (label :class "qm-br-value"
+      :text "${round((brightness-raw * 100.0) / brightness-max, 0)}%")))
+
+(defwidget volume-slider []
+    (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
+        (image :path {mute == "true"
+                ? "icons/speaker-simple-x.svg"
+                : volume < 30
+                ? "icons/speaker-simple-low.svg"
+                : volume < 50
+                ? "icons/speaker-simple-medium.svg"
+                : "icons/speaker-simple-high.svg"}
+               :image-width 16
+               :image-height 16)
+        (scale :class "qm-vol-slider"
+          :min 0 :max 100 :value volume
+          :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"
+          :orientation "h"
+          :hexpand true)
+        (label :class "qm-vol-value" :text "${volume}%"))
+    )

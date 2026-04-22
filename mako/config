@@ -5,12 +5,12 @@ layer=overlay
 anchor=top-right
 
 # ── Appearance ───────────────────────────
-background-color=#181818
-text-color=#ffffff
+background-color=#0e0e0e
+text-color=#b0b0b0
 border-size=0
 border-radius=0
 padding=15
-margin=10,10
+margin=8,8
 width=350
 height=150
 font=JetBrainsMono Nerd Font 11

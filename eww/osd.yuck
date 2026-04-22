@@ -1,0 +1,32 @@
+(defwindow osd-volume
+  :monitor 0
+  :geometry (geometry
+    :x "8px" :y "8px"
+    :width "260px"
+    :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  (volume-slider))
+
+(defwindow osd-brightness
+  :monitor 0
+  :geometry (geometry
+    :x "8px" :y "8px"
+    :width "260px"
+    :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  (brightness-slider))
+
+(defwindow osd-media
+  :monitor 0
+  :geometry (geometry
+    :x "8px" :y "8px"
+    :width "260px"
+    :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  (osd-media))

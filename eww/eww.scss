@@ -3,15 +3,34 @@
     font-family: "JetBrainsMono Nerd Font", monospace;
     font-weight: 700;
     font-size: 12px;
-}
-
-.bar {
-    margin: 0 8px;
-    color: #eaeaea;
+    color: #b0b0b0;
 }
 
 .bar-wrapper {
-    background: rgba(5, 5, 5, 0.723);
+    margin: 0 8px;
+    background: #0e0e0e;
+}
+
+.systray image {
+    padding: 0 8px;
+}
+
+.systray image:hover {
+    background-color: #252525;
+}
+
+.systray menu {
+    background-color: #0e0e0e;
+    margin: 0;
+    padding: 0;
+}
+
+.systray menuitem {
+    padding: 8px;
+}
+
+.systray menuitem:hover {
+    background-color: #252525;
 }
 
 .icon-btn {
@@ -22,6 +41,7 @@
     min-width: 28px;
     min-height: 28px;
     transition: background-color 200ms ease;
+    padding: 0 4px;
 
     image {
         all: unset;
@@ -30,10 +50,61 @@
     }
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.08);
+        background-color: #252525;
     }
 
     &:active {
-        background-color: rgba(255, 255, 255, 0.14);
+        background-color: #252525;
+    }
+}
+
+.focused {
+    background-color: #252525;
+}
+
+/* QUICK MENU */
+
+.qm-card {
+    background-color: #0e0e0e;
+    padding: 10px;
+}
+
+.qm-datetime-time {
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.qm-datetime-date {
+    color: #6e6e6e;
+}
+
+.qm-actions {
+    min-height: 28px;
+}
+
+.qm-action-btn {
+    transition: background-color 200ms ease;
+}
+
+.qm-action-btn:hover {
+    background-color: #252525;
+}
+
+.qm-br-slider,
+.qm-vol-slider {
+    trough {
+        background: rgba(255, 255, 255, 0.12);
+        min-height: 4px;
+    }
+
+    highlight {
+        background: #eaeaea;
+    }
+
+    slider {
+        background: #eaeaea;
+        min-width: 10px;
+        min-height: 10px;
+        margin: 0 0;
     }
 }
