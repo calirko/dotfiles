@@ -12,7 +12,11 @@
 }
 
 .systray image {
-    padding: 0 8px;
+    padding: 0 10px;
+
+    &:hover {
+        background-color: #252525;
+    }
 }
 
 .systray image:hover {
@@ -21,12 +25,14 @@
 
 .systray menu {
     background-color: #0e0e0e;
+    color: #b0b0b0;
     margin: 0;
     padding: 0;
 }
 
 .systray menuitem {
     padding: 8px;
+    color: #b0b0b0;
 }
 
 .systray menuitem:hover {
@@ -38,8 +44,8 @@
     /* display: flex; */
     /* align-items: center; */
     /* justify-content: center; */
-    min-width: 28px;
-    min-height: 28px;
+    min-width: 26px;
+    min-height: 26px;
     transition: background-color 200ms ease;
     padding: 0 4px;
 

@@ -2,6 +2,12 @@
   "logo": {
     "type": "file",
     "source": "~/.config/fastfetch/ascii.txt",
+    "color": {
+      "1": "white",
+    },
+    "padding": {
+      "top": 3,
+    },
   },
   "display": {
     "separator": "  ",

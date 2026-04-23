@@ -191,7 +191,7 @@
     :orientation "horizontal"
     :halign "start"
     :space-evenly false
-    :spacing 10
+    :spacing 0
     (systray
       :class "systray"
       :orientation "horizontal"
