@@ -1,19 +1,35 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "format_on_save": "on",
-  "formatter": "prettier",
+  "cli_default_open_behavior": "existing_window",
+  "outline_panel": {
+    "dock": "left"
+  },
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
   "agent": {
+    "dock": "right",
     "default_profile": "write",
     "default_model": {
-      "effort": "high",
       "provider": "copilot_chat",
-      "model": "gpt-5.3-codex",
-      "enable_thinking": false,
+      "model": "claude-haiku-4.5",
+      "enable_thinking": true,
     },
     "favorite_models": [],
     "model_parameters": [],
   },
   "edit_predictions": {
-    "provider": "zed",
+    "provider": "copilot",
     "mode": "eager",
   },
   "project_panel": {
@@ -34,6 +50,7 @@
     "metrics": false,
   },
   "base_keymap": "VSCode",
+  "vim_mode": false,
   "ui_font_size": 15,
   "buffer_font_size": 15,
   "ui_font_family": "JetBrainsMono Nerd Font",

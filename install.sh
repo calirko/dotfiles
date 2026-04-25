@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=true
 ICON_THEME_NAME="WhiteSur-grey-dark"
-CONFIGS=("btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
+CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
 
 # Color output
 RED='\033[0;31m'
@@ -108,6 +108,47 @@ for config in "${CONFIGS[@]}"; do
     fi
 done
 
+# Zen Browser userChrome.css
+ZEN_PROFILES="$HOME/.config/zen/profiles.ini"
+ZEN_SOURCE="$REPO_DIR/zen/userChrome.css"
+
+if [ ! -f "$ZEN_SOURCE" ]; then
+    echo -e "${YELLOW}⊘ zen/userChrome.css not found in repo, skipping${NC}"
+elif [ ! -f "$ZEN_PROFILES" ]; then
+    echo -e "${YELLOW}⊘ Zen profiles.ini not found, skipping${NC}"
+else
+    ZEN_PROFILE_PATH=$(awk -F= '
+        /^\[Profile/ { in_profile=1; path=""; is_default=0 }
+        in_profile && /^Path=/ { path=$2 }
+        in_profile && /^Default=1/ { is_default=1 }
+        in_profile && /^$/ {
+            if (is_default && path) { print path; found=1; exit }
+        }
+        END { if (!found && is_default && path) print path }
+    ' "$ZEN_PROFILES" | tr -d '\r')
+
+    if [ -z "$ZEN_PROFILE_PATH" ]; then
+        echo -e "${RED}✗ Could not find default Zen profile${NC}"
+    else
+        ZEN_CHROME_DIR="$HOME/.config/zen/$ZEN_PROFILE_PATH/chrome"
+        ZEN_TARGET="$ZEN_CHROME_DIR/userChrome.css"
+
+        mkdir -p "$ZEN_CHROME_DIR"
+
+        if [ -L "$ZEN_TARGET" ] && [ "$(readlink "$ZEN_TARGET")" = "$ZEN_SOURCE" ]; then
+            echo -e "${GREEN}✓ Zen userChrome.css already linked${NC}"
+        elif [ -e "$ZEN_TARGET" ]; then
+            backup="$ZEN_TARGET.backup.$(date +%s)"
+            echo -e "${YELLOW}→ Backing up existing Zen userChrome.css to $backup${NC}"
+            mv "$ZEN_TARGET" "$backup"
+            ln -s "$ZEN_SOURCE" "$ZEN_TARGET"
+            echo -e "${GREEN}✓ Linked Zen userChrome.css${NC}"
+        else
+            ln -s "$ZEN_SOURCE" "$ZEN_TARGET"
+            echo -e "${GREEN}✓ Linked Zen userChrome.css${NC}"
+        fi
+    fi
+fi
 
 # Configure PS1 prompt color in ~/.bashrc (managed block)
 BASHRC_FILE="$HOME/.bashrc"

@@ -2,8 +2,7 @@
 (defpoll time :interval "1s"
   `date +"%I:%M %p"`)
 
-(deflisten workspaces :initial "[]" `scripts/watch-workspaces.sh`)
-(deflisten active-workspace :initial "1" `scripts/watch-active-workspace.sh`)
+(deflisten workspace-data :initial '{"workspaces":[],"active":1}' `scripts/watch-workspaces.sh`)
 
 (defpoll date :interval "1m"
   `date +"%a, %d %b %Y"`)
@@ -18,14 +17,7 @@
 
 ; BRIGHTNESS
 
-(defpoll has-brightness :interval "5s"
-  `[ -r /sys/class/backlight/*/brightness ] && echo "1" || echo "0"`)
-
-(defpoll brightness-max :interval "10s"
-  `cat /sys/class/backlight/*/max_brightness 2>/dev/null | head -n1 || echo "100"`)
-
-(defpoll brightness-raw :interval "200ms"
-  `cat /sys/class/backlight/*/brightness 2>/dev/null | head -n1 || echo "0"`)
+(deflisten brightness-data :initial '{"has_brightness":"0","brightness_raw":0,"brightness_max":100}' `scripts/watch-brightness.sh`)
 
 ; QUICK MENU
 
@@ -41,11 +33,14 @@
   `scripts/kb-layout-status.sh`)
 
 ; BATTERY
+;
+(defpoll has-battery :interval "30s" :initial "0"
+  `[ -d /sys/class/power_supply/BAT* ] && echo "1" || echo "0"`)
 
-(defpoll battery-capacity :interval "5s" :initial "0"
+(defpoll battery-capacity :interval "20s" :initial "0"
   `cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo "0"`)
 
-(defpoll battery-status :interval "5s" :initial ""
+(defpoll battery-status :interval "20s" :initial ""
   `cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
 
 (defpoll ac-status :interval "5s" :initial "0"
@@ -53,11 +48,7 @@
 
 ; VOLUME
 
-(defpoll mute :interval "60ms" :initial "false"
-  "wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q 'MUTED' && echo 'true' || echo 'false'")
-
-(defpoll volume :interval "50ms" :initial "0"
-  `wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}'`)
+(deflisten audio-data :initial '{"volume":0,"mute":"true"}' `scripts/watch-audio.sh`)
 
 ; BLUETOOTH
 
@@ -85,7 +76,7 @@
     (label :text time)))
 
 (defwidget battery [?tooltip ?onclick ?onscroll]
-    (button :class "icon-btn"
+    (button :class "icon-btn"  :visible {has-battery == 1}
         :tooltip {tooltip ?: `Battery: ${battery-capacity}%`}
         :onclick {onclick ?: ""}
         :width 30
@@ -120,15 +111,13 @@
 
 (defwidget volume [?tooltip ?onclick ?onscroll]
   (button :class "icon-btn"
-    :tooltip {tooltip ?: `Volume: ${volume}%`}
+    :tooltip {tooltip ?: `Volume: ${audio-data.volume}%`}
     :onclick {onclick ?: "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"}
-    (image :path {mute == "true"
+    (image :path {audio-data.mute == "true"
             ? "icons/speaker-simple-x.svg"
-            ;; Use (round (number-of volume) 0) to force it to a number
-            ;; or simply ensure volume has a default
-            : (volume ?: 0) < 30
+            : (audio-data.volume ?: 0) < 30
             ? "icons/speaker-simple-low.svg"
-            : (volume ?: 0) < 50
+            : (audio-data.volume ?: 0) < 50
             ? "icons/speaker-simple-medium.svg"
             : "icons/speaker-simple-high.svg"}
            :image-width 16
@@ -160,10 +149,10 @@
   (box :class "workspaces-box"
        :orientation "horizontal"
        :space-evenly false
-    (for ws in workspaces
+    (for ws in {workspace-data.workspaces}
       (button
         :onclick "hyprctl dispatch workspace ${ws.id}"
-        :class "icon-btn ${"${ws.id}" == active-workspace ? 'focused' : ''}"
+        :class "icon-btn ${ws.id == workspace-data.active ? 'focused' : ''}"
         (label :text "${ws.id}")))))
 
 (defwidget menu-btn []
@@ -362,36 +351,36 @@
     :orientation "h"
     :space-evenly false
     :spacing 10
-    :visible {has-brightness == "1" && brightness-max > 0}
+    :visible {brightness-data.has_brightness == "1" && brightness-data.brightness_max > 0}
         (image
             :image-width 16
             :image-height 16
-            :path {round((brightness-raw * 100.0) / brightness-max, 0) > 30 ? "icons/sun.svg" : "icons/moon.svg"})
+            :path {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0) > 30 ? "icons/sun.svg" : "icons/moon.svg"})
     (scale :class "qm-br-slider"
       :min 0
       :max 100
-      :value {round((brightness-raw * 100.0) / brightness-max, 0)}
+      :value {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}
       :onchange "brightnessctl set {}% &"
       :orientation "h"
       :hexpand true)
     (label :class "qm-br-value"
-      :text "${round((brightness-raw * 100.0) / brightness-max, 0)}%")))
+      :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}%")))
 
 (defwidget volume-slider []
     (box :class "qm-card qm-volume" :orientation "h" :space-evenly false :spacing 10
-        (image :path {mute == "true"
+        (image :path {audio-data.mute == "true"
                 ? "icons/speaker-simple-x.svg"
-                : volume < 30
+                : audio-data.volume < 30
                 ? "icons/speaker-simple-low.svg"
-                : volume < 50
+                : audio-data.volume < 50
                 ? "icons/speaker-simple-medium.svg"
                 : "icons/speaker-simple-high.svg"}
                :image-width 16
                :image-height 16)
         (scale :class "qm-vol-slider"
-          :min 0 :max 100 :value volume
+          :min 0 :max 100 :value "${audio-data.volume}"
           :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"
           :orientation "h"
           :hexpand true)
-        (label :class "qm-vol-value" :text "${volume}%"))
+        (label :class "qm-vol-value" :text "${audio-data.volume}%"))
     )
