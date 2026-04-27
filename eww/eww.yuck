@@ -7,6 +7,10 @@
 (defpoll date :interval "1m"
   `date +"%a, %d %b %Y"`)
 
+; MEDIA
+
+
+
 ; WEATHER
 
 (defpoll weather-temperature :interval "20m"

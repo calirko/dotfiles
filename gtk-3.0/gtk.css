@@ -1,5 +1,9 @@
 /* ~/.config/gtk-4.0/gtk.css */
 
+* {
+    border-radius: 0px !important;
+}
+
 /* accent */
 @define-color accent_bg_color #0e0e0e;
 @define-color accent_fg_color #b0b0b0;
