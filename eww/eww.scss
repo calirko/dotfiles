@@ -1,116 +1,298 @@
 * {
     all: unset;
     font-family: "JetBrainsMono Nerd Font", monospace;
-    font-weight: 700;
+    font-weight: 500;
     font-size: 12px;
-    color: #b0b0b0;
+    color: #5f5e5a;
 }
 
-.bar-wrapper {
-    margin: 0 8px;
-    background: #0e0e0e;
+.bar {
+    background: #000000;
+    border-right: 1px solid #0f0f0f;
+    min-width: 32px;
+    /* padding: 10px 0; */
 }
 
-.systray image {
-    padding: 0 10px;
+.bar-top {
+    padding-bottom: 0;
+}
 
-    &:hover {
-        background-color: #252525;
+.bar-bottom {
+    /* padding: 8px 0 10px; */
+    /* spacing: 8px; */
+}
+
+.bar-divider {
+    min-height: 1px;
+    min-width: 20px;
+    /* margin: 6px 6px; */
+    background: #111111;
+}
+
+.bar-active-window {
+    font-size: 10px;
+    color: #3a3a3a;
+    letter-spacing: 0.05em;
+    padding: 10px 0 8px;
+    min-width: 32px;
+}
+
+/* WORKSPACES */
+
+.bar-workspaces {
+    /* padding: 4px 0;; */
+    /* spacing: 2px; */
+}
+
+.ws-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: background-color 150ms ease;
+    border-bottom: 1px solid #111111;
+
+    label {
+        font-size: 10px;
     }
 }
 
-.systray image:hover {
-    background-color: #252525;
+.ws-active {
+    background: #161616;
+    color: #888780;
+
+    label {
+        color: #888780;
+    }
+}
+
+/* .ws-occupied {
+    background: #161616;
+    color: #333333;
+
+    label {
+        color: #333333;
+    }
+
+    &:hover {
+        background: #1e1e1e;
+    }
+} */
+/*
+.ws-empty {
+    background: transparent;
+    color: #1a1a1a;
+
+    label {
+        color: #1a1a1a;
+    }
+
+    &:hover {
+        background: #0d0d0d;
+    }
+} */
+
+/* STATUS ICON */
+
+.bar-icon-btn {
+    min-width: 32px;
+    min-height: 32px;
+    transition: background-color 150ms ease;
+
+    image {
+        all: unset;
+    }
+
+    &:hover {
+        background: #0f0f0f;
+    }
+}
+
+.bar-mic-dot {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 4px;
+    /* margin: 0 auto; */
+}
+
+.mic-off {
+    background: #1a1a1a;
+}
+.mic-active {
+    background: #c0392b;
+}
+
+.bar-battery {
+    min-width: 32px;
+    padding: 2px 0;
+}
+
+.battery-bar-track {
+    min-width: 2px;
+    min-height: 30px;
+    background: #111111;
+    /* margin: 0 auto; */
+}
+
+.battery-bar-fill {
+    min-width: 2px;
+    background: #888780;
+    transition: min-height 1s ease;
+}
+
+.battery-low {
+    background: #7a2020;
+}
+.battery-charging {
+    background: #5dcaa5;
+}
+
+.bar-small-label {
+    font-size: 10px;
+    color: #2e2e2e;
+    letter-spacing: 0.04em;
+}
+
+.bar-dnd-dot {
+    min-width: 6px;
+    min-height: 6px;
+    /* margin: 0 auto; */
+    transition: background-color 150ms ease;
+}
+
+.dnd-off {
+    background: #1a1a1a;
+}
+.dnd-active {
+    background: #888780;
+}
+
+.bar-time {
+    font-weight: 500;
+    color: #5f5e5a;
+    letter-spacing: 0.06em;
+    margin: 4px 0px;
+    margin-top: 10px;
+}
+
+.bar-day {
+    font-size: 11px;
+    color: #272727;
+    margin-bottom: 10px;
+    letter-spacing: 0.08em;
+}
+
+// Menu trigger button
+.bar-menu-btn {
+    min-width: 32px;
+    min-height: 32px;
+    transition: background-color 150ms ease;
+
+    image {
+        all: unset;
+    }
+
+    &:hover {
+        background: #0f0f0f;
+    }
+    &:active {
+        background: #161616;
+    }
+}
+
+/* SCRIM */
+
+.scrim-box {
+    background: transparent;
+}
+
+/* QUICK MENU */
+
+.quick-menu {
+    background: #000000;
+    border-left: 1px solid #111111;
+    min-width: 300px;
+}
+
+.qm-section {
+    padding: 14px 14px;
+}
+
+.qm-divider {
+    min-height: 1px;
+    background: #0f0f0f;
+    margin: 0;
+}
+
+// Date & time
+.qm-time {
+    font-size: 28px;
+    font-weight: 700;
+    color: #5f5e5a;
+    letter-spacing: -0.01em;
+    /* line-height: 1; */
+}
+
+.qm-date {
+    font-size: 11px;
+    color: #252525;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+}
+
+// Sliders
+.qm-sliders {
+    padding: 14px 14px;
+}
+
+.qm-slider {
+    trough {
+        background: #111111;
+        min-height: 2px;
+        border-radius: 0;
+    }
+    highlight {
+        background: #888780;
+        border-radius: 0;
+    }
+    slider {
+        background: #888780;
+        min-width: 8px;
+        min-height: 8px;
+        border-radius: 0;
+        margin: -3px 0;
+        box-shadow: none;
+    }
+}
+
+.qm-slider-value {
+    font-size: 10px;
+    color: #2e2e2e;
+    min-width: 30px;
+    letter-spacing: 0.04em;
+}
+
+/* SYSTRAY */
+
+/* .systray image {
+    padding: 0 10px;
+    &:hover {
+        background-color: #0f0f0f;
+    }
 }
 
 .systray menu {
-    background-color: #0e0e0e;
-    color: #b0b0b0;
+    background-color: #000000;
+    color: #4a4a4a;
     margin: 0;
     padding: 0;
 }
 
 .systray menuitem {
     padding: 8px;
-    color: #b0b0b0;
-}
-
-.systray menuitem:hover {
-    background-color: #252525;
-}
-
-.icon-btn {
-    all: unset;
-    /* display: flex; */
-    /* align-items: center; */
-    /* justify-content: center; */
-    min-width: 26px;
-    min-height: 26px;
-    transition: background-color 200ms ease;
-    padding: 0 4px;
-
-    image {
-        all: unset;
-        min-width: 16px;
-        min-height: 16px;
-    }
-
+    color: #4a4a4a;
     &:hover {
-        background-color: #252525;
+        background-color: #0f0f0f;
     }
-
-    &:active {
-        background-color: #252525;
-    }
-}
-
-.focused {
-    background-color: #252525;
-}
-
-/* QUICK MENU */
-
-.qm-card {
-    background-color: #0e0e0e;
-    padding: 10px;
-}
-
-.qm-datetime-time {
-    font-size: 30px;
-    font-weight: 800;
-}
-
-.qm-datetime-date {
-    color: #6e6e6e;
-}
-
-.qm-actions {
-    min-height: 28px;
-}
-
-.qm-action-btn {
-    transition: background-color 200ms ease;
-}
-
-.qm-action-btn:hover {
-    background-color: #252525;
-}
-
-.qm-br-slider,
-.qm-vol-slider {
-    trough {
-        background: rgba(255, 255, 255, 0.12);
-        min-height: 4px;
-    }
-
-    highlight {
-        background: #eaeaea;
-    }
-
-    slider {
-        background: #eaeaea;
-        min-width: 10px;
-        min-height: 10px;
-        margin: 0 0;
-    }
-}
+} */

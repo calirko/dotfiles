@@ -1,0 +1,188 @@
+; ─────────────────────────────────────────────
+; QUICK MENU — menu.yuck
+; ─────────────────────────────────────────────
+
+; ── Scrim (click-outside-to-close backdrop)
+
+(defwidget menu-scrim []
+  (eventbox
+    :onclick "scripts/close-menu.sh &"
+    :onrightclick "scripts/close-menu.sh &"
+    :onmiddleclick "scripts/close-menu.sh &"
+    (box :class "scrim-box" :hexpand true :vexpand true)))
+
+(defwindow menu_scrim
+  :monitor 0
+  :geometry (geometry
+    :x "0%"
+    :y "0%"
+    :width "100%"
+    :height "100%"
+    :anchor "center")
+  :stacking "fg"
+  :focusable false
+  :namespace "eww-scrim"
+  (menu-scrim))
+
+; ── Menu window
+
+(defwindow quick_menu
+  :monitor 0
+  :geometry (geometry
+    :x "0px"
+    :y "0px"
+    :width "300px"
+    :height "100%"
+    :anchor "right center")
+  :stacking "fg"
+  :namespace "eww-menu"
+  (quick-menu-content))
+
+; ── Root layout
+
+(defwidget quick-menu-content []
+  (box
+    :class "quick-menu"
+    :orientation "v"
+    :space-evenly false
+    :spacing 0
+    (qm-datetime)
+    (box :class "qm-divider")
+    (qm-actions)
+    (box :class "qm-divider")
+    (qm-media)
+    (box :class "qm-divider")
+    (qm-sliders)
+    (box :vexpand true)))
+
+; ── Date & time
+
+(defwidget qm-datetime []
+  (box
+    :class "qm-section qm-datetime"
+    :orientation "v"
+    :space-evenly false
+    :spacing 2
+    (label :class "qm-time" :halign "start" :text time)
+    (label :class "qm-date" :halign "start" :text date)))
+
+; ── Action grid: lock / restart / power / screenshot / DND / kb-backlight
+
+(defwidget qm-actions []
+  (box
+    :class "qm-section qm-actions"
+    :orientation "h"
+    :space-evenly true
+    :spacing 0
+
+    (button :class "qm-action-btn"
+      :tooltip "Lock screen"
+      :onclick "hyprlock &"
+      (image :path "icons/lock.svg" :image-width 15 :image-height 15))
+
+    (button :class "qm-action-btn"
+      :tooltip "Restart"
+      :onclick "systemctl reboot &"
+      (image :path "icons/arrow-counter-clockwise.svg" :image-width 15 :image-height 15))
+
+    (button :class "qm-action-btn qm-action-power"
+      :tooltip "Power off"
+      :onclick "hyprshutdown -p \"systemctl poweroff\" &"
+      (image :path "icons/power.svg" :image-width 15 :image-height 15))
+
+    (button :class "qm-action-btn"
+      :tooltip "Screenshot to clipboard"
+      :onclick "hyprshot -m output --clipboard-only &"
+      (image :path "icons/camera.svg" :image-width 15 :image-height 15))
+
+    (button :class "qm-action-btn ${mako-paused == "1" ? "qm-action-active" : ""}"
+      :tooltip {mako-paused == "1" ? "DND on — click to disable" : "DND off — click to enable"}
+      :onclick "makoctl mode -t do-not-disturb &"
+      (image
+        :path {mako-paused == "0" ? "icons/bell-simple.svg" : "icons/bell-simple-slash.svg"}
+        :image-width 15 :image-height 15))
+
+    (button :class "qm-action-btn"
+      :visible {has-kb-backlight == "1"}
+      :tooltip "Keyboard backlight"
+      :onclick "~/.config/eww/scripts/cycle-kb-backlight.sh &"
+      (image :path "icons/keyboard.svg" :image-width 15 :image-height 15))))
+
+; ── Media player
+
+(defpoll media-title  :interval "2s" `playerctl metadata title  2>/dev/null || echo ""`)
+(defpoll media-artist :interval "2s" `playerctl metadata artist 2>/dev/null || echo ""`)
+(defpoll media-status :interval "2s" `playerctl status          2>/dev/null || echo "Stopped"`)
+
+(defwidget qm-media []
+  (box
+    :class "qm-section qm-media"
+    :orientation "v"
+    :space-evenly false
+    :spacing 6
+    :visible {media-title != ""}
+
+    (box :orientation "h" :space-evenly false :spacing 8
+      (label :class "qm-media-artist" :halign "start" :truncate true :text media-artist)
+      (label :class "qm-media-sep"    :text "—")
+      (label :class "qm-media-title"  :halign "start" :truncate true :hexpand true :text media-title))
+
+    (box :orientation "h" :space-evenly false :spacing 12 :halign "start"
+      (button :class "qm-media-btn"
+        :onclick "playerctl previous &"
+        (image :path "icons/skip-back.svg"    :image-width 13 :image-height 13))
+      (button :class "qm-media-btn"
+        :onclick "playerctl play-pause &"
+        (image
+          :path {media-status == "Playing" ? "icons/pause.svg" : "icons/play.svg"}
+          :image-width 13 :image-height 13))
+      (button :class "qm-media-btn"
+        :onclick "playerctl next &"
+        (image :path "icons/skip-forward.svg" :image-width 13 :image-height 13)))))
+
+; ── Sliders: volume / brightness / network info
+
+(defwidget qm-sliders []
+  (box
+    :class "qm-section qm-sliders"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    ; Volume
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      (image
+        :path {audio-data.mute == "true"
+          ? "icons/speaker-simple-x.svg"
+          : (audio-data.volume ?: 0) < 30
+          ? "icons/speaker-simple-low.svg"
+          : (audio-data.volume ?: 0) < 50
+          ? "icons/speaker-simple-medium.svg"
+          : "icons/speaker-simple-high.svg"}
+        :image-width 14 :image-height 14)
+      (scale
+        :class "qm-slider"
+        :min 0 :max 100
+        :value {audio-data.volume}
+        :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"
+        :orientation "h"
+        :hexpand true)
+      (label :class "qm-slider-value" :text "${audio-data.volume}%"))
+
+    ; Brightness
+    (box
+      :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      :visible {brightness-data.has_brightness == "1" && brightness-data.brightness_max > 0}
+      (image
+        :path {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0) > 30
+          ? "icons/sun.svg" : "icons/moon.svg"}
+        :image-width 14 :image-height 14)
+      (scale
+        :class "qm-slider"
+        :min 0 :max 100
+        :value {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}
+        :onchange "brightnessctl set {}% &"
+        :orientation "h"
+        :hexpand true)
+      (label :class "qm-slider-value"
+        :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}%"))))
