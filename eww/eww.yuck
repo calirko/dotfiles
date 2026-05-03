@@ -106,17 +106,16 @@
 (defwidget bar-battery []
   (box
     :class "bar-battery"
-    ; :visible {has-battery == 1}
     :orientation "v"
     :halign "center"
     :spacing 3
-    (box
-      :class "battery-bar-track"
-      :valign "end"
-      (box
-        :class "battery-bar-fill ${battery-capacity < 20 ? "battery-low" : ac-status == "1" ? "battery-charging" : ""}"
-        :vexpand false
-        :css "min-height: ${battery-capacity * 0.28}px;"))
+    (progress
+      :class "battery-progress ${battery-capacity < 20 ? "battery-low" : ac-status == "1" ? "battery-charging" : ""}"
+      :orientation "v"
+      :flipped true
+      :value battery-capacity
+      :min 0
+      :max 100)
     (label
       :class "bar-small-label"
       :angle 90

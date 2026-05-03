@@ -127,29 +127,30 @@
     min-width: 32px;
     padding: 2px 0;
     border-top: 1px solid #111111;
-
     padding-top: 10px;
 }
 
-.battery-bar-track {
+/* the progress trough (background track) */
+.battery-progress trough {
     min-width: 2px;
     min-height: 30px;
-    padding-left: 15px;
-
-    padding-right: 15px;
-    /* margin: 0 auto; */
-}
-
-.battery-bar-fill {
-    min-width: 2px;
     background: #111111;
-    transition: min-height 1s ease;
+    border-radius: 1px;
 }
 
-.battery-low {
+/* the filled portion */
+.battery-progress progress {
+    min-width: 2px;
+    background: #4a4a4a;
+    transition: all 1s ease;
+    border-radius: 1px;
+}
+
+.battery-low progress {
     background: #7a2020;
 }
-.battery-charging {
+
+.battery-charging progress {
     background: #5dcaa5;
 }
 
