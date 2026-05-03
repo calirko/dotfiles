@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # watch-active-window.sh
-# Emits the active window class + title on every focus change via Hyprland IPC.
-# Used by the bar-active-window widget.
+
+SIG="${HYPRLAND_INSTANCE_SIGNATURE:-$(ls /run/user/1000/hypr/ 2>/dev/null | grep -v '\.lock' | head -1)}"
+SOCK="/run/user/1000/hypr/${SIG}/.socket2.sock"
 
 emit() {
   local class title
   class=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // ""')
   title=$(hyprctl activewindow -j 2>/dev/null | jq -r '.title // ""')
-
   if [[ -z "$class" && -z "$title" ]]; then
     echo ""
   elif [[ -n "$class" ]]; then
@@ -17,12 +17,24 @@ emit() {
   fi
 }
 
-emit
+last=""
 
-socat - "UNIX-CONNECT:${XDG_RUNTIME_DIR}/hypr/${HYPRLAND_INSTANCE_SIGNATURE}/.socket2.sock" | \
-  while IFS= read -r line; do
-    event="${line%%>>*}"
-    if [[ "$event" == "activewindow" || "$event" == "activewindowv2" || "$event" == "closewindow" ]]; then
-      emit
-    fi
-  done
+emit_deduped() {
+  local val
+  val=$(emit)
+  if [[ "$val" != "$last" ]]; then
+    last="$val"
+    echo "$val"
+  fi
+}
+
+emit_deduped
+
+socat -u UNIX-CONNECT:"$SOCK" STDOUT | while IFS= read -r line; do
+  event="${line%%>>*}"
+  case "$event" in
+    activewindowv2|closewindow)
+      emit_deduped
+      ;;
+  esac
+done

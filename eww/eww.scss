@@ -126,17 +126,21 @@
 .bar-battery {
     min-width: 32px;
     padding: 2px 0;
+    border-top: 1px solid #111111;
+    padding-top: 10px;
 }
 
 .battery-bar-track {
     min-width: 2px;
     min-height: 30px;
-    background: #111111;
+    padding-left: 15px;
+    padding-right: 15px;
     /* margin: 0 auto; */
 }
 
 .battery-bar-fill {
     min-width: 2px;
+    /* max-width: 2px; */
     background: #888780;
     transition: min-height 1s ease;
 }
@@ -275,7 +279,13 @@
 
 /* SYSTRAY */
 
-/* .systray image {
+.systray {
+    padding-top: 10px;
+    margin-bottom: 10px;
+    border-top: 1px #111111 solid;
+}
+
+.systray image {
     padding: 0 10px;
     &:hover {
         background-color: #0f0f0f;
@@ -295,4 +305,4 @@
     &:hover {
         background-color: #0f0f0f;
     }
-} */
+}

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# lucide-color.sh — set stroke color of all SVGs in the same folder
+# lucide-color.sh — set fill color of all SVGs in the same folder
 # Usage: ./lucide-color.sh <#hexcolor>
-# Example: ./lucide-color.sh "#cdd6f4"
-
 set -euo pipefail
 
 DEST="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,7 +20,12 @@ if [[ ! -e "${svgs[0]}" ]]; then
 fi
 
 for svg in "${svgs[@]}"; do
-  sed -i "s/currentColor/${COLOR}/g; s/stroke=\"#[0-9a-fA-F]\{3,6\}\"/stroke=\"${COLOR}\"/g" "$svg"
+  sed -i \
+    -e "s/fill=\"#[0-9a-fA-F]\{3,6\}\"/fill=\"${COLOR}\"/g" \
+    -e "s/fill=\"currentColor\"/fill=\"${COLOR}\"/g" \
+    -e "s/stroke=\"#[0-9a-fA-F]\{3,6\}\"/stroke=\"${COLOR}\"/g" \
+    -e "s/stroke=\"currentColor\"/stroke=\"${COLOR}\"/g" \
+    "$svg"
   printf "Colored %s\n" "$(basename "$svg")"
 done
 

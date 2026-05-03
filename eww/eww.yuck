@@ -106,7 +106,7 @@
 (defwidget bar-battery []
   (box
     :class "bar-battery"
-    :visible {has-battery == 1}
+    ; :visible {has-battery == 1}
     :orientation "v"
     :halign "center"
     :spacing 3
@@ -120,7 +120,7 @@
     (label
       :class "bar-small-label"
       :angle 90
-      :text "${battery-capacity}")))
+      :text "${battery-capacity}%")))
 
 (defwidget bar-dnd []
   (button
@@ -172,15 +172,15 @@
       :space-evenly false
       :valign "end"
       :spacing 0
-      (box :class "bar-divider")
-      (bar-volume)
-      (bar-battery)
-      (box :class "bar-divider")
       (systray
             :class "systray"
             :orientation "v"
             :space-evenly true
             :icon-size 15)
+      (box :class "bar-divider")
+      (bar-volume)
+      (bar-battery)
+      (box :class "bar-divider")
       (bar-clock)
       (box :class "bar-divider")
       (bar-menu-btn))))
