@@ -125,9 +125,12 @@
 
 .bar-battery {
     min-width: 32px;
-    padding: 2px 0;
     border-top: 1px solid #111111;
     padding-top: 10px;
+}
+
+.battery-progress {
+    padding-right: 14px;
 }
 
 /* the progress trough (background track) */

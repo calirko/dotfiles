@@ -107,6 +107,7 @@
   (box
     :class "bar-battery"
     :orientation "v"
+    :visible {has-battery == 1}
     :halign "center"
     :spacing 3
     (progress
