@@ -399,10 +399,16 @@
     border-radius: 4px;
     transition: background-color 150ms ease;
 
-    image { all: unset; }
+    image {
+        all: unset;
+    }
 
-    &:hover  { background: #1a1a1a; }
-    &:active { background: #262626; }
+    &:hover {
+        background: #1a1a1a;
+    }
+    &:active {
+        background: #262626;
+    }
 }
 
 .qm-cal calendar {

@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 
-# Find the brightness path
-BRIGHTNESS_PATH=$(find /sys/class/backlight -name "brightness" 2>/dev/null | head -n1)
-MAX_BRIGHTNESS_PATH=$(find /sys/class/backlight -name "max_brightness" 2>/dev/null | head -n1)
+# Find the brightness path - check common backlight devices
+BRIGHTNESS_PATH=""
+MAX_BRIGHTNESS_PATH=""
+
+for backlight_dir in /sys/class/backlight/*/; do
+    if [[ -r "${backlight_dir}brightness" && -r "${backlight_dir}max_brightness" ]]; then
+        BRIGHTNESS_PATH="${backlight_dir}brightness"
+        MAX_BRIGHTNESS_PATH="${backlight_dir}max_brightness"
+        break
+    fi
+done
 
 get_brightness_data() {
     if [[ -r "$BRIGHTNESS_PATH" && -r "$MAX_BRIGHTNESS_PATH" ]]; then
