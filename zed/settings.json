@@ -7,15 +7,20 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry",
+    },
+  },
   "cli_default_open_behavior": "existing_window",
   "outline_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "collaboration_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "git_panel": {
-    "dock": "left"
+    "dock": "left",
   },
   "agent": {
     "dock": "right",
@@ -40,11 +45,7 @@
   "minimap": {
     "show": "never",
   },
-  "icon_theme": {
-    "mode": "dark",
-    "light": "Zed (Default)",
-    "dark": "Zed (Default)",
-  },
+  "icon_theme": "Zed (Default)",
   "telemetry": {
     "diagnostics": false,
     "metrics": false,
@@ -53,12 +54,8 @@
   "vim_mode": false,
   "ui_font_size": 15,
   "buffer_font_size": 15,
-  "ui_font_family": "JetBrainsMono Nerd Font",
-  "theme": {
-    "mode": "dark",
-    "light": "One Light",
-    "dark": "calirko",
-  },
+  "ui_font_family": "Geist Font",
+  "theme": "calirko",
   "gutter": {
     "min_line_number_digits": 0,
   },

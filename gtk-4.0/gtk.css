@@ -1,32 +1,141 @@
 /* ~/.config/gtk-4.0/gtk.css */
 
-* {
-    border-radius: 0px !important;
+/* ── Surfaces ─────────────────────────────── */
+
+@define-color window_bg_color       #0d0d0d;
+@define-color window_fg_color       #d6d6d6;
+
+@define-color view_bg_color         #0d0d0d;
+@define-color view_fg_color         #d6d6d6;
+
+@define-color headerbar_bg_color    #141414;
+@define-color headerbar_fg_color    #d6d6d6;
+@define-color headerbar_border_color rgba(255,255,255,0.06);
+@define-color headerbar_backdrop_color #0d0d0d;
+@define-color headerbar_shade_color rgba(0,0,0,0.4);
+
+@define-color sidebar_bg_color      #141414;
+@define-color sidebar_fg_color      #d6d6d6;
+@define-color sidebar_border_color  rgba(255,255,255,0.06);
+@define-color sidebar_backdrop_color #0d0d0d;
+
+@define-color card_bg_color         #1a1a1a;
+@define-color card_fg_color         #d6d6d6;
+@define-color card_shade_color      rgba(0,0,0,0.4);
+
+@define-color popover_bg_color      #1f1f1f;
+@define-color popover_fg_color      #d6d6d6;
+@define-color popover_shade_color   rgba(0,0,0,0.4);
+
+@define-color dialog_bg_color       #1a1a1a;
+@define-color dialog_fg_color       #d6d6d6;
+
+@define-color thumbnail_bg_color    #141414;
+@define-color thumbnail_fg_color    #d6d6d6;
+
+/* ── Accent ───────────────────────────────── */
+
+@define-color accent_color          #ebebeb;
+@define-color accent_bg_color       #ebebeb;
+@define-color accent_fg_color       #000000;
+
+/* ── States (no hue — severity via lightness only) ── */
+
+@define-color destructive_color     #f5f5f5;
+@define-color destructive_bg_color  #f5f5f5;
+@define-color destructive_fg_color  #000000;
+
+@define-color success_color         #8a8a8a;
+@define-color success_bg_color      #8a8a8a;
+@define-color success_fg_color      #0d0d0d;
+
+@define-color warning_color         #d6d6d6;
+@define-color warning_bg_color      #d6d6d6;
+@define-color warning_fg_color      #0d0d0d;
+
+@define-color error_color           #f5f5f5;
+@define-color error_bg_color        #f5f5f5;
+@define-color error_fg_color        #000000;
+
+/* ── Border radius ────────────────────────── */
+
+button,
+entry,
+spinbutton,
+.chip,
+tag {
+    border-radius: 4px;
 }
 
-/* accent */
-@define-color accent_bg_color #0e0e0e;
-@define-color accent_fg_color #b0b0b0;
+.card,
+popover,
+popover > contents,
+dialog,
+tooltip {
+    border-radius: 6px;
+}
 
-/* windows */
-@define-color window_bg_color #0e0e0e;
-@define-color window_fg_color #b0b0b0;
+/* ── Buttons ──────────────────────────────── */
 
-/* views (file lists, text areas) */
-@define-color view_bg_color #0e0e0e;
-@define-color view_fg_color #b0b0b0;
+button {
+    padding: 7px 14px;
+    /*background-color: #1a1a1a;*/
+    color: #d6d6d6;
+    /*border: 1px solid rgba(255, 255, 255, 0.1);*/
+}
 
-/* headerbar */
-@define-color headerbar_bg_color #0e0e0e;
-@define-color headerbar_fg_color #b0b0b0;
+button:hover {
+    /*background-color: #262626;*/
+    color: #ebebeb;
+}
 
-/* sidebar */
-@define-color sidebar_bg_color #0e0e0e;
-@define-color sidebar_fg_color #b0b0b0;
-@define-color sidebar_border_color #0e0e0e;
+button:active,
+button:checked {
+    /*background-color: #2e2e2e;*/
+    color: #ebebeb;
+}
 
-/* cards and popovers */
-@define-color card_bg_color #0e0e0e;
-@define-color card_fg_color #b0b0b0;
-@define-color popover_bg_color #0e0e0e;
-@define-color popover_fg_color #b0b0b0;
+button.suggested-action {
+    background-color: #ebebeb;
+    color: #000000;
+    border: none;
+}
+
+button.suggested-action:hover {
+    background-color: #f5f5f5;
+}
+
+button.destructive-action {
+    background-color: #f5f5f5;
+    color: #000000;
+    border: none;
+}
+
+button:disabled {
+    background-color: #1a1a1a;
+    color: #4a4a4a;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Inputs ───────────────────────────────── */
+
+entry {
+    background-color: #0d0d0d;
+    color: #d6d6d6;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+entry:focus-within {
+    border-color: #4a4a4a;
+}
+
+entry placeholder {
+    color: #6b6b6b;
+}
+
+/* ── Selection ────────────────────────────── */
+
+*:selected {
+    background-color: #2e2e2e;
+    color: #ebebeb;
+}

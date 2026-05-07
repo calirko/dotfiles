@@ -53,6 +53,12 @@
     (qm-media)
     (box :class "qm-divider")
     (qm-sliders)
+    (box :class "qm-divider")
+    (qm-connectivity)
+    (box :class "qm-divider")
+    (qm-system)
+    (box :class "qm-divider")
+    (qm-calendar)
     (box :vexpand true)))
 
 ; ── Date & time
@@ -113,32 +119,68 @@
 (defpoll media-title  :interval "2s" `playerctl metadata title  2>/dev/null || echo ""`)
 (defpoll media-artist :interval "2s" `playerctl metadata artist 2>/dev/null || echo ""`)
 (defpoll media-status :interval "2s" `playerctl status          2>/dev/null || echo "Stopped"`)
+(defpoll media-art    :interval "2s" `scripts/media-art-path.sh`)
+
+(defpoll sensors-data :interval "5s"
+  :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}'
+  `scripts/sensors.sh`)
+
+(defpoll vpn-data :interval "5s"
+  :initial '{"active": false, "name": ""}'
+  `scripts/vpn-eww.sh`)
+
+(defvar cal-month 1)
+(defvar cal-year 2024)
+(defpoll cal-today :interval "3600s" `date +%-d`)
 
 (defwidget qm-media []
   (box
     :class "qm-section qm-media"
     :orientation "v"
     :space-evenly false
-    :spacing 6
+    :spacing 12
     :visible {media-title != ""}
 
-    (box :orientation "h" :space-evenly false :spacing 8
-      (label :class "qm-media-artist" :halign "start" :truncate true :text media-artist)
-      (label :class "qm-media-sep"    :text "—")
-      (label :class "qm-media-title"  :halign "start" :truncate true :hexpand true :text media-title))
+    ; Cover art
+    (box :class "qm-media-art-wrap" :halign "fill"
+      (image
+        :class "qm-media-art"
+        :path {media-art != "" ? media-art : ""}
+        :image-width 268
+        :image-height 268
+        :visible {media-art != ""}
+        :preserve-aspect-ratio true)
+      (box
+        :class "qm-media-art-placeholder"
+        :visible {media-art == ""}
+        :hexpand true))
 
-    (box :orientation "h" :space-evenly false :spacing 12 :halign "start"
-      (button :class "qm-media-btn"
+    ; Info
+    (box :orientation "v" :space-evenly false :spacing 2
+      (label
+        :class "qm-media-title"
+        :halign "start"
+        :truncate true
+        :text media-title)
+      (label
+        :class "qm-media-artist"
+        :halign "start"
+        :truncate true
+        :text media-artist))
+
+    ; Controls
+    (box :orientation "h" :space-evenly false :spacing 4 :halign "fill"
+      (button :class "qm-media-btn" :hexpand true
         :onclick "playerctl previous &"
-        (image :path "icons/skip-back.svg"    :image-width 13 :image-height 13))
-      (button :class "qm-media-btn"
+        (image :path "icons/skip-back.svg" :image-width 14 :image-height 14))
+      (button :class "qm-media-btn qm-media-btn-play" :hexpand true
         :onclick "playerctl play-pause &"
         (image
           :path {media-status == "Playing" ? "icons/pause.svg" : "icons/play.svg"}
-          :image-width 13 :image-height 13))
-      (button :class "qm-media-btn"
+          :image-width 14 :image-height 14))
+      (button :class "qm-media-btn" :hexpand true
         :onclick "playerctl next &"
-        (image :path "icons/skip-forward.svg" :image-width 13 :image-height 13)))))
+        (image :path "icons/skip-forward.svg" :image-width 14 :image-height 14)))))
 
 ; ── Sliders: volume / brightness / network info
 
@@ -186,3 +228,126 @@
         :hexpand true)
       (label :class "qm-slider-value"
         :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}%"))))
+
+; ── Connectivity: wifi & bluetooth
+
+(defwidget qm-connectivity []
+  (box
+    :class "qm-section qm-connectivity"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      (image
+        :path {network == "wifi-strength-4" ? "icons/wifi-high.svg"
+          : network == "wifi-strength-3" ? "icons/wifi-medium.svg"
+          : network == "wifi-strength-2" ? "icons/wifi-low.svg"
+          : network == "wifi-strength-1" ? "icons/wifi-none.svg"
+          : network == "wifi-strength-0" ? "icons/wifi-none.svg"
+          : network == "ethernet-connected" ? "icons/network.svg"
+          : "icons/wifi-slash.svg"}
+        :image-width 14 :image-height 14)
+      (label
+        :class "qm-connectivity-label"
+        :halign "start"
+        :hexpand true
+        :truncate true
+        :text {network == "ethernet-connected" ? "Ethernet"
+          : network == "wifi-offline" ? "Offline"
+          : wifi-ssid != "" ? wifi-ssid : "Wi-Fi"}))
+
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      (image
+        :path {bluetooth == "connected" ? "icons/bluetooth-connected.svg"
+          : bluetooth == "disabled" ? "icons/bluetooth-x.svg"
+          : "icons/bluetooth.svg"}
+        :image-width 14 :image-height 14)
+      (label
+        :class "qm-connectivity-label"
+        :halign "start"
+        :hexpand true
+        :truncate true
+        :text {bluetooth == "connected" && bluetooth-device != "" ? bluetooth-device
+          : bluetooth == "connected" ? "Connected"
+          : bluetooth == "disabled" ? "Off"
+          : "On"}))
+
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      (image
+        :path {vpn-data.active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
+        :image-width 14 :image-height 14)
+      (label
+        :class "qm-connectivity-label"
+        :halign "start"
+        :hexpand true
+        :truncate true
+        :text {vpn-data.active ? vpn-data.name : "VPN off"}))))
+
+; ── System stats: CPU / memory / GPU
+
+(defwidget qm-system []
+  (box
+    :class "qm-section qm-system"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      (image :path "icons/cpu.svg" :image-width 14 :image-height 14)
+      (label :class "qm-system-label" :halign "start" :hexpand true :text "CPU")
+      (label :class "qm-system-value"
+        :visible {sensors-data.cpu_temp > 0}
+        :text "${sensors-data.cpu_temp}°")
+      (label :class "qm-system-value" :text "${sensors-data.cpu}%"))
+
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      (image :path "icons/database.svg" :image-width 14 :image-height 14)
+      (label :class "qm-system-label" :halign "start" :hexpand true :text "Memory")
+      (label :class "qm-system-value" :text "${sensors-data.ram}%"))
+
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+      :visible {sensors-data.gpu_temp > 0}
+      (image :path "icons/thermometer-simple.svg" :image-width 14 :image-height 14)
+      (label :class "qm-system-label" :halign "start" :hexpand true :text "GPU")
+      (label :class "qm-system-value" :text "${sensors-data.gpu_temp}°"))))
+
+; ── Calendar
+
+(defwidget qm-calendar []
+  (box
+    :class "qm-section qm-calendar"
+    :orientation "v"
+    :space-evenly false
+    :spacing 12
+
+    (box :orientation "h" :space-evenly false :halign "fill" :spacing 0
+      (button :class "qm-cal-nav"
+        :onclick "scripts/cal-nav.sh prev ${cal-month} ${cal-year} &"
+        (image :path "icons/caret-left.svg" :image-width 12 :image-height 12))
+      (label :class "qm-cal-header" :hexpand true :halign "center"
+        :text {(cal-month == 1  ? "January"
+              : cal-month == 2  ? "February"
+              : cal-month == 3  ? "March"
+              : cal-month == 4  ? "April"
+              : cal-month == 5  ? "May"
+              : cal-month == 6  ? "June"
+              : cal-month == 7  ? "July"
+              : cal-month == 8  ? "August"
+              : cal-month == 9  ? "September"
+              : cal-month == 10 ? "October"
+              : cal-month == 11 ? "November"
+              : "December") + " " + cal-year})
+      (button :class "qm-cal-nav"
+        :onclick "scripts/cal-nav.sh next ${cal-month} ${cal-year} &"
+        (image :path "icons/caret-right.svg" :image-width 12 :image-height 12)))
+
+    (calendar
+      :class "qm-cal"
+      :day cal-today
+      :month cal-month
+      :year cal-year
+      :show-details false
+      :show-heading false
+      :show-day-names true
+      :show-week-numbers false)))

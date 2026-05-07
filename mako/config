@@ -5,22 +5,41 @@ layer=overlay
 anchor=top-right
 
 # ── Appearance ───────────────────────────
-background-color=#0e0e0e
-text-color=#b0b0b0
-border-size=0
-border-radius=0
-padding=15
+background-color=#1f1f1f
+text-color=#d6d6d6
+border-size=1
+border-color=#2e2e2e
+border-radius=6
+padding=12,16
 margin=8,8
-width=350
-height=150
-font=JetBrainsMono Nerd Font 11
+width=340
+height=120
+font=Geist Mono 11
 
 # ── Icons ────────────────────────────────
 icons=1
-max-icon-size=48
+max-icon-size=32
 icon-location=left
 
 # ── Behavior ─────────────────────────────
 default-timeout=5000
 ignore-timeout=0
 group-by=app-name
+
+# ── Urgency: low ─────────────────────────
+[urgency=low]
+background-color=#1a1a1a
+text-color=#8a8a8a
+border-color=#1f1f1f
+
+# ── Urgency: normal ──────────────────────
+[urgency=normal]
+background-color=#1f1f1f
+text-color=#d6d6d6
+border-color=#2e2e2e
+
+# ── Urgency: critical ────────────────────
+[urgency=critical]
+background-color=#1f1f1f
+text-color=#ebebeb
+border-color=#ebebeb

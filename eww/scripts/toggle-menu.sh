@@ -13,6 +13,7 @@ if is_open; then
   eww close menu_scrim  || true
 else
   local_screen=$("$SCRIPT_DIR/get-screen.sh")
+  eww update cal-month="$(date +%-m)" cal-year="$(date +%Y)"
   eww open menu_scrim --screen "$local_screen"
   eww open quick_menu --screen "$local_screen"
 fi

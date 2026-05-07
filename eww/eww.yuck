@@ -50,6 +50,9 @@
 (defpoll network :interval "2s"
   `scripts/network-status.sh`)
 
+(defpoll wifi-ssid :interval "5s"
+  `nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes' | cut -d: -f2 | head -1 || echo ""`)
+
 (deflisten active-window :initial "" `scripts/watch-active-window.sh`)
 
 (include "osd.yuck")
@@ -194,7 +197,7 @@
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "32px"
+    :width "36px"
     :height "100%"
     :anchor "left center")
   :stacking "fg"
