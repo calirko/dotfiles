@@ -302,7 +302,7 @@
       (label :class "qm-system-value" :text "${sensors-data.cpu}%"))
 
     (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      (image :path "icons/database.svg" :image-width 14 :image-height 14)
+      (image :path "icons/memory.svg" :image-width 14 :image-height 14)
       (label :class "qm-system-label" :halign "start" :hexpand true :text "Memory")
       (label :class "qm-system-value" :text "${sensors-data.ram}%"))
 
