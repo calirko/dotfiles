@@ -184,14 +184,7 @@
 
 ; ── Sliders: volume / brightness / network info
 
-(defwidget qm-sliders []
-  (box
-    :class "qm-section qm-sliders"
-    :orientation "v"
-    :space-evenly false
-    :spacing 10
-
-    ; Volume
+(defwidget volume-slider []
     (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
       (image
         :path {audio-data.mute == "true"
@@ -210,6 +203,17 @@
         :orientation "h"
         :hexpand true)
       (label :class "qm-slider-value" :text "${audio-data.volume}%"))
+    )
+
+(defwidget qm-sliders []
+  (box
+    :class "qm-section qm-sliders"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    ; Volume
+    (volume-slider)
 
     ; Brightness
     (box

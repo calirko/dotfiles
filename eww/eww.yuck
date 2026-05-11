@@ -55,8 +55,8 @@
 
 (deflisten active-window :initial "" `scripts/watch-active-window.sh`)
 
-(include "osd.yuck")
 (include "menu.yuck")
+(include "osd.yuck")
 
 ; ─────────────────────────────────────────────
 ; BAR WIDGETS

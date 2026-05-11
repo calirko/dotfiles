@@ -8,6 +8,9 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "agent_servers": {
+    "github-copilot-cli": {
+      "type": "registry"
+    },
     "claude-acp": {
       "type": "registry",
     },
@@ -34,7 +37,7 @@
     "model_parameters": [],
   },
   "edit_predictions": {
-    "provider": "copilot",
+    "provider": "zed",
     "mode": "eager",
   },
   "project_panel": {

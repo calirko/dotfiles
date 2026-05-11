@@ -59,13 +59,13 @@
 
 /* ── Border radius ────────────────────────── */
 
-button,
+/*button,
 entry,
 spinbutton,
 .chip,
 tag {
     border-radius: 4px;
-}
+}*/
 
 .card,
 popover,

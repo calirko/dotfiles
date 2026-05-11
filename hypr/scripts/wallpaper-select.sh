@@ -12,35 +12,22 @@ wallpaper_list=$(find "$WALLPAPER_DIR" -type f \( -iname "*.jpg" -o -iname "*.jp
 selected=$(printf '%s\n' "$wallpaper_list" | wofi --dmenu --allow-images --prompt "Select Wallpaper")
 
 if [[ -n "$selected" ]]; then
-   # Extract filename from selected entry (after "text:")
    filename="${selected#*text:}"
    WP_PATH="$WALLPAPER_DIR/$filename"
 
-   # Get list of monitors
-   monitors=$(hyprctl monitors -j | jq -r '.[].name')
+   echo "$WP_PATH" > "$HOME/.cache/current-wallpaper"
 
-   # Build the new configuration
-   CONF_FILE="$(dirname "$0")/../hyprpaper.conf"
-   config_content="splash = false
-ipc = true
-"
+   CONF_FILE="$HOME/.config/hypr/hyprpaper.conf"
+   cat > "$CONF_FILE" <<EOF
+preload = $WP_PATH
+wallpaper = ,$WP_PATH
+splash = false
+EOF
 
-   # Add wallpaper block for each monitor
-   while IFS= read -r monitor; do
-      config_content+="
-wallpaper {
-    monitor = $monitor
-    path = $WP_PATH
-    fit_mode = cover
-}
-"
-   done <<< "$monitors"
-
-   # Write the new configuration
-   echo "$config_content" > "$CONF_FILE"
-
-   # Kill hyprpaper and reload it
    pkill hyprpaper
    sleep 0.5
    hyprpaper &>/dev/null &
+   sleep 1
+   hyprctl hyprpaper preload "$WP_PATH"
+   hyprctl hyprpaper wallpaper ",$WP_PATH"
 fi
