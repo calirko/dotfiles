@@ -93,7 +93,7 @@
 
     (button :class "qm-action-btn qm-action-power"
       :tooltip "Power off"
-      :onclick "hyprshutdown -p \"systemctl poweroff\" &"
+      :onclick "shutdown -h now &"
       (image :path "icons/power.svg" :image-width 15 :image-height 15))
 
     (button :class "qm-action-btn"
