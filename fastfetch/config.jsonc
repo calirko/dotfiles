@@ -1,12 +1,11 @@
 {
   "logo": {
-    "type": "file",
-    "source": "~/.config/fastfetch/ascii.txt",
-    "color": {
-      "1": "white",
-    },
+    "type": "kitty-direct",
+    "source": "~/.config/fastfetch/image.png",
+    "width": 22,
+    // "height": 25,
     "padding": {
-      "top": 3,
+      "left": 1,
     },
   },
   "display": {
