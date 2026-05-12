@@ -1,5 +1,6 @@
 {
   "packages": [
+    "xdg-user-dirs",
     "hyprland",
     "hyprpolkitagent",
     "kitty",
