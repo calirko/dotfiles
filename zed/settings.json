@@ -29,9 +29,9 @@
     "dock": "right",
     "default_profile": "write",
     "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-haiku-4.5",
-      "enable_thinking": true,
+      "provider": "zed.dev",
+      "model": "claude-haiku-4-5",
+      "enable_thinking": false,
     },
     "favorite_models": [],
     "model_parameters": [],
