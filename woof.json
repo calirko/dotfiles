@@ -1,5 +1,7 @@
 {
   "packages": [
+    "libheif",
+    "loupe",
     "xdg-user-dirs",
     "hyprland",
     "hyprpolkitagent",
@@ -28,8 +30,6 @@
     "playerctl",
     "brightnessctl",
     "easyeffects",
-    "inter-font",
-    "ttf-jetbrains-mono-nerd",
     "bluetui",
     "pulsemixer",
     "grim",

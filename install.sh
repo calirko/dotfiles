@@ -6,7 +6,7 @@ set -e
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
-SKIP_PACKAGES=true
+SKIP_PACKAGES=false
 ICON_THEME_NAME="WhiteSur-grey-dark"
 CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
 
