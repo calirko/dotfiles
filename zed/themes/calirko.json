@@ -6,15 +6,15 @@
       "name": "calirko",
       "appearance": "dark",
       "style": {
-        "panel.background": "#060606",
-        "tab_bar.background": "#060606",
-        "tab.inactive_background": "#060606",
+        "panel.background": "#0D0D0D",
+        "tab_bar.background": "#0D0D0D",
+        "tab.inactive_background": "#0D0D0D",
         "tab.active_background": "#141414",
-        "toolbar.background": "#060606",
-        "title_bar.background": "#060606",
-        "status_bar.background": "#060606",
-        "editor.background": "#060606",
-        "background": "#060606",
+        "toolbar.background": "#0D0D0D",
+        "title_bar.background": "#0D0D0D",
+        "status_bar.background": "#0D0D0D",
+        "editor.background": "#0D0D0D",
+        "background": "#0D0D0D",
         "background.appearance": "opaque",
 
         "syntax": {
@@ -127,7 +127,7 @@
 
         "players": [],
 
-        "editor.gutter.background": "#060606",
+        "editor.gutter.background": "#0D0D0D",
         "editor.foreground": "#d6d6d6",
         "editor.line_number": "#4a4a4a",
         "editor.active_line_number": "#d6d6d6",
@@ -178,7 +178,7 @@
         "warning": "#d6d6d6",
         "unreachable": "#4a4a4a",
 
-        "terminal.background": "#060606",
+        "terminal.background": "#0D0D0D",
         "terminal.foreground": "#d6d6d6",
         "terminal.ansi.black": "#1a1a1a",
         "terminal.ansi.red": "#6b6b6b",
