@@ -70,7 +70,7 @@ fi
 
 # Create symlinks
 for config in "${CONFIGS[@]}"; do
-    source="$REPO_DIR/$config"
+    source="$REPO_DIR/configs/$config"
     target="$CONFIG_DIR/$config"
 
     if [ ! -d "$source" ]; then
