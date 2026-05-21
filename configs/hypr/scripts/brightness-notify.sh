@@ -18,4 +18,4 @@ case "$action" in
 esac
 
 # eww OSD
-~/.config/hypr/scripts/osd-show.sh osd-Brightness 2.5
+~/.config/hypr/scripts/osd-show.sh osd-brightness 2.5

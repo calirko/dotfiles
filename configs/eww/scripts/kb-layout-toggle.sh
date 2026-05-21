@@ -13,7 +13,7 @@ else
 fi
 
 # Set the new keyboard layout
-hyprctl keyword input:kb_layout "$NEW_LAYOUT"
+hyprctl eval "hl.config({ input = { kb_layout = \"$NEW_LAYOUT\" } })"
 
 # Send a notification (optional)
 notify-send "Keyboard Layout" "Changed to: $NEW_LAYOUT" -t 1000

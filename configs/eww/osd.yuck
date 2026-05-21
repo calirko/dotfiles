@@ -1,7 +1,7 @@
 (defwindow osd-volume
   :monitor 0
   :geometry (geometry
-    :x "8px" :y "8px"
+    :x "6px" :y "6px"
     :width "260px"
     :anchor "top right")
   :stacking "overlay"
@@ -12,7 +12,7 @@
 (defwindow osd-brightness
   :monitor 0
   :geometry (geometry
-    :x "8px" :y "8px"
+    :x "6px" :y "6px"
     :width "260px"
     :anchor "top right")
   :stacking "overlay"

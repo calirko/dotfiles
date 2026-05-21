@@ -205,19 +205,8 @@
       (label :class "qm-slider-value" :text "${audio-data.volume}%"))
     )
 
-(defwidget qm-sliders []
-  (box
-    :class "qm-section qm-sliders"
-    :orientation "v"
-    :space-evenly false
-    :spacing 10
-
-    ; Volume
-    (volume-slider)
-
-    ; Brightness
-    (box
-      :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+(defwidget brightness-slider []
+    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
       :visible {brightness-data.has_brightness == "1" && brightness-data.brightness_max > 0}
       (image
         :path {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0) > 30
@@ -231,7 +220,21 @@
         :orientation "h"
         :hexpand true)
       (label :class "qm-slider-value"
-        :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}%"))))
+        :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}%"))
+    )
+
+(defwidget qm-sliders []
+  (box
+    :class "qm-section qm-sliders"
+    :orientation "v"
+    :space-evenly false
+    :spacing 10
+
+    ; Volume
+    (volume-slider)
+
+    ; Brightness
+    (brightness-slider)))
 
 ; ── Connectivity: wifi & bluetooth
 

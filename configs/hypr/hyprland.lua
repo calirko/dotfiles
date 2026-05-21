@@ -12,34 +12,6 @@ local ide         = "zeditor"
 
 -- functions
 
-local function get_lid_state()
-    local paths = {
-        "/proc/acpi/button/lid/LID/state",
-        "/proc/acpi/button/lid/LID0/state",
-    }
-    for _, path in ipairs(paths) do
-        local f = io.open(path, "r")
-        if f then
-            local content = f:read("*a")
-            f:close()
-            if content:match("closed") then return "closed" end
-            if content:match("open") then return "open" end
-        end
-    end
-    return nil
-end
-
-local function handle_lid_switch()
-    local lid_state = get_lid_state()
-    hl.monitor({
-        output   = "desc:BOE 0x0A2A",
-        mode     = "1920x1200@60",
-        position = "0x0",
-        scale    = "1.07",
-        disabled = lid_state == "closed"
-    })
-end
-
 -- actual code
 
 if hostname == "bear" then
@@ -58,14 +30,22 @@ if hostname == "bear" then
         transform = 3,
     })
 
-    -- hl.workspace({ id = 1, monitor = "DP-1", default = true })
-    -- hl.workspace({ id = 2, monitor = "DP-1" })
-    -- hl.workspace({ id = 3, monitor = "DP-1" })
-    -- hl.workspace({ id = 4, monitor = "DP-1" })
-    -- hl.workspace({ id = 5, monitor = "HDMI-A-1", default = true })
-    -- hl.workspace({ id = 6, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 7, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 8, monitor = "HDMI-A-1" })
+    hl.monitor({
+        output   = "desc:BOE 0x0A2A",
+        mode     = "1920x1200@60",
+        position = "-1920x0",
+        scale    = "1",
+    })
+
+    hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
+    hl.workspace_rule({ monitor = "DP-1", workspace = "2" })
+    hl.workspace_rule({ monitor = "DP-1", workspace = "3" })
+    hl.workspace_rule({ monitor = "DP-1", workspace = "4" })
+    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "5", default = true })
+    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "6" })
+    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "7" })
+    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "8" })
+
 
     hl.window_rule({
         name = "zed-workspace",
@@ -106,18 +86,13 @@ if hostname == "bear" then
         action = "workspace",
     })
 
-    -- laptop lid switch
-    hl.on("hyprland.start", function()
-        handle_lid_switch()
-    end)
-    hl.bind("switch:Lid Switch", function()
-        handle_lid_switch()
-    end, { locked = true })
-
     hl.bind("XF86KbdBrightnessUp", hl.dsp.exec_cmd("~/.config/hypr/scripts/kbd-backlight-notify.sh up"),
         { repeating = true })
     hl.bind("XF86KbdBrightnessDown", hl.dsp.exec_cmd("~/.config/hypr/scripts/kbd-backlight-notify.sh down"),
         { repeating = true })
+    hl.on("hyprland.start", function()
+        hl.dispatch(hl.dsp.exec_cmd("nmcli connection up peer_dragon_1"))
+    end)
 elseif hostname == "shark" then
     hl.monitor({
         output   = "desc:AOC 22B1WG5 AUWMAXA004846",
@@ -126,16 +101,16 @@ elseif hostname == "shark" then
         scale    = "1",
     })
 
-    -- hl.workspace({ id = 1, monitor = "HDMI-A-1", default = true })
-    -- hl.workspace({ id = 2, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 3, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 4, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 5, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 6, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 7, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 8, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 9, monitor = "HDMI-A-1" })
-    -- hl.workspace({ id = 10, monitor = "HDMI-A-1" })
+    hl.workspace_rule({
+        monitor = "HDMI-A-1",
+        workspace = "1",
+        default = true,
+    })
+
+    hl.workspace_rule({
+        monitor = "HDMI-A-1",
+        workspace = "2",
+    })
 
     hl.config({
         input = {
@@ -159,7 +134,6 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("easyeffects --gapplication-service"))
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type text --watch cliphist store"))
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type image --watch cliphist store"))
-    hl.dispatch(hl.dsp.exec_cmd("discord --start-minimized"))
 end)
 
 
@@ -178,11 +152,7 @@ hl.config({
     general = {
         gaps_in = 3,
         gaps_out = 6,
-        border_size = 1,
-        col = {
-            active_border = "rgb(111111)",
-            inactive_border = "rgb(111111)",
-        },
+        border_size = 0,
         resize_on_border = false,
         allow_tearing = false,
         layout = "dwindle",
@@ -245,7 +215,6 @@ hl.animation({ leaf = "workspacesIn", enabled = true, speed = 2.5, bezier = "sli
 hl.animation({ leaf = "workspacesOut", enabled = true, speed = 2, bezier = "instant", style = "slide" })
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "snappy" })
 
-
 local mainMod = "SUPER"
 
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(browser))
@@ -266,6 +235,8 @@ hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliph
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-select.sh"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"))
+hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd("~/.config/eww/scripts/toggle-menu.sh"))
+hl.bind("escape", hl.dsp.exec_cmd("~/.config/eww/scripts/close-menu.sh"), { non_consuming = true })
 
 hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
@@ -338,6 +309,12 @@ hl.window_rule({
 hl.window_rule({
     name = "bitwarden-extension-float",
     match = { title = "Extension: (Bitwarden Password Manager) - Bitwarden — Zen Browser" },
+    float = true,
+})
+
+hl.window_rule({
+    name = "Calculator",
+    match = { class = "gnome-calculator" },
     float = true,
 })
 

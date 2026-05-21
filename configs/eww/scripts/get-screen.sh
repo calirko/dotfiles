@@ -10,16 +10,15 @@ case "$HOSTNAME" in
     ;;
   bear)
     if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
-      if hyprctl monitors -j | jq -e '.[] | select(.name == "eDP-1")' >/dev/null 2>&1; then
-        echo 0
-      else
-        count=$(hyprctl monitors -j | jq 'length')
-        if [[ "$count" -gt 0 ]]; then
-          echo $((count - 1))
-        else
-          echo 0
-        fi
+      monitors=$(hyprctl monitors -j)
+      idx=$(echo "$monitors" | jq 'to_entries[] | select(.value.name == "DP-1") | .key' 2>/dev/null | head -1)
+      if [[ -z "$idx" ]]; then
+        idx=$(echo "$monitors" | jq 'to_entries[] | select(.value.name | test("^HDMI"; "i")) | .key' 2>/dev/null | head -1)
       fi
+      if [[ -z "$idx" ]]; then
+        idx=$(echo "$monitors" | jq 'to_entries[] | select(.value.name | test("^eDP"; "i")) | .key' 2>/dev/null | head -1)
+      fi
+      echo "${idx:-0}"
     else
       echo 0
     fi
