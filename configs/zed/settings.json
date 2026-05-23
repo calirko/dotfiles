@@ -29,9 +29,10 @@
     "dock": "right",
     "default_profile": "write",
     "default_model": {
+      "effort": "high",
       "provider": "zed.dev",
-      "model": "claude-haiku-4-5",
-      "enable_thinking": false,
+      "model": "claude-sonnet-4-6",
+      "enable_thinking": true,
     },
     "favorite_models": [],
     "model_parameters": [],

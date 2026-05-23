@@ -34,7 +34,7 @@ if hostname == "bear" then
         output   = "desc:BOE 0x0A2A",
         mode     = "1920x1200@60",
         position = "-1920x0",
-        scale    = "1",
+        scale    = "1.2",
     })
 
     hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
