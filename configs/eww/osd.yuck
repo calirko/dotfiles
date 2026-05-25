@@ -3,7 +3,7 @@
   :geometry (geometry
     :x "6px" :y "6px"
     :width "260px"
-    :anchor "top right")
+    :anchor "bottom left")
   :stacking "overlay"
   :exclusive false
   :focusable false
@@ -14,7 +14,7 @@
   :geometry (geometry
     :x "6px" :y "6px"
     :width "260px"
-    :anchor "top right")
+    :anchor "bottom left")
   :stacking "overlay"
   :exclusive false
   :focusable false

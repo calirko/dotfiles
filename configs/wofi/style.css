@@ -9,6 +9,7 @@ window {
 
 #outer-box {
     padding: 0;
+    border-radius: 6px;
 }
 
 #input {
@@ -18,7 +19,7 @@ window {
     color: #d6d6d6;
     border: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 0;
+    border-radius: 6px 6px 0px 0px;
     box-shadow: none;
     font-size: 14px;
     font-weight: 400;
@@ -37,6 +38,7 @@ window {
 
 #inner-box {
     padding: 0;
+    border-radius: 6px;
 }
 
 #entry {

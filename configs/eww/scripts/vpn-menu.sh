@@ -9,7 +9,7 @@ ICON_DISCONNECTED=""
 
 nmcli_hint() {
   local msg="NetworkManager or its WireGuard plugin is unavailable. Install nmcli and the WireGuard plugin."
-  notify-send "VPN" "$msg"
+  notify-send -i "dialog-error" "VPN" "$msg"
   echo "$msg" >&2
 }
 
@@ -112,7 +112,7 @@ bring_up_vpn() {
   local conf_file="$VPN_CONFIG_DIR/$target.conf"
 
   if [[ ! -f "$conf_file" ]]; then
-    notify-send "VPN" "Config not found: $conf_file"
+    notify-send -i "dialog-error" "VPN" "Config not found: $conf_file"
     return 1
   fi
 
@@ -121,12 +121,12 @@ bring_up_vpn() {
   fi
 
   if nmcli_c connection up "$target" >/dev/null 2>&1; then
-    notify-send "VPN" "Connected to $target"
+    notify-send -i "network-vpn" "VPN" "Connected to $target"
     refresh_eww_status
     return 0
   fi
 
-  notify-send "VPN" "Failed to connect $target"
+  notify-send -i "dialog-error" "VPN" "Failed to connect $target"
   return 1
 }
 
@@ -146,7 +146,7 @@ show_menu() {
   fi
 
   if [[ -z "$options" ]]; then
-    notify-send "VPN" "No VPN configs found in $VPN_CONFIG_DIR"
+    notify-send -i "dialog-warning" "VPN" "No VPN configs found in $VPN_CONFIG_DIR"
     exit 0
   fi
 
@@ -162,7 +162,7 @@ show_menu() {
       [[ -z "$iface" ]] && continue
       nmcli_c connection down "$iface" >/dev/null 2>&1 || true
     done < <(active_wireguard_connections)
-    notify-send "VPN" "Disconnected"
+    notify-send -i "network-vpn" "VPN" "Disconnected"
     refresh_eww_status
   else
     bring_up_vpn "$choice"

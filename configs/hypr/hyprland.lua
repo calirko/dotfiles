@@ -47,30 +47,6 @@ if hostname == "bear" then
     hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "8" })
 
 
-    hl.window_rule({
-        name = "zed-workspace",
-        match = { class = "dev.zed.Zed" },
-        workspace = 5,
-    })
-
-    hl.window_rule({
-        name = "dbeaver-workspace",
-        match = { class = "DBeaver" },
-        workspace = 2,
-    })
-
-    hl.window_rule({
-        name = "tidal-workspace",
-        match = { class = "tidal-hifi" },
-        workspace = 3,
-    })
-
-    hl.window_rule({
-        name = "zen-workspace",
-        match = { class = "zen" },
-        workspace = 1,
-    })
-
     hl.config({
         input = {
             touchpad = {
@@ -84,6 +60,14 @@ if hostname == "bear" then
         fingers = 3,
         direction = "horizontal",
         action = "workspace",
+    })
+
+    hl.gesture({
+        fingers = 4,
+        direction = "down",
+        action = function()
+            hl.dispatch(hl.dsp.exec_cmd(terminal))
+        end,
     })
 
     hl.bind("XF86KbdBrightnessUp", hl.dsp.exec_cmd("~/.config/hypr/scripts/kbd-backlight-notify.sh up"),
@@ -134,6 +118,8 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("easyeffects --gapplication-service"))
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type text --watch cliphist store"))
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type image --watch cliphist store"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/network-notify.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/vpn-notify.sh"))
 end)
 
 

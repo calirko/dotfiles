@@ -2,7 +2,7 @@
 max-visible=3
 sort=-time
 layer=overlay
-anchor=top-right
+anchor=bottom-left
 
 # ── Appearance ───────────────────────────
 background-color=#1f1f1f
@@ -11,15 +11,15 @@ border-size=1
 border-color=#2e2e2e
 border-radius=6
 padding=8,8
-margin=6,6
+margin=6,6,6,6
 width=340
-height=120
-font=Geist Mono 11
+font=Geist Mono 13
 
 # ── Icons ────────────────────────────────
 icons=1
-max-icon-size=32
+max-icon-size=24
 icon-location=left
+icon-path=/home/calirko/.local/share/icons/WhiteSur-grey-dark:/usr/share/icons/Adwaita:/usr/share/icons/hicolor
 
 # ── Behavior ─────────────────────────────
 default-timeout=5000
@@ -43,3 +43,17 @@ border-color=#2e2e2e
 background-color=#1f1f1f
 text-color=#ebebeb
 border-color=#ebebeb
+
+# ── Suppressed apps ───────────────────────
+# Check actual app-name with: makoctl list | grep app-name
+[app-name=wiki]
+invisible=1
+
+[app-name=peer]
+invisible=1
+
+[app-name=NetworkManager summary~=peer*]
+invisible=1
+
+[app-name=NetworkManager summary~=*peer_dragon*]
+invisible=1
