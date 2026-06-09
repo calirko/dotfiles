@@ -14,7 +14,7 @@ local ide         = "zeditor"
 
 -- actual code
 
-if hostname == "bear" then
+if hostname == "raccoon" then
     hl.monitor({
         output   = "desc:Samsung Electric Company LF24T35 HX5X803123",
         mode     = "1920x1080@74.97",
@@ -35,6 +35,7 @@ if hostname == "bear" then
         mode     = "1920x1200@60",
         position = "-1920x0",
         scale    = "1.2",
+        -- disable  = true,
     })
 
     hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
@@ -76,7 +77,9 @@ if hostname == "bear" then
         { repeating = true })
     hl.on("hyprland.start", function()
         hl.dispatch(hl.dsp.exec_cmd("nmcli connection up peer_dragon_1"))
+        hl.dispatch(hl.dsp.exec_cmd("~/.config/hypr/scripts/audio-preset-switch.sh"))
     end)
+    hl.env("AQ_DRM_DEVICES", "/dev/dri/card1")
 elseif hostname == "shark" then
     hl.monitor({
         output   = "desc:AOC 22B1WG5 AUWMAXA004846",
@@ -120,6 +123,7 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type image --watch cliphist store"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/network-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/vpn-notify.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/media-rpc"))
 end)
 
 
@@ -255,6 +259,11 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tru
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 
 
+hl.layer_rule({
+    match = { namespace = "eww-menu" },
+    animation = "slide right",
+})
+
 hl.window_rule({
     name = "discord-float-center",
     match = { class = "discord" },
@@ -312,4 +321,10 @@ hl.window_rule({
     no_focus = true,
     no_shadow = true,
     border_size = 0,
+})
+
+hl.window_rule({
+    name = "bitwarden",
+    match = { class = "Bitwarden" },
+    float = true,
 })

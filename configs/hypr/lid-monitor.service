@@ -1,0 +1,13 @@
+[Unit]
+Description=Lid switch handler for Hyprland (raccoon)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.config/hypr/scripts/lid-handler.sh
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

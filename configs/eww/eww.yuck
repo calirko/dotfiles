@@ -2,58 +2,33 @@
 ; VARIABLES & LISTENERS
 ; ─────────────────────────────────────────────
 
-(defpoll time :interval "1s"
-  `date +"%H:%M"`)
-
-(defpoll date :interval "1m"
-  `date +"%a, %d %b %Y"`)
+(deflisten clock-data :initial '{"time":"00:00","date":""}' `scripts/watch-clock.sh`)
 
 (deflisten workspace-data :initial '{"workspaces":[],"active":1}' `scripts/watch-workspaces.sh`)
 
-(defpoll weather-temperature :interval "20m"
-  `scripts/get-weather.sh temperature`)
-
-(defpoll weather-icon :interval "20m"
-  `scripts/get-weather.sh icon`)
+(deflisten weather-data :initial '{"temperature":"","icon":""}' `scripts/watch-weather.sh`)
 
 (deflisten brightness-data :initial '{"has_brightness":"0","brightness_raw":0,"brightness_max":100}' `scripts/watch-brightness.sh`)
 
-(defpoll mako-paused :interval "1s"
-  `makoctl mode | grep -q "do-not-disturb" && echo "1" || echo "0"`)
+(deflisten mako-paused :initial "0" `scripts/watch-mako.sh`)
 
-(defpoll has-kb-backlight :interval "10s"
-  `[ -d /sys/class/leds ] && ls /sys/class/leds | grep -qi "kbd_backlight\\|::kbd_backlight\\|keyboard_backlight" && echo "1" || echo "0"`)
+(deflisten has-kb-backlight :initial "0" `scripts/watch-kb-backlight.sh`)
 
-(defpoll kb-layout :interval "1s"
-  `scripts/kb-layout-status.sh`)
+(deflisten kb-layout :initial "" `scripts/watch-kb-layout.sh`)
 
-(defpoll has-battery :interval "30s" :initial "0"
-  `[ -d /sys/class/power_supply/BAT* ] && echo "1" || echo "0"`)
-
-(defpoll battery-capacity :interval "20s" :initial "0"
-  `cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo "0"`)
-
-(defpoll battery-status :interval "20s" :initial ""
-  `cat /sys/class/power_supply/BAT*/status 2>/dev/null || echo ""`)
-
-(defpoll ac-status :interval "5s" :initial "0"
-  `cat /sys/class/power_supply/AC/online 2>/dev/null || echo "0"`)
+(deflisten battery-data :initial '{"has_battery":0,"capacity":0,"status":"","ac":0}' `scripts/watch-battery.sh`)
 
 (deflisten audio-data :initial '{"volume":0,"mute":"true"}' `scripts/watch-audio.sh`)
 
-(defpoll bluetooth :interval "2s"
-  `scripts/bluetooth-status.sh`)
+(deflisten bluetooth-data :initial '{"state":"disabled","device":""}' `scripts/watch-bluetooth.sh`)
 
-(defpoll bluetooth-device :interval "2s"
-  `bluetoothctl devices Connected 2>/dev/null | head -1 | cut -d' ' -f3-`)
-
-(defpoll network :interval "2s"
-  `scripts/network-status.sh`)
-
-(defpoll wifi-ssid :interval "5s"
-  `nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes' | cut -d: -f2 | head -1 || echo ""`)
+(deflisten network-data :initial '{"connection":"wifi-offline","ssid":"","vpn_active":false,"vpn_name":""}' `scripts/watch-network.sh`)
 
 (deflisten active-window :initial "" `scripts/watch-active-window.sh`)
+
+(deflisten media-data :initial '{"title":"","artist":"","status":"Stopped","art":""}' `scripts/watch-media.sh`)
+
+(deflisten sensors-data :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}' `scripts/watch-sensors.sh`)
 
 (include "menu.yuck")
 (include "osd.yuck")
@@ -110,20 +85,20 @@
   (box
     :class "bar-battery"
     :orientation "v"
-    :visible {has-battery == 1}
+    :visible {battery-data.has_battery == 1}
     :halign "center"
     :spacing 3
     (progress
-      :class "battery-progress ${battery-capacity < 20 ? "battery-low" : ac-status == "1" ? "battery-charging" : ""}"
+      :class "battery-progress ${battery-data.capacity < 20 ? "battery-low" : battery-data.ac == 1 ? "battery-charging" : ""}"
       :orientation "v"
       :flipped true
-      :value battery-capacity
+      :value {battery-data.capacity}
       :min 0
       :max 100)
     (label
       :class "bar-small-label"
       :angle 90
-      :text "${battery-capacity}%")))
+      :text "${battery-data.capacity}%")))
 
 (defwidget bar-dnd []
   (button
@@ -137,8 +112,8 @@
     :halign "center"
     :spacing 2
     :space-evenly false
-    (label :class "bar-time" :angle 90 :text time)
-    (label :class "bar-day"  :angle 90 :text {substring(date, 0, 3)})))
+    (label :class "bar-time" :angle 90 :text {clock-data.time})
+    (label :class "bar-day"  :angle 90 :text {substring(clock-data.date, 0, 3)})))
 
 (defwidget bar-menu-btn []
   (button

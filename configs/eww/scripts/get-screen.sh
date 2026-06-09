@@ -8,7 +8,7 @@ case "$HOSTNAME" in
   shark)
     echo 0
     ;;
-  bear)
+  raccoon)
     if command -v hyprctl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
       monitors=$(hyprctl monitors -j)
       idx=$(echo "$monitors" | jq 'to_entries[] | select(.value.name == "DP-1") | .key' 2>/dev/null | head -1)

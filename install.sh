@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="WhiteSur-grey-dark"
-CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
+CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig" "easyeffects")
 
 # Color output
 GREEN='\033[0;32m'
@@ -85,5 +85,26 @@ for config in "${CONFIGS[@]}"; do
         echo -e "${GREEN}✓ Linked $config${NC}"
     fi
 done
+
+# raccoon: lid switch handling (laptop-only, requires sudo for logind drop-in)
+if [[ "$(uname -n)" == "raccoon" ]]; then
+    echo ""
+    echo -e "${YELLOW}raccoon: setting up lid switch handler...${NC}"
+
+    if command -v sudo >/dev/null 2>&1; then
+        sudo mkdir -p /etc/systemd/logind.conf.d
+        sudo cp "$REPO_DIR/configs/hypr/logind-lid.conf" /etc/systemd/logind.conf.d/raccoon-lid.conf
+        sudo systemctl kill -s HUP systemd-logind
+        echo -e "${GREEN}✓ logind lid switch handling disabled${NC}"
+    else
+        echo -e "${YELLOW}⊘ sudo not available — copy configs/hypr/logind-lid.conf to /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
+    fi
+
+    mkdir -p "$HOME/.config/systemd/user"
+    ln -sf "$HOME/.config/hypr/lid-monitor.service" "$HOME/.config/systemd/user/lid-monitor.service"
+    systemctl --user daemon-reload
+    systemctl --user enable --now lid-monitor.service
+    echo -e "${GREEN}✓ lid-monitor service enabled${NC}"
+fi
 
 echo -e "${GREEN}Done!${NC}"

@@ -2,43 +2,36 @@
 ; QUICK MENU — menu.yuck
 ; ─────────────────────────────────────────────
 
-; ── Scrim (click-outside-to-close backdrop)
+; ── Single overlay window: scrim + panel merged so they can never desync
 
-(defwidget menu-scrim []
-  (eventbox
-    :onclick "scripts/close-menu.sh &"
-    :onrightclick "scripts/close-menu.sh &"
-    :onmiddleclick "scripts/close-menu.sh &"
-    (box :class "scrim-box" :hexpand true :vexpand true)))
-
-(defwindow menu_scrim
-  :monitor 0
-  :geometry (geometry
-    :x "0%"
-    :y "0%"
-    :width "100%"
-    :height "100%"
-    :anchor "center")
-  :stacking "fg"
-  :focusable false
-  :namespace "eww-scrim"
-  (menu-scrim))
-
-; ── Menu window
-
-(defwindow quick_menu
+(defwindow menu_overlay
   :monitor 0
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "300px"
+    :width "100%"
     :height "100%"
     :anchor "right center")
   :stacking "fg"
   :namespace "eww-menu"
-  (quick-menu-content))
+  (menu-overlay-content))
 
-; ── Root layout
+(defwidget menu-overlay-content []
+  (box
+    :orientation "h"
+    :space-evenly false
+    :hexpand true
+    :vexpand true
+    (eventbox
+      :onclick "scripts/close-menu.sh &"
+      :onrightclick "scripts/close-menu.sh &"
+      :onmiddleclick "scripts/close-menu.sh &"
+      :hexpand true
+      :vexpand true
+      (box :class "scrim-box" :hexpand true :vexpand true))
+    (quick-menu-content)))
+
+; ── Panel content
 
 (defwidget quick-menu-content []
   (box
@@ -69,8 +62,8 @@
     :orientation "v"
     :space-evenly false
     :spacing 2
-    (label :class "qm-time" :halign "start" :text time)
-    (label :class "qm-date" :halign "start" :text date)))
+    (label :class "qm-time" :halign "start" :text {clock-data.time})
+    (label :class "qm-date" :halign "start" :text {clock-data.date})))
 
 ; ── Action grid: lock / restart / power / screenshot / DND / kb-backlight
 
@@ -116,19 +109,6 @@
 
 ; ── Media player
 
-(defpoll media-title  :interval "2s" `playerctl metadata title  2>/dev/null || echo ""`)
-(defpoll media-artist :interval "2s" `playerctl metadata artist 2>/dev/null || echo ""`)
-(defpoll media-status :interval "2s" `playerctl status          2>/dev/null || echo "Stopped"`)
-(defpoll media-art    :interval "2s" `scripts/media-art-path.sh`)
-
-(defpoll sensors-data :interval "5s"
-  :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}'
-  `scripts/sensors.sh`)
-
-(defpoll vpn-data :interval "5s"
-  :initial '{"active": false, "name": ""}'
-  `scripts/vpn-eww.sh`)
-
 (defvar cal-month 1)
 (defvar cal-year 2024)
 (defpoll cal-today :interval "3600s" `date +%-d`)
@@ -139,20 +119,20 @@
     :orientation "v"
     :space-evenly false
     :spacing 12
-    :visible {media-title != ""}
+    :visible {media-data.title != ""}
 
     ; Cover art
     (box :class "qm-media-art-wrap" :halign "fill"
       (image
         :class "qm-media-art"
-        :path {media-art != "" ? media-art : ""}
+        :path {media-data.art != "" ? media-data.art : ""}
         :image-width 268
         :image-height 268
-        :visible {media-art != ""}
+        :visible {media-data.art != ""}
         :preserve-aspect-ratio true)
       (box
         :class "qm-media-art-placeholder"
-        :visible {media-art == ""}
+        :visible {media-data.art == ""}
         :hexpand true))
 
     ; Info
@@ -161,12 +141,12 @@
         :class "qm-media-title"
         :halign "start"
         :truncate true
-        :text media-title)
+        :text {media-data.title})
       (label
         :class "qm-media-artist"
         :halign "start"
         :truncate true
-        :text media-artist))
+        :text {media-data.artist}))
 
     ; Controls
     (box :orientation "h" :space-evenly false :spacing 4 :halign "fill"
@@ -176,7 +156,7 @@
       (button :class "qm-media-btn qm-media-btn-play" :hexpand true
         :onclick "playerctl play-pause &"
         (image
-          :path {media-status == "Playing" ? "icons/pause.svg" : "icons/play.svg"}
+          :path {media-data.status == "Playing" ? "icons/pause.svg" : "icons/play.svg"}
           :image-width 14 :image-height 14))
       (button :class "qm-media-btn" :hexpand true
         :onclick "playerctl next &"
@@ -247,12 +227,12 @@
 
     (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
       (image
-        :path {network == "wifi-strength-4" ? "icons/wifi-high.svg"
-          : network == "wifi-strength-3" ? "icons/wifi-medium.svg"
-          : network == "wifi-strength-2" ? "icons/wifi-low.svg"
-          : network == "wifi-strength-1" ? "icons/wifi-none.svg"
-          : network == "wifi-strength-0" ? "icons/wifi-none.svg"
-          : network == "ethernet-connected" ? "icons/network.svg"
+        :path {network-data.connection == "wifi-strength-4" ? "icons/wifi-high.svg"
+          : network-data.connection == "wifi-strength-3" ? "icons/wifi-medium.svg"
+          : network-data.connection == "wifi-strength-2" ? "icons/wifi-low.svg"
+          : network-data.connection == "wifi-strength-1" ? "icons/wifi-none.svg"
+          : network-data.connection == "wifi-strength-0" ? "icons/wifi-none.svg"
+          : network-data.connection == "ethernet-connected" ? "icons/network.svg"
           : "icons/wifi-slash.svg"}
         :image-width 14 :image-height 14)
       (label
@@ -260,14 +240,14 @@
         :halign "start"
         :hexpand true
         :truncate true
-        :text {network == "ethernet-connected" ? "Ethernet"
-          : network == "wifi-offline" ? "Offline"
-          : wifi-ssid != "" ? wifi-ssid : "Wi-Fi"}))
+        :text {network-data.connection == "ethernet-connected" ? "Ethernet"
+          : network-data.connection == "wifi-offline" ? "Offline"
+          : network-data.ssid != "" ? network-data.ssid : "Wi-Fi"}))
 
     (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
       (image
-        :path {bluetooth == "connected" ? "icons/bluetooth-connected.svg"
-          : bluetooth == "disabled" ? "icons/bluetooth-x.svg"
+        :path {bluetooth-data.state == "connected" ? "icons/bluetooth-connected.svg"
+          : bluetooth-data.state == "disabled" ? "icons/bluetooth-x.svg"
           : "icons/bluetooth.svg"}
         :image-width 14 :image-height 14)
       (label
@@ -275,21 +255,21 @@
         :halign "start"
         :hexpand true
         :truncate true
-        :text {bluetooth == "connected" && bluetooth-device != "" ? bluetooth-device
-          : bluetooth == "connected" ? "Connected"
-          : bluetooth == "disabled" ? "Off"
+        :text {bluetooth-data.state == "connected" && bluetooth-data.device != "" ? bluetooth-data.device
+          : bluetooth-data.state == "connected" ? "Connected"
+          : bluetooth-data.state == "disabled" ? "Off"
           : "On"}))
 
     (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
       (image
-        :path {vpn-data.active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
+        :path {network-data.vpn_active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
         :image-width 14 :image-height 14)
       (label
         :class "qm-connectivity-label"
         :halign "start"
         :hexpand true
         :truncate true
-        :text {vpn-data.active ? vpn-data.name : "VPN off"}))))
+        :text {network-data.vpn_active ? network-data.vpn_name : "VPN off"}))))
 
 ; ── System stats: CPU / memory / GPU
 

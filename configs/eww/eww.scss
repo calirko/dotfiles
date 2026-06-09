@@ -1,8 +1,8 @@
 * {
     all: unset;
-    font-family: "Geist Mono", monospace;
+    font-family: "Geist", monospace;
     font-weight: 400;
-    font-size: 13px;
+    font-size: 14px;
     color: #d6d6d6;
 }
 
@@ -24,6 +24,7 @@
     background: #000000;
     /* border-right: 1px solid rgba(255, 255, 255, 0.06); */
     min-width: 36px;
+    font-family: "Geist Mono", monospace;
 }
 
 .bar-top {
@@ -38,6 +39,7 @@
 
 .bar-active-window {
     font-size: 11px;
+    font-weight: 300;
     color: #6b6b6b;
     letter-spacing: 0.05em;
     padding: 10px 0 8px;
@@ -51,7 +53,7 @@
     border-radius: 0px;
     min-width: 36px;
     min-height: 32px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 400;
     color: #6b6b6b;
     letter-spacing: 0.04em;
@@ -59,7 +61,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
     label {
-        font-size: 12px;
+        font-size: 11px;
         color: #6b6b6b;
     }
 
@@ -155,7 +157,8 @@
 }
 
 .bar-small-label {
-    font-size: 11px;
+    font-size: 10px;
+    font-weight: 300;
     color: #4a4a4a;
     letter-spacing: 0.04em;
 }
@@ -187,7 +190,8 @@
 }
 
 .bar-day {
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 300;
     color: #6b6b6b;
     letter-spacing: 0.08em;
     margin-bottom: 10px;
@@ -237,16 +241,17 @@
 }
 
 .qm-time {
-    font-size: 28px;
-    font-weight: 500;
+    font-size: 32px;
+    font-weight: 600;
     color: #ebebeb;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
 }
 
 .qm-date {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 300;
     color: #6b6b6b;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.02em;
     margin-top: 3px;
 }
 
@@ -313,7 +318,9 @@
 }
 
 .qm-slider-value {
+    font-family: "Geist Mono", monospace;
     font-size: 11px;
+    font-weight: 400;
     color: #6b6b6b;
     min-width: 30px;
     letter-spacing: 0.04em;
@@ -336,16 +343,17 @@
 }
 
 .qm-media-title {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: #ebebeb;
-    letter-spacing: 0;
+    letter-spacing: -0.01em;
 }
 
 .qm-media-artist {
-    font-size: 11px;
+    font-size: 13px;
+    font-weight: 300;
     color: #6b6b6b;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
 }
 
 .qm-media-btn {
@@ -379,34 +387,36 @@
 /* CONNECTIVITY */
 
 .qm-connectivity-label {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 300;
     color: #8a8a8a;
-    letter-spacing: 0.02em;
 }
 
 /* SYSTEM STATS */
 
 .qm-system-label {
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 300;
     color: #8a8a8a;
-    letter-spacing: 0.02em;
 }
 
 .qm-system-value {
+    font-family: "Geist Mono", monospace;
     font-size: 12px;
+    font-weight: 400;
     color: #6b6b6b;
-    letter-spacing: 0.02em;
-    min-width: 32px;
+    min-width: 36px;
     margin-left: 4px;
+    letter-spacing: 0.02em;
 }
 
 /* CALENDAR */
 
 .qm-cal-header {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: #d6d6d6;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
 }
 
 .qm-cal-nav {
@@ -430,7 +440,7 @@
 .qm-cal calendar {
     background: transparent;
     color: #6b6b6b;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .qm-cal calendar header {
@@ -459,7 +469,7 @@
 
 .qm-cal calendar .day-name {
     color: #4a4a4a;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.04em;
 }
 
@@ -491,6 +501,8 @@
 }
 
 .systray menuitem {
+    font-size: 13px;
+    font-weight: 300;
     padding: 8px;
     color: #8a8a8a;
 
