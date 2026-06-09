@@ -20,8 +20,8 @@ echo "Target: $CONFIG_DIR"
 echo ""
 echo ""
 
-# Array of config directories to unlink
-CONFIGS=("hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig")
+# Array of config directories to unlink (must match install.sh)
+CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig" "easyeffects")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
@@ -34,10 +34,32 @@ fi
 
 echo ""
 
+# raccoon: tear down lid switch handler (mirror of install.sh)
+if [[ "$(uname -n)" == "raccoon" ]]; then
+    echo -e "${YELLOW}raccoon: removing lid switch handler...${NC}"
+
+    if systemctl --user list-unit-files lid-monitor.service &>/dev/null; then
+        systemctl --user disable --now lid-monitor.service 2>/dev/null || true
+    fi
+    rm -f "$HOME/.config/systemd/user/lid-monitor.service"
+    rm -f "$HOME/.config/systemd/user/default.target.wants/lid-monitor.service"
+    systemctl --user daemon-reload 2>/dev/null || true
+    echo -e "${GREEN}✓ lid-monitor service removed${NC}"
+
+    if command -v sudo >/dev/null 2>&1; then
+        sudo rm -f /etc/systemd/logind.conf.d/raccoon-lid.conf
+        sudo systemctl kill -s HUP systemd-logind 2>/dev/null || true
+        echo -e "${GREEN}✓ logind lid drop-in removed${NC}"
+    else
+        echo -e "${YELLOW}⊘ sudo not available — remove /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
+    fi
+    echo ""
+fi
+
 # Remove symlinks
 for config in "${CONFIGS[@]}"; do
     target="$CONFIG_DIR/$config"
-    source="$REPO_DIR/$config"
+    source="$REPO_DIR/configs/$config"
 
     if [ -L "$target" ]; then
         if [ "$(readlink "$target")" = "$source" ]; then
@@ -63,37 +85,6 @@ for config in "${CONFIGS[@]}"; do
         echo -e "${YELLOW}⊘ $config not found${NC}"
     fi
 done
-
-# Remove GTK symlinks
-GTK_SOURCE="$REPO_DIR/gtk/gtk.css"
-GTK3_TARGET="$HOME/.config/gtk-3.0/gtk.css"
-GTK4_TARGET="$HOME/.config/gtk-4.0/gtk.css"
-
-echo -e "${YELLOW}→ Removing GTK symlinks...${NC}"
-
-# GTK 3
-if [ -L "$GTK3_TARGET" ]; then
-    if [ "$(readlink "$GTK3_TARGET")" = "$GTK_SOURCE" ]; then
-        rm "$GTK3_TARGET"
-        echo -e "${GREEN}✓ Removed GTK 3 gtk.css symlink${NC}"
-    else
-        echo -e "${YELLOW}⊘ GTK 3 gtk.css symlink points elsewhere, skipping${NC}"
-    fi
-elif [ -e "$GTK3_TARGET" ]; then
-    echo -e "${YELLOW}⊘ GTK 3 gtk.css exists but is not a symlink, skipping${NC}"
-fi
-
-# GTK 4
-if [ -L "$GTK4_TARGET" ]; then
-    if [ "$(readlink "$GTK4_TARGET")" = "$GTK_SOURCE" ]; then
-        rm "$GTK4_TARGET"
-        echo -e "${GREEN}✓ Removed GTK 4 gtk.css symlink${NC}"
-    else
-        echo -e "${YELLOW}⊘ GTK 4 gtk.css symlink points elsewhere, skipping${NC}"
-    fi
-elif [ -e "$GTK4_TARGET" ]; then
-    echo -e "${YELLOW}⊘ GTK 4 gtk.css exists but is not a symlink, skipping${NC}"
-fi
 
 echo ""
 echo -e "${GREEN}Done!${NC}"

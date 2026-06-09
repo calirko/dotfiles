@@ -1,13 +1,15 @@
 [Unit]
 Description=Lid switch handler for Hyprland (raccoon)
-After=graphical-session.target
-PartOf=graphical-session.target
+# Hyprland is launched from ~/.zprofile, not a systemd-managed session, so
+# graphical-session.target is never kept active. Bind to default.target (always
+# reached at user login) instead; the handler script self-waits for the
+# Hyprland socket before issuing any hyprctl commands.
 
 [Service]
 Type=simple
 ExecStart=%h/.config/hypr/scripts/lid-handler.sh
-Restart=on-failure
+Restart=always
 RestartSec=5s
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=default.target
