@@ -1,1 +1,4 @@
 hypr/hyprpaper.conf
+
+# media-rpc: contains personal Discord app_id — keep local, see config.example.json
+configs/hypr/config.json

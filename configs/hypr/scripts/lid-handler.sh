@@ -56,12 +56,19 @@ get_external_monitor_count() {
         || echo "0"
 }
 
+reopen_bar() {
+    bash "$HOME/.config/hypr/scripts/bar.sh" &
+    disown
+}
+
 disable_edp() {
     hyprctl_cmd eval "hl.monitor({output=\"$EDP_NAME\", disabled=true})" >/dev/null 2>&1 || true
+    reopen_bar
 }
 
 enable_edp() {
     hyprctl_cmd eval "hl.monitor({output=\"$EDP_NAME\", disabled=false, mode=\"$EDP_MODE\", position=\"$EDP_POS\", scale=$EDP_SCALE})" >/dev/null 2>&1 || true
+    reopen_bar
 }
 
 on_lid_close() {

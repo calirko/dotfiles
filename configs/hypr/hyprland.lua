@@ -107,6 +107,16 @@ elseif hostname == "shark" then
 end
 
 
+-- Reopen the bar whenever a monitor is physically connected or disconnected.
+-- Lid-close/open (software disable) is handled by lid-handler.sh directly.
+hl.on("monitor.added", function()
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
+end)
+
+hl.on("monitor.removed", function()
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
+end)
+
 hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface monospace-font-name 'Geist Font Mono 11'"))
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface font-name 'Geist Font 11'"))
@@ -115,7 +125,6 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("gnome-keyring-daemon --start --components=secrets"))
     hl.dispatch(hl.dsp.exec_cmd("systemctl --user start hyprpolkitagent"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/wallpaper-default.sh"))
-    hl.dispatch(hl.dsp.exec_cmd("eww daemon"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
     hl.dispatch(hl.dsp.exec_cmd("hypridle"))
     hl.dispatch(hl.dsp.exec_cmd("easyeffects --gapplication-service"))
@@ -123,6 +132,7 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type image --watch cliphist store"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/network-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/vpn-notify.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/power-tweaks.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/media-rpc"))
 end)
 
@@ -146,6 +156,7 @@ hl.config({
         resize_on_border = false,
         allow_tearing = false,
         layout = "dwindle",
+
     },
 
     decoration = {
@@ -153,8 +164,9 @@ hl.config({
             enabled = false,
         },
         blur = {
-            enabled = false,
+            enabled = true,
         },
+        inactive_opacity = 0.95,
         dim_inactive = true,
         dim_strength = 0.1,
         rounding = 6,
