@@ -77,7 +77,6 @@ if hostname == "raccoon" then
         { repeating = true })
     hl.on("hyprland.start", function()
         hl.dispatch(hl.dsp.exec_cmd("nmcli connection up peer_dragon_1"))
-        hl.dispatch(hl.dsp.exec_cmd("~/.config/hypr/scripts/audio-preset-switch.sh"))
     end)
     hl.env("AQ_DRM_DEVICES", "/dev/dri/card1")
 elseif hostname == "shark" then
