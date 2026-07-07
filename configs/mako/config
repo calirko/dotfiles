@@ -54,6 +54,3 @@ invisible=1
 
 [app-name=NetworkManager summary~=peer*]
 invisible=1
-
-[app-name=NetworkManager summary~=*peer_dragon*]
-invisible=1

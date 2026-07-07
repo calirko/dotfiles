@@ -1,12 +1,12 @@
 [StreamInputs]
-inputDevice=bluez_input.48:73:CB:5B:22:F8
+inputDevice=alsa_input.pci-0000_00_1f.3.analog-stereo
 
 [StreamOutputs]
 outputDevice=bluez_output.48_73_CB_5B_22_F8.1
-plugins=equalizer#0
+plugins=equalizer#0,bass_enhancer#0,limiter#0
 visiblePage=pluginsPage
 visiblePlugin=equalizer#0
 
 [Window]
-height=1068
-width=933
+height=582
+width=692
