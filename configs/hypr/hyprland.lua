@@ -35,8 +35,96 @@ if hostname == "raccoon" then
         mode     = "1920x1200@60",
         position = "-1920x0",
         scale    = "1.2",
-        -- disable  = true,
     })
+
+    -- Lid switch handling, native (no polling daemon).
+    --
+    -- Plugged in + external monitor : lid close disables eDP-1, lid open re-enables it
+    -- Plugged in + no external      : lid close suspends
+    -- On battery (any)              : lid close suspends; timeout suspend is handled by hypridle
+    --
+    -- This runs synchronously as part of config evaluation, right after the
+    -- monitor specs above, so a boot-with-lid-closed never lets eDP-1 come up
+    -- enabled and grab the default workspace before we get a chance to turn
+    -- it off -- that race is what used to strand the session behind a closed
+    -- lid with no way to reach the other monitors. Switch bindings below
+    -- handle the same logic on live lid events.
+    local EDP_NAME  = "eDP-1"
+    local EDP_MODE  = "1920x1200@60"
+    local EDP_POS   = "-1920x0"
+    local EDP_SCALE = "1.2"
+
+    local function read_file(path)
+        local fh = io.open(path, "r")
+        if not fh then return nil end
+        local content = fh:read("*a")
+        fh:close()
+        return content
+    end
+
+    local function lid_closed()
+        for _, path in ipairs({
+            "/proc/acpi/button/lid/LID0/state",
+            "/proc/acpi/button/lid/LID1/state",
+            "/proc/acpi/button/lid/LID/state",
+        }) do
+            local content = read_file(path)
+            if content then return content:find("closed") ~= nil end
+        end
+        return false
+    end
+
+    local function on_ac()
+        for _, path in ipairs({
+            "/sys/class/power_supply/AC/online",
+            "/sys/class/power_supply/AC0/online",
+            "/sys/class/power_supply/ADP0/online",
+            "/sys/class/power_supply/ADP1/online",
+        }) do
+            local content = read_file(path)
+            if content then return content:find("1") ~= nil end
+        end
+        return false
+    end
+
+    local function external_monitor_connected()
+        for _, m in ipairs(hl.get_monitors()) do
+            if m.name ~= EDP_NAME then return true end
+        end
+        return false
+    end
+
+    local function reopen_bar()
+        hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
+    end
+
+    local function handle_lid_close()
+        if on_ac() and external_monitor_connected() then
+            hl.monitor({ output = EDP_NAME, disabled = true })
+            reopen_bar()
+        else
+            hl.dispatch(hl.dsp.exec_cmd("systemctl suspend"))
+        end
+    end
+
+    local function handle_lid_open()
+        hl.monitor({
+            output   = EDP_NAME,
+            disabled = false,
+            mode     = EDP_MODE,
+            position = EDP_POS,
+            scale    = EDP_SCALE,
+        })
+        reopen_bar()
+    end
+
+    -- Apply current lid state immediately (handles boot-with-lid-closed).
+    if lid_closed() then
+        handle_lid_close()
+    end
+
+    hl.bind("switch:on:Lid Switch", handle_lid_close, { locked = true })
+    hl.bind("switch:off:Lid Switch", handle_lid_open, { locked = true })
 
     hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
     hl.workspace_rule({ monitor = "DP-1", workspace = "2" })
@@ -107,7 +195,8 @@ end
 
 
 -- Reopen the bar whenever a monitor is physically connected or disconnected.
--- Lid-close/open (software disable) is handled by lid-handler.sh directly.
+-- Lid-close/open (software disable) is handled by the native switch bindings
+-- in the raccoon block above.
 hl.on("monitor.added", function()
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
 end)
@@ -131,6 +220,7 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("wl-paste --type image --watch cliphist store"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/network-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/vpn-notify.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bluetooth-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/power-tweaks.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/media-rpc"))
 end)
@@ -219,7 +309,8 @@ hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "snappy"
 local mainMod = "SUPER"
 
 hl.bind(mainMod .. " + W", hl.dsp.exec_cmd(browser))
-hl.bind(mainMod .. " + D", hl.dsp.exec_cmd(ide))
+hl.bind(mainMod .. " + Z", hl.dsp.exec_cmd(ide))
+hl.bind(mainMod .. " + D", hl.dsp.exec_cmd("~/.config/hypr/scripts/show-desktop.sh"))
 hl.bind("Print", hl.dsp.exec_cmd("hyprshot -m region"))
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("pidof hyprlock >/dev/null || hyprlock"))

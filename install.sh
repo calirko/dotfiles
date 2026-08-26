@@ -44,6 +44,15 @@ echo ""
 
 # Install packages from woof.json
 if [ "$SKIP_PACKAGES" = false ]; then
+    # jq is required to parse woof.json below, and is itself one of the
+    # packages woof.json lists — bootstrap it directly via pacman so a
+    # jq-less machine isn't stuck permanently skipping package installation.
+    if ! command -v jq &> /dev/null && command -v sudo &> /dev/null; then
+        echo -e "${YELLOW}Bootstrapping jq (required to read woof.json)...${NC}"
+        sudo pacman -S --noconfirm jq
+        echo ""
+    fi
+
     if [ ! -f "$REPO_DIR/woof.json" ]; then
         echo -e "${YELLOW}⊘ woof.json not found, skipping package installation${NC}"
         echo ""
@@ -87,9 +96,12 @@ for config in "${CONFIGS[@]}"; do
 done
 
 # raccoon: lid switch handling (laptop-only, requires sudo for logind drop-in)
+# Lid close/open itself is handled natively inside hyprland.lua via switch
+# bindings — this just stops systemd-logind from also acting on the lid
+# (suspending, etc.) so Hyprland is the sole owner of the event.
 if [[ "$(uname -n)" == "raccoon" ]]; then
     echo ""
-    echo -e "${YELLOW}raccoon: setting up lid switch handler...${NC}"
+    echo -e "${YELLOW}raccoon: disabling logind lid handling (Hyprland owns it natively)...${NC}"
 
     if command -v sudo >/dev/null 2>&1; then
         sudo mkdir -p /etc/systemd/logind.conf.d
@@ -99,12 +111,22 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
     else
         echo -e "${YELLOW}⊘ sudo not available — copy configs/hypr/logind-lid.conf to /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
     fi
+fi
 
-    mkdir -p "$HOME/.config/systemd/user"
-    ln -sf "$HOME/.config/hypr/lid-monitor.service" "$HOME/.config/systemd/user/lid-monitor.service"
-    systemctl --user daemon-reload
-    systemctl --user enable --now lid-monitor.service
-    echo -e "${GREEN}✓ lid-monitor service enabled${NC}"
+# Auto-start Hyprland on tty1 login
+echo ""
+ZPROFILE="$HOME/.zprofile"
+START_HYPR_MARKER="# start-hyprland (dotfiles-managed)"
+if ! grep -qF "$START_HYPR_MARKER" "$ZPROFILE" 2>/dev/null; then
+    {
+        echo "$START_HYPR_MARKER"
+        echo 'if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = "1" ]; then'
+        echo "    exec start-hyprland"
+        echo "fi"
+    } >> "$ZPROFILE"
+    echo -e "${GREEN}✓ Added Hyprland autostart to ~/.zprofile${NC}"
+else
+    echo -e "${GREEN}✓ ~/.zprofile already configured for Hyprland autostart${NC}"
 fi
 
 echo -e "${GREEN}Done!${NC}"

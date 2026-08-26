@@ -12,8 +12,10 @@ border-color=#2e2e2e
 border-radius=6
 padding=8,8
 margin=6,6,6,6
+outer-margin=6,6,6,6
 width=340
 font=Geist Mono 13
+format=<b>%s</b>\n<span size="small">%b</span>
 
 # ── Icons ────────────────────────────────
 icons=1

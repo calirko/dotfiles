@@ -19,9 +19,13 @@ set -euo pipefail
 # the preferred monitor. This stays correct across lid/monitor enable-disable
 # events, where the array order and active-monitor count both change.
 #
-# Preference order: DP-1 → any HDMI* → any eDP* → first enabled monitor.
-# That single ordering also produces the right answer on single-monitor hosts
-# (shark), where it just falls through to "first enabled monitor" = index 0.
+# Preference order:
+#   - Lid open (laptop panel eDP-1 in use): eDP-1 always wins, even if DP-1 or
+#     HDMI are also connected (docked with lid open still targets the laptop
+#     screen).
+#   - Otherwise: DP-1 → any HDMI* → any eDP* → first enabled monitor.
+# That fallback ordering also produces the right answer on single-monitor
+# hosts (shark), where it just falls through to "first enabled monitor" = index 0.
 
 MODE="${1:-index}"
 
@@ -30,13 +34,27 @@ if ! command -v hyprctl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
   exit 0
 fi
 
+lid_open() {
+  for f in /proc/acpi/button/lid/*/state; do
+    [[ -f "$f" ]] || continue
+    grep -q "closed" "$f" 2>/dev/null && return 1
+    return 0
+  done
+  return 1  # no lid (desktop-only host): treat as "not open"
+}
+
+EDP_FIRST=false
+lid_open && EDP_FIRST=true
+
 # Emit "INDEX NAME" for the preferred enabled monitor, or empty if none.
 read -r idx name < <(
-  hyprctl monitors -j 2>/dev/null | jq -r '
+  hyprctl monitors -j 2>/dev/null | jq -r --argjson edp_first "$EDP_FIRST" '
     ([.[] | select((.disabled // false) == false)] | sort_by(.id) | to_entries) as $m
-    | ( ($m | map(select(.value.name == "DP-1")))
+    | ($m | map(select(.value.name | test("^eDP"; "i")))) as $edp
+    | ( (if $edp_first then $edp else [] end)
+        + ($m | map(select(.value.name == "DP-1")))
         + ($m | map(select(.value.name | test("^HDMI"; "i"))))
-        + ($m | map(select(.value.name | test("^eDP"; "i"))))
+        + $edp
         + $m )
     | .[0] // empty
     | "\(.key) \(.value.name)"

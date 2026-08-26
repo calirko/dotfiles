@@ -34,17 +34,9 @@ fi
 
 echo ""
 
-# raccoon: tear down lid switch handler (mirror of install.sh)
+# raccoon: restore logind lid handling (mirror of install.sh)
 if [[ "$(uname -n)" == "raccoon" ]]; then
-    echo -e "${YELLOW}raccoon: removing lid switch handler...${NC}"
-
-    if systemctl --user list-unit-files lid-monitor.service &>/dev/null; then
-        systemctl --user disable --now lid-monitor.service 2>/dev/null || true
-    fi
-    rm -f "$HOME/.config/systemd/user/lid-monitor.service"
-    rm -f "$HOME/.config/systemd/user/default.target.wants/lid-monitor.service"
-    systemctl --user daemon-reload 2>/dev/null || true
-    echo -e "${GREEN}✓ lid-monitor service removed${NC}"
+    echo -e "${YELLOW}raccoon: restoring logind lid handling...${NC}"
 
     if command -v sudo >/dev/null 2>&1; then
         sudo rm -f /etc/systemd/logind.conf.d/raccoon-lid.conf
@@ -54,6 +46,14 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
         echo -e "${YELLOW}⊘ sudo not available — remove /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
     fi
     echo ""
+fi
+
+# Remove Hyprland autostart block from ~/.zprofile (mirror of install.sh)
+ZPROFILE="$HOME/.zprofile"
+START_HYPR_MARKER="# start-hyprland (dotfiles-managed)"
+if [ -f "$ZPROFILE" ] && grep -qF "$START_HYPR_MARKER" "$ZPROFILE"; then
+    sed -i "/^${START_HYPR_MARKER}\$/,/^fi\$/d" "$ZPROFILE"
+    echo -e "${GREEN}✓ Removed Hyprland autostart from ~/.zprofile${NC}"
 fi
 
 # Remove symlinks
