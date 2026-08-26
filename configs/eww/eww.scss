@@ -39,8 +39,8 @@
 
 .bar-active-window {
     font-size: 11px;
-    font-weight: 300;
-    color: #6b6b6b;
+    font-weight: 400;
+    color: #8a8a8a;
     letter-spacing: 0.05em;
     padding: 10px 0 8px;
     min-width: 36px;
@@ -158,8 +158,8 @@
 
 .bar-small-label {
     font-size: 10px;
-    font-weight: 300;
-    color: #4a4a4a;
+    font-weight: 400;
+    color: #8a8a8a;
     letter-spacing: 0.04em;
 }
 
@@ -191,8 +191,8 @@
 
 .bar-day {
     font-size: 11px;
-    font-weight: 300;
-    color: #6b6b6b;
+    font-weight: 400;
+    color: #8a8a8a;
     letter-spacing: 0.08em;
     margin-bottom: 10px;
 }
@@ -249,8 +249,8 @@
 
 .qm-date {
     font-size: 13px;
-    font-weight: 300;
-    color: #6b6b6b;
+    font-weight: 400;
+    color: #8a8a8a;
     letter-spacing: 0.02em;
     margin-top: 3px;
 }
@@ -320,8 +320,8 @@
 .qm-slider-value {
     font-family: "Geist Mono", monospace;
     font-size: 11px;
-    font-weight: 400;
-    color: #6b6b6b;
+    font-weight: 500;
+    color: #d6d6d6;
     min-width: 30px;
     letter-spacing: 0.04em;
 }
@@ -351,8 +351,8 @@
 
 .qm-media-artist {
     font-size: 13px;
-    font-weight: 300;
-    color: #6b6b6b;
+    font-weight: 400;
+    color: #8a8a8a;
     letter-spacing: 0;
 }
 
@@ -388,23 +388,23 @@
 
 .qm-connectivity-label {
     font-size: 13px;
-    font-weight: 300;
-    color: #8a8a8a;
+    font-weight: 400;
+    color: #d6d6d6;
 }
 
 /* SYSTEM STATS */
 
 .qm-system-label {
     font-size: 13px;
-    font-weight: 300;
-    color: #8a8a8a;
+    font-weight: 400;
+    color: #d6d6d6;
 }
 
 .qm-system-value {
     font-family: "Geist Mono", monospace;
     font-size: 12px;
-    font-weight: 400;
-    color: #6b6b6b;
+    font-weight: 500;
+    color: #d6d6d6;
     min-width: 36px;
     margin-left: 4px;
     letter-spacing: 0.02em;
@@ -439,7 +439,7 @@
 
 .qm-cal calendar {
     background: transparent;
-    color: #6b6b6b;
+    color: #d6d6d6;
     font-size: 12px;
 }
 
@@ -468,7 +468,7 @@
 }
 
 .qm-cal calendar .day-name {
-    color: #4a4a4a;
+    color: #8a8a8a;
     font-size: 11px;
     letter-spacing: 0.04em;
 }
