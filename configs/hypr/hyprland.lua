@@ -258,7 +258,7 @@ hl.config({
         inactive_opacity = 0.95,
         dim_inactive = true,
         dim_strength = 0.1,
-        rounding = 6,
+        rounding = 8,
     },
 
     dwindle = {
