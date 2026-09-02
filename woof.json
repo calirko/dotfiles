@@ -16,11 +16,12 @@
     "wofi",
     "eww",
     "ttf-jetbrains-mono-nerd",
+    "ttf-geist-variable",
+    "ttf-geist-mono-variable",
     "xdg-desktop-portal-hyprland",
     "hyprshot",
     "pipewire",
     "wireplumber",
-    "xdg-desktop-portal-hyprland",
     "xdg-desktop-portal-gtk",
     "hyprpicker",
     "adw-gtk-theme",
@@ -35,6 +36,10 @@
     "pulsemixer",
     "grim",
     "slurp",
-    "bluez-utils"
+    "bluez-utils",
+    "zsh",
+    "zen-browser-bin",
+    "hyprpaper",
+    "oh-my-zsh-git"
   ]
 }

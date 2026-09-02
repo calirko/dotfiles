@@ -56,6 +56,22 @@ if [ -f "$ZPROFILE" ] && grep -qF "$START_HYPR_MARKER" "$ZPROFILE"; then
     echo -e "${GREEN}✓ Removed Hyprland autostart from ~/.zprofile${NC}"
 fi
 
+# Remove PATH block from ~/.zshenv (mirror of install.sh)
+ZSHENV="$HOME/.zshenv"
+LOCAL_BIN_MARKER="# local-bin-path (dotfiles-managed)"
+if [ -f "$ZSHENV" ] && grep -qF "$LOCAL_BIN_MARKER" "$ZSHENV"; then
+    sed -i "/^${LOCAL_BIN_MARKER}\$/d;\@^export PATH=\"\$HOME/.local/bin:\$PATH\"\$@d" "$ZSHENV"
+    echo -e "${GREEN}✓ Removed PATH block from ~/.zshenv${NC}"
+fi
+
+# Remove oh-my-zsh block from ~/.zshrc (mirror of install.sh)
+ZSHRC="$HOME/.zshrc"
+OMZ_MARKER="# oh-my-zsh (dotfiles-managed)"
+if [ -f "$ZSHRC" ] && grep -qF "$OMZ_MARKER" "$ZSHRC"; then
+    sed -i "/^${OMZ_MARKER}\$/,/^source \$ZSH\/oh-my-zsh.sh\$/d" "$ZSHRC"
+    echo -e "${GREEN}✓ Removed oh-my-zsh block from ~/.zshrc${NC}"
+fi
+
 # Remove symlinks
 for config in "${CONFIGS[@]}"; do
     target="$CONFIG_DIR/$config"

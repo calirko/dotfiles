@@ -95,6 +95,54 @@ for config in "${CONFIGS[@]}"; do
     fi
 done
 
+# zen-browser: userChrome.css must live inside the active profile's chrome/
+# dir, not at ~/.config/zen itself -- that root is the whole browser profile
+# (cookies, logins, history), so symlinking over it like the CONFIGS loop
+# above would destroy it. Only touch the one file, inside whichever profile
+# the browser actually launches by default.
+ZEN_CONFIG_DIR="$CONFIG_DIR/zen"
+ZEN_SOURCE="$REPO_DIR/configs/zen/userChrome.css"
+if [ -f "$ZEN_SOURCE" ] && [ -d "$ZEN_CONFIG_DIR" ]; then
+    ZEN_PROFILE=$(grep -m1 '^Default=' "$ZEN_CONFIG_DIR/installs.ini" 2>/dev/null | cut -d= -f2-)
+    if [ -z "$ZEN_PROFILE" ]; then
+        ZEN_PROFILE=$(awk -F= '/^Path=/{print $2; exit}' "$ZEN_CONFIG_DIR/profiles.ini" 2>/dev/null)
+    fi
+
+    if [ -n "$ZEN_PROFILE" ] && [ -d "$ZEN_CONFIG_DIR/$ZEN_PROFILE" ]; then
+        mkdir -p "$ZEN_CONFIG_DIR/$ZEN_PROFILE/chrome"
+        ZEN_TARGET="$ZEN_CONFIG_DIR/$ZEN_PROFILE/chrome/userChrome.css"
+        if [ -L "$ZEN_TARGET" ] && [ "$(readlink "$ZEN_TARGET")" = "$ZEN_SOURCE" ]; then
+            echo -e "${GREEN}✓ zen userChrome.css already linked${NC}"
+        else
+            rm -f "$ZEN_TARGET"
+            ln -s "$ZEN_SOURCE" "$ZEN_TARGET"
+            echo -e "${GREEN}✓ Linked zen userChrome.css${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⊘ Could not determine zen-browser's default profile, skipping userChrome.css${NC}"
+    fi
+else
+    echo -e "${YELLOW}⊘ zen-browser has no profile yet (launch it once first), skipping userChrome.css${NC}"
+fi
+
+# Switch default shell to zsh (the .zprofile autostart block below is only
+# read on login by zsh -- bash never sources .zprofile).
+echo ""
+ZSH_PATH="$(command -v zsh || true)"
+CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+if [ -z "$ZSH_PATH" ]; then
+    echo -e "${YELLOW}⊘ zsh not installed, skipping default shell switch${NC}"
+elif [ "$CURRENT_SHELL" = "$ZSH_PATH" ]; then
+    echo -e "${GREEN}✓ Default shell already zsh${NC}"
+else
+    echo -e "${YELLOW}Switching default shell to zsh...${NC}"
+    if chsh -s "$ZSH_PATH"; then
+        echo -e "${GREEN}✓ Default shell set to zsh (takes effect next login)${NC}"
+    else
+        echo -e "${YELLOW}⊘ Failed to switch shell — run 'chsh -s $ZSH_PATH' manually${NC}"
+    fi
+fi
+
 # raccoon: lid switch handling (laptop-only, requires sudo for logind drop-in)
 # Lid close/open itself is handled natively inside hyprland.lua via switch
 # bindings — this just stops systemd-logind from also acting on the lid
@@ -127,6 +175,42 @@ if ! grep -qF "$START_HYPR_MARKER" "$ZPROFILE" 2>/dev/null; then
     echo -e "${GREEN}✓ Added Hyprland autostart to ~/.zprofile${NC}"
 else
     echo -e "${GREEN}✓ ~/.zprofile already configured for Hyprland autostart${NC}"
+fi
+
+# Put ~/.local/bin on PATH for zsh. .zprofile above only runs on the tty1
+# login shell (which immediately execs into Hyprland), so every other zsh
+# instance -- kitty, etc. -- is a non-login shell that reads .zshenv, not
+# .zprofile. Without this, tools installed to ~/.local/bin (like the claude
+# CLI) are invisible outside of bash.
+ZSHENV="$HOME/.zshenv"
+LOCAL_BIN_MARKER="# local-bin-path (dotfiles-managed)"
+if ! grep -qF "$LOCAL_BIN_MARKER" "$ZSHENV" 2>/dev/null; then
+    {
+        echo "$LOCAL_BIN_MARKER"
+        echo 'export PATH="$HOME/.local/bin:$PATH"'
+    } >> "$ZSHENV"
+    echo -e "${GREEN}✓ Added ~/.local/bin to PATH in ~/.zshenv${NC}"
+else
+    echo -e "${GREEN}✓ ~/.zshenv already configured for PATH${NC}"
+fi
+
+# oh-my-zsh (installed system-wide via the oh-my-zsh-git AUR package, not
+# the usual per-user curl installer) -- wire it up from ~/.zshrc.
+ZSHRC="$HOME/.zshrc"
+OMZ_MARKER="# oh-my-zsh (dotfiles-managed)"
+if [ -d /usr/share/oh-my-zsh ] && ! grep -qF "$OMZ_MARKER" "$ZSHRC" 2>/dev/null; then
+    {
+        echo "$OMZ_MARKER"
+        echo 'export ZSH=/usr/share/oh-my-zsh'
+        echo 'ZSH_THEME="robbyrussell"'
+        echo 'plugins=(git)'
+        echo 'source $ZSH/oh-my-zsh.sh'
+    } >> "$ZSHRC"
+    echo -e "${GREEN}✓ Added oh-my-zsh to ~/.zshrc${NC}"
+elif [ -d /usr/share/oh-my-zsh ]; then
+    echo -e "${GREEN}✓ ~/.zshrc already configured for oh-my-zsh${NC}"
+else
+    echo -e "${YELLOW}⊘ oh-my-zsh-git not installed, skipping ~/.zshrc setup${NC}"
 fi
 
 echo -e "${GREEN}Done!${NC}"
