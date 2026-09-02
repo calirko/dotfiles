@@ -141,11 +141,15 @@
         :class "qm-media-title"
         :halign "start"
         :truncate true
+        :limit-width 30
+        :width 268
         :text {media-data.title})
       (label
         :class "qm-media-artist"
         :halign "start"
         :truncate true
+        :limit-width 30
+        :width 268
         :text {media-data.artist}))
 
     ; Controls
@@ -169,10 +173,10 @@
       (image
         :path {audio-data.mute == "true"
           ? "icons/speaker-simple-x.svg"
-          : (audio-data.volume ?: 0) < 30
-          ? "icons/speaker-simple-low.svg"
+          : (audio-data.volume ?: 0) == 0
+          ? "icons/speaker-simple-none.svg"
           : (audio-data.volume ?: 0) < 50
-          ? "icons/speaker-simple-medium.svg"
+          ? "icons/speaker-simple-low.svg"
           : "icons/speaker-simple-high.svg"}
         :image-width 14 :image-height 14)
       (scale
