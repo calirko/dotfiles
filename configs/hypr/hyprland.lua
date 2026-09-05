@@ -9,6 +9,7 @@ local fileManager = "nautilus"
 local menu        = "wofi --style ~/.config/wofi/style.css --allow-images --show drun"
 local browser     = "zen-browser"
 local ide         = "zeditor"
+local kbLayout    = hostname == "shark" and "br" or "us"
 
 -- functions
 
@@ -290,7 +291,7 @@ hl.config({
     },
 
     input = {
-        kb_layout = "us",
+        kb_layout = kbLayout,
         follow_mouse = 1,
         accel_profile = "flat",
         sensitivity = 0,
