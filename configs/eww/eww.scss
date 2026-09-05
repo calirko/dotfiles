@@ -37,6 +37,17 @@
     background: rgba(255, 255, 255, 0.10);
 }
 
+/* LAPTOP PANEL: bar renders a bit small at eDP-1's native scale, so bump
+   the sidebar width slightly when the bar is on the laptop screen. */
+
+.bar-laptop,
+.bar-laptop .bar-active-window,
+.bar-laptop .ws-btn,
+.bar-laptop .bar-icon-btn,
+.bar-laptop .bar-menu-btn {
+    min-width: 42px;
+}
+
 .bar-active-window {
     font-size: 11px;
     font-weight: 400;
@@ -153,7 +164,7 @@
     background: #f5f5f5;
 }
 .battery-charging progress {
-    background: #d6d6d6;
+    background: #b9c9b9;
 }
 
 .bar-small-label {

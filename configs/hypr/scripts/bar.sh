@@ -85,6 +85,9 @@ reopen_bar() {
     screen=$(get_bar_screen)
     echo "$screen" > "$BAR_SCREEN_FILE"
 
+    local on_laptop="false"
+    [[ "$target" == eDP-1 ]] && on_laptop="true"
+
     # No usable monitor info (not on Hyprland / no jq): best-effort open, done.
     if [[ -z "$target" ]]; then
       eww open bar --screen "${screen:-0}" 2>/dev/null || true
@@ -96,7 +99,7 @@ reopen_bar() {
 
     eww close bar 2>/dev/null || true
     sleep 0.3
-    eww open bar --screen "$screen" 2>/dev/null || true
+    eww open bar --screen "$screen" --arg on_laptop="$on_laptop" 2>/dev/null || true
     sleep 0.5
 
     # Verify it actually landed where we wanted; if so we're done, else retry

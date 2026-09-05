@@ -125,9 +125,9 @@
 ; BAR LAYOUT
 ; ─────────────────────────────────────────────
 
-(defwidget bar []
+(defwidget bar [?on_laptop]
   (box
-    :class "bar"
+    :class "bar ${on_laptop == "true" ? "bar-laptop" : ""}"
     :orientation "v"
     :space-evenly false
     :hexpand false
@@ -167,15 +167,15 @@
 ; BAR WINDOW
 ; ─────────────────────────────────────────────
 
-(defwindow bar
+(defwindow bar [?on_laptop]
   :monitor 0
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "36px"
+    :width "${on_laptop == "true" ? "42" : "36"}px"
     :height "100%"
     :anchor "left center")
   :stacking "fg"
   :exclusive true
   :namespace "eww-bar"
-  (bar))
+  (bar :on_laptop on_laptop))

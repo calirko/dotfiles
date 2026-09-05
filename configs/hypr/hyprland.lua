@@ -126,14 +126,27 @@ if hostname == "raccoon" then
     hl.bind("switch:on:Lid Switch", handle_lid_close, { locked = true })
     hl.bind("switch:off:Lid Switch", handle_lid_open, { locked = true })
 
-    hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
-    hl.workspace_rule({ monitor = "DP-1", workspace = "2" })
-    hl.workspace_rule({ monitor = "DP-1", workspace = "3" })
-    hl.workspace_rule({ monitor = "DP-1", workspace = "4" })
-    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "5", default = true })
-    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "6" })
-    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "7" })
-    hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "8" })
+    -- Workspaces 1-8 are statically bound to the external monitors. That
+    -- binding holds even while those monitors are disconnected, so on a
+    -- laptop-only boot (no DP-1/HDMI-A-1) Hyprland can't place anything on
+    -- 1-8 and falls through to the next free id (observed: workspace 9).
+    -- Give eDP-1 its own bound range only when no external monitor is
+    -- present, so a laptop-only session starts on workspace 1 instead.
+    if external_monitor_connected() then
+        hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
+        hl.workspace_rule({ monitor = "DP-1", workspace = "2" })
+        hl.workspace_rule({ monitor = "DP-1", workspace = "3" })
+        hl.workspace_rule({ monitor = "DP-1", workspace = "4" })
+        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "5", default = true })
+        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "6" })
+        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "7" })
+        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "8" })
+    else
+        hl.workspace_rule({ monitor = "eDP-1", workspace = "1", default = true })
+        hl.workspace_rule({ monitor = "eDP-1", workspace = "2" })
+        hl.workspace_rule({ monitor = "eDP-1", workspace = "3" })
+        hl.workspace_rule({ monitor = "eDP-1", workspace = "4" })
+    end
 
 
     hl.config({
@@ -222,6 +235,7 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/vpn-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bluetooth-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/power-tweaks.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/battery-notify.sh"))
     hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/media-rpc"))
 end)
 

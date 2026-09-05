@@ -15,7 +15,7 @@ while true; do
     current=$(_active_vpn)
 
     if [[ -z "$current" && -n "$last" ]]; then
-        notify-send -i "network-vpn" -u critical -t 8000 \
+        notify-send -i "network-vpn" -t 8000 \
             "VPN" "Disconnected from $last"
     elif [[ -n "$current" && -z "$last" ]]; then
         notify-send -i "network-vpn" -t 5000 \

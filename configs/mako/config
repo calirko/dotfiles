@@ -15,7 +15,7 @@ margin=6,6,6,6
 outer-margin=6,6,6,0
 width=340
 font=Geist Mono 12
-format=<b>%s</b>\n<span size="small">%b</span>
+format=<b>%s</b>\n%b
 
 # ── Icons ────────────────────────────────
 icons=1
