@@ -213,4 +213,20 @@ else
     echo -e "${YELLOW}⊘ oh-my-zsh-git not installed, skipping ~/.zshrc setup${NC}"
 fi
 
+# xdg-user-dirs: (re)generate ~/.config/user-dirs.dirs so GIO/Nautilus know
+# which folders are Documents/Downloads/Pictures/etc. and give them themed
+# icons instead of the generic folder icon. Missing this file is what causes
+# bookmarked/home folders to show the wrong icons in Nautilus.
+echo ""
+if command -v xdg-user-dirs-update >/dev/null 2>&1; then
+    xdg-user-dirs-update
+    echo -e "${GREEN}✓ Updated ~/.config/user-dirs.dirs${NC}"
+    if pgrep -x nautilus >/dev/null 2>&1; then
+        killall nautilus
+        echo -e "${GREEN}✓ Restarted Nautilus to pick up folder icons${NC}"
+    fi
+else
+    echo -e "${YELLOW}⊘ xdg-user-dirs-update not found, skipping${NC}"
+fi
+
 echo -e "${GREEN}Done!${NC}"
