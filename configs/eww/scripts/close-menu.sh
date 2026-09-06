@@ -2,4 +2,7 @@
 
 set -euo pipefail
 
-eww close menu_overlay || true
+(
+  flock -n 9 || exit 0
+  eww close menu_scrim menu_overlay || true
+) 9>/tmp/eww-menu.lock

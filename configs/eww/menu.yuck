@@ -2,7 +2,27 @@
 ; QUICK MENU — menu.yuck
 ; ─────────────────────────────────────────────
 
-; ── Single overlay window: scrim + panel merged so they can never desync
+; ── Two windows opened/closed together (see toggle-menu.sh / close-menu.sh):
+; the scrim gets its own blurred layer that just fades in place, while the
+; panel keeps a separate layer so it can still slide in from the edge.
+
+(defwindow menu_scrim
+  :monitor 0
+  :geometry (geometry
+    :x "0px"
+    :y "0px"
+    :width "100%"
+    :height "100%"
+    :anchor "left center")
+  :stacking "fg"
+  :namespace "eww-menu-scrim"
+  (eventbox
+    :onclick "scripts/close-menu.sh &"
+    :onrightclick "scripts/close-menu.sh &"
+    :onmiddleclick "scripts/close-menu.sh &"
+    :hexpand true
+    :vexpand true
+    (box :class "scrim-box" :hexpand true :vexpand true)))
 
 (defwindow menu_overlay
   :monitor 0
@@ -20,15 +40,9 @@
   (box
     :orientation "h"
     :space-evenly false
+    :halign "end"
     :hexpand true
     :vexpand true
-    (eventbox
-      :onclick "scripts/close-menu.sh &"
-      :onrightclick "scripts/close-menu.sh &"
-      :onmiddleclick "scripts/close-menu.sh &"
-      :hexpand true
-      :vexpand true
-      (box :class "scrim-box" :hexpand true :vexpand true))
     (quick-menu-content)))
 
 ; ── Panel content
@@ -122,12 +136,12 @@
     :visible {media-data.title != ""}
 
     ; Cover art
-    (box :class "qm-media-art-wrap" :halign "fill"
+    (box :class "qm-media-art-wrap" :halign "center"
       (image
         :class "qm-media-art"
         :path {media-data.art != "" ? media-data.art : ""}
-        :image-width 268
-        :image-height 268
+        :image-width 190
+        :image-height 190
         :visible {media-data.art != ""}
         :preserve-aspect-ratio true)
       (box

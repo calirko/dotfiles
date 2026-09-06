@@ -340,7 +340,7 @@
 /* MEDIA */
 
 .qm-media-art-wrap {
-    min-height: 268px;
+    min-height: 190px;
 }
 
 .qm-media-art {
@@ -348,7 +348,8 @@
 }
 
 .qm-media-art-placeholder {
-    min-height: 268px;
+    min-width: 190px;
+    min-height: 190px;
     background: #1a1a1a;
     border-radius: 6px;
 }

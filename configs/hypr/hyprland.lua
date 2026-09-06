@@ -268,6 +268,9 @@ hl.config({
         },
         blur = {
             enabled = true,
+            size = 10,
+            passes = 3,
+            new_optimizations = true,
         },
         inactive_opacity = 0.95,
         dim_inactive = true,
@@ -375,9 +378,31 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tru
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 
 
+local sidebarBlur = true -- toggle blur behind the eww quick-menu sidebar (win+/ / bar button)
+
+-- Explicit z-order within the `top` layer. Without this the order depends on
+-- which window eww happens to map first, so the scrim could land on top of the
+-- panel. Hyprland sorts layers by `order` descending, so a HIGHER number sits
+-- further BACK: scrim (3) is behind the bar (2), which is behind the panel (1).
+-- Keeping the bar in front of the scrim also leaves it out of the blur pass, so
+-- its icons stay crisp instead of being half-blurred where the scrim overlaps.
+
+hl.layer_rule({
+    match = { namespace = "eww-menu-scrim" },
+    animation = "fade",
+    blur = sidebarBlur,
+    order = 3,
+})
+
 hl.layer_rule({
     match = { namespace = "eww-menu" },
     animation = "slide right",
+    order = 1,
+})
+
+hl.layer_rule({
+    match = { namespace = "eww-bar" },
+    order = 2,
 })
 
 hl.window_rule({
