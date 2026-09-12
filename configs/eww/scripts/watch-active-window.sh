@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # watch-active-window.sh
 
-SIG="${HYPRLAND_INSTANCE_SIGNATURE:-$(ls /run/user/1000/hypr/ 2>/dev/null | grep -v '\.lock' | head -1)}"
-SOCK="/run/user/1000/hypr/${SIG}/.socket2.sock"
+EVENTS="$(dirname "$0")/hypr-events.sh"
 
 # Window classes are app-ids, not display names: reverse-DNS ("dev.zed.Zed")
 # or lowercase slugs ("zen", "zen-browser"). Map the common ones to what the
@@ -57,7 +56,7 @@ emit_deduped() {
 
 emit_deduped
 
-socat -u UNIX-CONNECT:"$SOCK" STDOUT | while IFS= read -r line; do
+"$EVENTS" | while IFS= read -r line; do
   event="${line%%>>*}"
   case "$event" in
     activewindowv2|closewindow)

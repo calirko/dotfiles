@@ -324,7 +324,7 @@ Kitty/foot bg                #0d0d0d
 Kitty/foot fg                #d6d6d6
 Kitty cursor                 #ebebeb
 Kitty selection bg           #2e2e2e
-Rofi/Wofi panel bg           #1a1a1a
+Rofi/Wofi panel bg           #2e2e2e
 Rofi/Wofi selected bg        #262626
 Rofi/Wofi selected fg        #ebebeb
 Mako/Dunst bg                #1f1f1f

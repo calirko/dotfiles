@@ -1,12 +1,12 @@
 [StreamInputs]
-inputDevice=bluez_input.84:D3:52:7C:A8:38
+inputDevice=alsa_input.usb-3142_Fifine_Microphone-00.mono-fallback
 
 [StreamOutputs]
 outputDevice=bluez_output.84_D3_52_7C_A8_38.1
-plugins=equalizer#0,bass_enhancer#0,limiter#0
+plugins=equalizer#0
 visiblePage=pluginsPage
 visiblePlugin=equalizer#0
 
 [Window]
 height=1068
-width=931
+width=1274

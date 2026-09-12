@@ -6,7 +6,7 @@ f:close()
 
 local terminal    = "kitty"
 local fileManager = "nautilus"
-local menu        = "wofi --style ~/.config/wofi/style.css --allow-images --show drun"
+local menu        = "~/.config/hypr/scripts/wofi.sh --style ~/.config/wofi/style.css --allow-images --show drun"
 local browser     = "zen-browser"
 local ide         = "zeditor"
 local kbLayout    = hostname == "shark" and "br" or "us"
@@ -276,7 +276,7 @@ hl.config({
         inactive_opacity = 0.95,
         dim_inactive = true,
         dim_strength = 0.1,
-        rounding = 8,
+        rounding = 9,
     },
 
     dwindle = {
@@ -305,6 +305,13 @@ hl.config({
 hl.curve("snappy", { type = "bezier", points = { { 0.18, 1 }, { 0.18, 1 } } })
 hl.curve("instant", { type = "bezier", points = { { 0.1, 0.9 }, { 0.1, 1 } } })
 hl.curve("slide", { type = "bezier", points = { { 0.25, 1 }, { 0.25, 1 } } })
+-- Layer exits and fades. "instant" front-loads ~90% of the motion into the
+-- first frames, so closing layers (quick menu + blur, wofi, mako, OSD) looked
+-- like a cut. "exit" (ease-in) drives slides out; "smooth" (ease-in-out)
+-- drives layer fades both ways, which is what the blur scrims ride on.
+-- Global on purpose: layer rules can only pick a style, not curve or speed.
+hl.curve("exit", { type = "bezier", points = { { 0.4, 0 }, { 1, 1 } } })
+hl.curve("smooth", { type = "bezier", points = { { 0.4, 0 }, { 0.2, 1 } } })
 
 hl.animation({ leaf = "global", enabled = true, speed = 1, bezier = "default" })
 hl.animation({ leaf = "windows", enabled = true, speed = 2.2, bezier = "snappy" })
@@ -316,9 +323,9 @@ hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.5, bezier = "instant"
 hl.animation({ leaf = "fade", enabled = true, speed = 2, bezier = "instant" })
 hl.animation({ leaf = "layers", enabled = true, speed = 2, bezier = "snappy" })
 hl.animation({ leaf = "layersIn", enabled = true, speed = 2, bezier = "snappy", style = "slide" })
-hl.animation({ leaf = "layersOut", enabled = true, speed = 1.5, bezier = "instant", style = "slide" })
-hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 1.5, bezier = "instant" })
-hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.2, bezier = "instant" })
+hl.animation({ leaf = "layersOut", enabled = true, speed = 2, bezier = "exit", style = "slide" })
+hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 2, bezier = "smooth" })
+hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 2, bezier = "smooth" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "slide", style = "slide" })
 hl.animation({ leaf = "workspacesIn", enabled = true, speed = 2.5, bezier = "slide", style = "slide" })
 hl.animation({ leaf = "workspacesOut", enabled = true, speed = 2, bezier = "instant", style = "slide" })
@@ -341,7 +348,7 @@ hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("pgrep -x wofi > /dev/null || " .. me
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + space", hl.dsp.exec_cmd("~/.config/eww/scripts/kb-layout-toggle.sh"))
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("cliphist list | ~/.config/hypr/scripts/wofi.sh --dmenu | cliphist decode | wl-copy"))
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-select.sh"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"))
@@ -389,7 +396,7 @@ local sidebarBlur = true -- toggle blur behind the eww quick-menu sidebar (win+/
 -- its icons stay crisp instead of being half-blurred where the scrim overlaps.
 
 hl.layer_rule({
-    match = { namespace = "eww-menu-scrim" },
+    match = { namespace = "^eww-(menu|wofi)-scrim$" },
     animation = "fade",
     blur = sidebarBlur,
     order = 3,
@@ -401,9 +408,22 @@ hl.layer_rule({
     order = 1,
 })
 
+-- wofi in front of its blur scrim (hypr/scripts/wofi.sh), same as the panel.
+hl.layer_rule({
+    match = { namespace = "^wofi$" },
+    order = 1,
+})
+
 hl.layer_rule({
     match = { namespace = "eww-bar" },
     order = 2,
+})
+
+-- Screenshot / color-picker overlays (slurp, hyprpicker): no fade at all, or
+-- the eased layer exit above would still be on screen when grim captures.
+hl.layer_rule({
+    match = { namespace = "^(selection|hyprpicker)$" },
+    no_anim = true,
 })
 
 hl.window_rule({

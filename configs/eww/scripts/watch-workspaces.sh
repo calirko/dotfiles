@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
 
-SIG="${HYPRLAND_INSTANCE_SIGNATURE:-$(ls /run/user/1000/hypr/ 2>/dev/null | grep -v '\.lock' | head -1)}"
-SOCK="/run/user/1000/hypr/${SIG}/.socket2.sock"
+EVENTS="$(dirname "$0")/hypr-events.sh"
+
+# The SUPER + S scratch plane (see hyprland.lua). Special workspaces have
+# negative ids, so they're reported separately from the numbered list.
+SPECIAL="special:magic"
 
 get_workspace_data() {
-    workspaces=$(hyprctl workspaces -j | jq -c '[.[] | {id: .id, windows: .windows}] | sort_by(.id)')
+    ws_json=$(hyprctl workspaces -j)
+    workspaces=$(jq -c '[.[] | select(.id > 0) | {id: .id, windows: .windows}] | sort_by(.id)' <<<"$ws_json")
+    special=$(jq -c --arg n "$SPECIAL" --argjson mons "$(hyprctl monitors -j)" \
+        '{windows: ([.[] | select(.name == $n) | .windows] | add // 0), shown: any($mons[]; .specialWorkspace.name == $n)}' <<<"$ws_json")
     active=$(hyprctl activeworkspace -j | jq -c '.id')
-    echo "{\"workspaces\": $workspaces, \"active\": $active}"
+    echo "{\"workspaces\": $workspaces, \"active\": $active, \"special\": $special}"
 }
 
 get_workspace_data
 
-socat -u UNIX-CONNECT:"$SOCK" STDOUT | while IFS= read -r event; do
-    echo "GOT: $event" >&2
+"$EVENTS" | while IFS= read -r event; do
     case "$event" in
-        "workspace>>"*|"createworkspace>>"*|"destroyworkspace>>"*|"openwindow>>"*|"closewindow>>"*|"movewindow>>"*)
+        "workspace>>"*|"createworkspace>>"*|"destroyworkspace>>"*|"openwindow>>"*|"closewindow>>"*|"movewindow>>"*|"activespecial>>"*)
             get_workspace_data
             ;;
     esac
 done
-
-echo "DIED" >&2

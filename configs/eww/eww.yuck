@@ -4,7 +4,7 @@
 
 (deflisten clock-data :initial '{"time":"00:00","date":""}' `scripts/watch-clock.sh`)
 
-(deflisten workspace-data :initial '{"workspaces":[],"active":1}' `scripts/watch-workspaces.sh`)
+(deflisten workspace-data :initial '{"workspaces":[],"active":1,"special":{"windows":0,"shown":false}}' `scripts/watch-workspaces.sh`)
 
 (deflisten weather-data :initial '{"temperature":"","icon":""}' `scripts/watch-weather.sh`)
 
@@ -54,11 +54,31 @@
     :orientation "v"
     :space-evenly false
     :spacing 0
-    (for ws in {workspace-data.workspaces}
-      (button
-        :class "ws-btn ${ws.id == workspace-data.active ? "ws-active" : ws.windows > 0 ? "ws-occupied" : "ws-empty"}"
-        :onclick "hyprctl dispatch workspace ${ws.id}"
-        (label :angle 90 :text "${ws.id}")))))
+    ; SUPER + S special workspace — pinned first so it never moves as
+    ; numbered workspaces come and go. Icon instead of a number: it's not
+    ; part of the regular sequence.
+    (button
+      :class "ws-btn ws-special ${workspace-data.special.shown ? "ws-active" : workspace-data.special.windows > 0 ? "ws-occupied" : "ws-empty"}"
+      :tooltip "Special workspace (SUPER + S)"
+      :onclick "scripts/goto-workspace.sh special:magic &"
+      (image :path "icons/notches.svg" :image-width 16 :image-height 16))
+    ; the `for` lives in its own box: eww lays out a box's literal children
+    ; before loop-generated ones, so a bare sibling button would jump above
+    ; the workspace list instead of trailing it.
+    (box
+      :orientation "v"
+      :space-evenly false
+      :spacing 0
+      (for ws in {workspace-data.workspaces}
+        (button
+          :class "ws-btn ${ws.id == workspace-data.active ? "ws-active" : ws.windows > 0 ? "ws-occupied" : "ws-empty"}"
+          :onclick "scripts/goto-workspace.sh ${ws.id} &"
+          (label :angle 90 :text "${ws.id}"))))
+    (button
+      :class "ws-btn ws-add"
+      :tooltip "Go to the next free workspace"
+      :onclick "scripts/goto-workspace.sh emptym &"
+      (label :angle 90 :text "+"))))
 
 (defwidget bar-mic []
   (box :class "bar-mic-dot ${false ? "mic-active" : "mic-off"}"
@@ -78,8 +98,8 @@
         : (audio-data.volume ?: 0) < 50
         ? "icons/speaker-simple-low.svg"
         : "icons/speaker-simple-high.svg"}
-      :image-width 14
-      :image-height 14)))
+      :image-width 16
+      :image-height 16)))
 
 (defwidget bar-battery []
   (box
@@ -87,7 +107,7 @@
     :orientation "v"
     :visible {battery-data.has_battery == 1}
     :halign "center"
-    :spacing 3
+    :spacing 4
     (progress
       :class "battery-progress ${battery-data.capacity < 20 ? "battery-low" : battery-data.ac == 1 ? "battery-charging" : ""}"
       :orientation "v"
@@ -108,8 +128,9 @@
 
 (defwidget bar-clock []
   (box
+    :class "bar-clock"
     :orientation "v"
-    :halign "center"
+    :halign "fill"
     :spacing 2
     :space-evenly false
     (label :class "bar-time" :angle 90 :text {clock-data.time})
@@ -117,9 +138,9 @@
 
 (defwidget bar-menu-btn []
   (button
-    :class "bar-menu-btn"
+    :class "bar-menu-btn ${menu-open ? "bar-menu-open" : ""}"
     :onclick "scripts/toggle-menu.sh &"
-    (image :path "icons/squares-four.svg" :image-width 13 :image-height 13)))
+    (image :path "icons/squares-four.svg" :image-width 15 :image-height 15)))
 
 ; ─────────────────────────────────────────────
 ; BAR LAYOUT
@@ -132,16 +153,17 @@
     :space-evenly false
     :hexpand false
 
-    ; ── top section: window title + workspaces
+    ; ── top section: workspaces, then window title. Title goes last so its
+    ; changing length never shifts the workspace buttons. No divider between
+    ; them: the + button's border-bottom already separates the two.
     (box
       :class "bar-top"
       :orientation "v"
       :space-evenly false
       :vexpand true
       :valign "start"
-      (bar-active-window)
-      (box :class "bar-divider")
-      (bar-workspaces))
+      (bar-workspaces)
+      (bar-active-window))
 
     ; ── bottom section: status + menu
     (box
@@ -154,7 +176,7 @@
             :class "systray"
             :orientation "v"
             :space-evenly true
-            :icon-size 15)
+            :icon-size 17)
       (box :class "bar-divider")
       (bar-volume)
       (bar-battery)
@@ -172,7 +194,7 @@
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "${on_laptop == "true" ? "42" : "36"}px"
+    :width "${on_laptop == "true" ? "52" : "44"}px"
     :height "100%"
     :anchor "left center")
   :stacking "fg"

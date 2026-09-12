@@ -16,4 +16,4 @@ fi
 hyprctl eval "hl.config({ input = { kb_layout = \"$NEW_LAYOUT\" } })"
 
 # Send a notification (optional)
-notify-send "Keyboard Layout" "Changed to: $NEW_LAYOUT" -t 1000
+notify-send -i "$HOME/.config/eww/icons/keyboard.svg" -t 1000 "Keyboard Layout" "Changed to: $NEW_LAYOUT"

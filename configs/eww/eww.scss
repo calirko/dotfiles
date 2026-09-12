@@ -23,7 +23,7 @@
 .bar {
     background: #000000;
     /* border-right: 1px solid rgba(255, 255, 255, 0.06); */
-    min-width: 36px;
+    min-width: 44px;
     font-family: "Geist Mono", monospace;
 }
 
@@ -33,7 +33,7 @@
 
 .bar-divider {
     min-height: 1px;
-    min-width: 24px;
+    min-width: 30px;
     background: rgba(255, 255, 255, 0.10);
 }
 
@@ -45,16 +45,16 @@
 .bar-laptop .ws-btn,
 .bar-laptop .bar-icon-btn,
 .bar-laptop .bar-menu-btn {
-    min-width: 42px;
+    min-width: 52px;
 }
 
 .bar-active-window {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 400;
     color: #8a8a8a;
     letter-spacing: 0.05em;
-    padding: 10px 0 8px;
-    min-width: 36px;
+    padding: 12px 0 10px;
+    min-width: 44px;
 }
 
 /* WORKSPACES */
@@ -62,9 +62,9 @@
 .ws-btn {
     all: unset;
     border-radius: 0px;
-    min-width: 36px;
-    min-height: 32px;
-    font-size: 11px;
+    min-width: 44px;
+    min-height: 40px;
+    font-size: 13px;
     font-weight: 400;
     color: #6b6b6b;
     letter-spacing: 0.04em;
@@ -72,7 +72,7 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
     label {
-        font-size: 11px;
+        font-size: 13px;
         color: #6b6b6b;
     }
 
@@ -103,11 +103,31 @@
     }
 }
 
+/* "+" - always-visible jump to the next free workspace */
+
+.ws-add {
+    label {
+        color: #4a4a4a;
+        font-size: 15px;
+    }
+
+    &:hover label {
+        color: #8a8a8a;
+    }
+}
+
+/* SUPER + S special workspace: state comes from the shared ws-btn
+   hover / ws-active backgrounds; the icon itself is a baked #8a8a8a svg. */
+
+.ws-special image {
+    all: unset;
+}
+
 /* STATUS ICON BUTTONS */
 
 .bar-icon-btn {
-    min-width: 36px;
-    min-height: 32px;
+    min-width: 44px;
+    min-height: 40px;
     transition: background-color 150ms ease;
 
     image {
@@ -137,18 +157,18 @@
 /* BATTERY */
 
 .bar-battery {
-    min-width: 36px;
-    padding-top: 8px;
-    padding-bottom: 4px;
+    min-width: 44px;
+    padding-top: 10px;
+    padding-bottom: 5px;
 }
 
 .battery-progress {
-    padding-right: 16px;
+    padding-right: 20px;
 }
 
 .battery-progress trough {
     min-width: 2px;
-    min-height: 30px;
+    min-height: 37px;
     background: #1a1a1a;
     border-radius: 1px;
 }
@@ -168,7 +188,7 @@
 }
 
 .bar-small-label {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
     color: #8a8a8a;
     letter-spacing: 0.04em;
@@ -191,28 +211,37 @@
 
 /* CLOCK */
 
+/* One surface step up from the bar (g-000 -> g-100) so the clock block
+   reads as its own panel instead of floating on the bar background.
+   Full-bleed: no radius or side margin, so it spans the bar edge to edge. */
+.bar-clock {
+    background: #0d0d0d;
+    border-radius: 0;
+    margin: 0;
+}
+
 .bar-time {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
     color: #8a8a8a;
     letter-spacing: 0.08em;
-    margin: 4px 0;
-    margin-top: 10px;
+    margin: 5px 0;
+    margin-top: 12px;
 }
 
 .bar-day {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 400;
     color: #8a8a8a;
     letter-spacing: 0.08em;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 /* MENU BUTTON */
 
 .bar-menu-btn {
-    min-width: 36px;
-    min-height: 32px;
+    min-width: 44px;
+    min-height: 40px;
     transition: background-color 150ms ease;
 
     image {
@@ -224,6 +253,15 @@
     }
     &:active {
         background: #1a1a1a;
+    }
+
+    /* quick menu open: same step as the active workspace button */
+    &.bar-menu-open {
+        background: #1f1f1f;
+
+        &:hover {
+            background: #262626;
+        }
     }
 }
 
@@ -343,15 +381,22 @@
     min-height: 190px;
 }
 
+/* Cover art is a background image: GTK3 won't clip an image widget to
+   border-radius, but it does clip backgrounds. */
 .qm-media-art {
-    border-radius: 6px;
+    min-width: 190px;
+    min-height: 190px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .qm-media-art-placeholder {
     min-width: 190px;
     min-height: 190px;
     background: #1a1a1a;
-    border-radius: 6px;
+    border-radius: 9px;
 }
 
 .qm-media-title {
@@ -492,8 +537,8 @@
 /* SYSTRAY */
 
 .systray {
-    padding-top: 10px;
-    margin-bottom: 10px;
+    padding-top: 12px;
+    margin-bottom: 12px;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 

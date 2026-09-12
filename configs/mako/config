@@ -28,6 +28,11 @@ default-timeout=5000
 ignore-timeout=0
 group-by=app-name
 
+# Repeats from one app still collapse into a single card, but without mako's
+# default "(N)" counter on grouped cards.
+[grouped]
+format=<b>%s</b>\n%b
+
 # ── Urgency: low ─────────────────────────
 [urgency=low]
 background-color=#1a1a1a

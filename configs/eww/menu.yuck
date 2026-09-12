@@ -6,6 +6,17 @@
 ; the scrim gets its own blurred layer that just fades in place, while the
 ; panel keeps a separate layer so it can still slide in from the edge.
 
+; Full-screen click catcher; Hyprland blurs what's behind it (layer rule on
+; the eww-*-scrim namespaces).
+(defwidget scrim [onclick]
+  (eventbox
+    :onclick onclick
+    :onrightclick onclick
+    :onmiddleclick onclick
+    :hexpand true
+    :vexpand true
+    (box :class "scrim-box" :hexpand true :vexpand true)))
+
 (defwindow menu_scrim
   :monitor 0
   :geometry (geometry
@@ -16,13 +27,21 @@
     :anchor "left center")
   :stacking "fg"
   :namespace "eww-menu-scrim"
-  (eventbox
-    :onclick "scripts/close-menu.sh &"
-    :onrightclick "scripts/close-menu.sh &"
-    :onmiddleclick "scripts/close-menu.sh &"
-    :hexpand true
-    :vexpand true
-    (box :class "scrim-box" :hexpand true :vexpand true)))
+  (scrim :onclick "scripts/close-menu.sh &"))
+
+; Same scrim behind wofi — opened/closed by hypr/scripts/wofi.sh. A click
+; kills wofi, and the wrapper closes the scrim once wofi is gone.
+(defwindow wofi_scrim
+  :monitor 0
+  :geometry (geometry
+    :x "0px"
+    :y "0px"
+    :width "100%"
+    :height "100%"
+    :anchor "left center")
+  :stacking "fg"
+  :namespace "eww-wofi-scrim"
+  (scrim :onclick "pkill -x wofi &"))
 
 (defwindow menu_overlay
   :monitor 0
@@ -36,13 +55,26 @@
   :namespace "eww-menu"
   (menu-overlay-content))
 
+; Whether the menu is open — set by toggle-menu.sh / close-menu.sh so the
+; bar's menu button can show an active state.
+(defvar menu-open false)
+
 (defwidget menu-overlay-content []
   (box
     :orientation "h"
     :space-evenly false
-    :halign "end"
     :hexpand true
     :vexpand true
+    ; menu_overlay is full-screen and layered in front of the scrim, so its
+    ; empty area swallows clicks meant for the scrim. This spacer fills that
+    ; area (pushing the panel to the edge) and closes the menu itself.
+    (eventbox
+      :onclick "scripts/close-menu.sh &"
+      :onrightclick "scripts/close-menu.sh &"
+      :onmiddleclick "scripts/close-menu.sh &"
+      :hexpand true
+      :vexpand true
+      (box :hexpand true :vexpand true))
     (quick-menu-content)))
 
 ; ── Panel content
@@ -137,13 +169,11 @@
 
     ; Cover art
     (box :class "qm-media-art-wrap" :halign "center"
-      (image
+      ; painted as a background (not an image widget) so border-radius clips it
+      (box
         :class "qm-media-art"
-        :path {media-data.art != "" ? media-data.art : ""}
-        :image-width 190
-        :image-height 190
         :visible {media-data.art != ""}
-        :preserve-aspect-ratio true)
+        :style "background-image: url('${media-data.art}');")
       (box
         :class "qm-media-art-placeholder"
         :visible {media-data.art == ""}
