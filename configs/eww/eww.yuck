@@ -80,10 +80,6 @@
       :onclick "scripts/goto-workspace.sh emptym &"
       (label :angle 90 :text "+"))))
 
-(defwidget bar-mic []
-  (box :class "bar-mic-dot ${false ? "mic-active" : "mic-off"}"
-       :halign "center"))
-
 (defwidget bar-volume []
   (button
     :class "bar-icon-btn"
@@ -119,12 +115,6 @@
       :class "bar-small-label"
       :angle 90
       :text "${battery-data.capacity}%")))
-
-(defwidget bar-dnd []
-  (button
-    :class "bar-dnd-dot ${mako-paused == "1" ? "dnd-active" : "dnd-off"}"
-    :tooltip {mako-paused == "1" ? "DND on — click to disable" : "DND off — click to enable"}
-    :onclick "makoctl mode -t do-not-disturb &"))
 
 (defwidget bar-clock []
   (box

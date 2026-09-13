@@ -140,11 +140,11 @@
       :onclick "hyprshot -m output --clipboard-only &"
       (image :path "icons/camera.svg" :image-width 15 :image-height 15))
 
-    (button :class "qm-action-btn ${mako-paused == "1" ? "qm-action-active" : ""}"
+    (button :class "qm-action-btn ${mako-paused == "1" ? "qm-action-dnd" : ""}"
       :tooltip {mako-paused == "1" ? "DND on — click to disable" : "DND off — click to enable"}
-      :onclick "makoctl mode -t do-not-disturb &"
+      :onclick "scripts/toggle-dnd.sh &"
       (image
-        :path {mako-paused == "0" ? "icons/bell-simple.svg" : "icons/bell-simple-slash.svg"}
+        :path {mako-paused == "1" ? "icons/red/bell-simple-slash.svg" : "icons/bell-simple.svg"}
         :image-width 15 :image-height 15))
 
     (button :class "qm-action-btn"
@@ -168,7 +168,7 @@
     :visible {media-data.title != ""}
 
     ; Cover art
-    (box :class "qm-media-art-wrap" :halign "center"
+    (box :class "qm-media-art-wrap" :halign "fill"
       ; painted as a background (not an image widget) so border-radius clips it
       (box
         :class "qm-media-art"
@@ -211,6 +211,10 @@
         (image :path "icons/skip-forward.svg" :image-width 14 :image-height 14)))))
 
 ; ── Sliders: volume / brightness / network info
+;
+; :max is 101 because eww builds the GtkAdjustment with a page size of 1, so
+; the top is only reachable at max - 1. :round-digits 0 keeps the value
+; handed to onchange an integer instead of e.g. 99.6.
 
 (defwidget volume-slider []
     (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
@@ -225,9 +229,9 @@
         :image-width 14 :image-height 14)
       (scale
         :class "qm-slider"
-        :min 0 :max 100
+        :min 0 :max 101 :round-digits 0
         :value {audio-data.volume}
-        :onchange "wpctl set-volume @DEFAULT_AUDIO_SINK@ {}% &"
+        :onchange "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ {}% &"
         :orientation "h"
         :hexpand true)
       (label :class "qm-slider-value" :text "${audio-data.volume}%"))
@@ -242,7 +246,7 @@
         :image-width 14 :image-height 14)
       (scale
         :class "qm-slider"
-        :min 0 :max 100
+        :min 0 :max 101 :round-digits 0
         :value {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}
         :onchange "brightnessctl set {}% &"
         :orientation "h"
@@ -266,6 +270,19 @@
 
 ; ── Connectivity: wifi & bluetooth
 
+; One grid cell. limit-width keeps long SSIDs / device names from widening
+; the panel — each column is only ~128px.
+(defwidget qm-conn-item [icon text]
+  (box :orientation "h" :space-evenly false :spacing 8 :hexpand true
+    (image :path icon :image-width 14 :image-height 14)
+    (label
+      :class "qm-connectivity-label"
+      :halign "start"
+      :hexpand true
+      :truncate true
+      :limit-width 13
+      :text text)))
+
 (defwidget qm-connectivity []
   (box
     :class "qm-section qm-connectivity"
@@ -273,51 +290,34 @@
     :space-evenly false
     :spacing 10
 
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      (image
-        :path {network-data.connection == "wifi-strength-4" ? "icons/wifi-high.svg"
+    (box :orientation "h" :space-evenly true :spacing 12
+      (qm-conn-item
+        :icon {network-data.connection == "wifi-strength-4" ? "icons/wifi-high.svg"
           : network-data.connection == "wifi-strength-3" ? "icons/wifi-medium.svg"
           : network-data.connection == "wifi-strength-2" ? "icons/wifi-low.svg"
           : network-data.connection == "wifi-strength-1" ? "icons/wifi-none.svg"
           : network-data.connection == "wifi-strength-0" ? "icons/wifi-none.svg"
           : network-data.connection == "ethernet-connected" ? "icons/network.svg"
           : "icons/wifi-slash.svg"}
-        :image-width 14 :image-height 14)
-      (label
-        :class "qm-connectivity-label"
-        :halign "start"
-        :hexpand true
-        :truncate true
         :text {network-data.connection == "ethernet-connected" ? "Ethernet"
           : network-data.connection == "wifi-offline" ? "Offline"
-          : network-data.ssid != "" ? network-data.ssid : "Wi-Fi"}))
+          : network-data.ssid != "" ? network-data.ssid : "Wi-Fi"})
 
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      (image
-        :path {bluetooth-data.state == "connected" ? "icons/bluetooth-connected.svg"
+      (qm-conn-item
+        :icon {bluetooth-data.state == "connected" ? "icons/bluetooth-connected.svg"
           : bluetooth-data.state == "disabled" ? "icons/bluetooth-x.svg"
           : "icons/bluetooth.svg"}
-        :image-width 14 :image-height 14)
-      (label
-        :class "qm-connectivity-label"
-        :halign "start"
-        :hexpand true
-        :truncate true
         :text {bluetooth-data.state == "connected" && bluetooth-data.device != "" ? bluetooth-data.device
           : bluetooth-data.state == "connected" ? "Connected"
           : bluetooth-data.state == "disabled" ? "Off"
           : "On"}))
 
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      (image
-        :path {network-data.vpn_active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
-        :image-width 14 :image-height 14)
-      (label
-        :class "qm-connectivity-label"
-        :halign "start"
-        :hexpand true
-        :truncate true
-        :text {network-data.vpn_active ? network-data.vpn_name : "VPN off"}))))
+    (box :orientation "h" :space-evenly true :spacing 12
+      (qm-conn-item
+        :icon {network-data.vpn_active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
+        :text {network-data.vpn_active ? network-data.vpn_name : "VPN off"})
+      ; empty cell keeps VPN in the left column
+      (box))))
 
 ; ── System stats: CPU / memory / GPU
 

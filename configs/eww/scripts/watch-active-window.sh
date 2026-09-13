@@ -31,9 +31,10 @@ pretty_name() {
 }
 
 emit() {
-  local class title
-  class=$(hyprctl activewindow -j 2>/dev/null | jq -r '.class // ""')
-  title=$(hyprctl activewindow -j 2>/dev/null | jq -r '.title // ""')
+  local win class title
+  win=$(hyprctl activewindow -j 2>/dev/null)
+  class=$(jq -r '.class // ""' <<<"$win")
+  title=$(jq -r '.title // ""' <<<"$win")
   if [[ -z "$class" && -z "$title" ]]; then
     echo ""
   elif [[ -n "$class" ]]; then

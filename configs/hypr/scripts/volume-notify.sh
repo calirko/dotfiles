@@ -14,8 +14,5 @@ case "$action" in
         ;;
 esac
 
-muted=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q '\[MUTED\]' && echo yes || echo no)
-volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{printf "%d", $2 * 100}')
-
 # eww OSD
 ~/.config/hypr/scripts/osd-show.sh osd-volume 2.5

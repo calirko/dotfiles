@@ -220,8 +220,8 @@ hl.on("monitor.removed", function()
 end)
 
 hl.on("hyprland.start", function()
-    hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface monospace-font-name 'Geist Font Mono 11'"))
-    hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface font-name 'Geist Font 11'"))
+    hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface monospace-font-name 'Geist Mono 11'"))
+    hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface font-name 'Geist 11'"))
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"))
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'"))
     hl.dispatch(hl.dsp.exec_cmd("gnome-keyring-daemon --start --components=secrets"))
@@ -248,7 +248,7 @@ hl.env("GDK_BACKEND", "wayland")
 hl.env("ADW_DISABLE_PORTAL", "1")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 hl.env("HYPRSHOT_DIR", "/home/calirko/Pictures/Screenshots")
-hl.env("GTK_FONT_NAME", "Geist Font 11")
+hl.env("GTK_FONT_NAME", "Geist 11")
 hl.env("GTK_THEME", "adw-gtk3-dark")
 
 
@@ -288,7 +288,7 @@ hl.config({
     },
 
     misc = {
-        font_family = "Geist Font",
+        font_family = "Geist",
         force_default_wallpaper = 0,
         disable_hyprland_logo = true,
     },
@@ -310,25 +310,26 @@ hl.curve("slide", { type = "bezier", points = { { 0.25, 1 }, { 0.25, 1 } } })
 -- like a cut. "exit" (ease-in) drives slides out; "smooth" (ease-in-out)
 -- drives layer fades both ways, which is what the blur scrims ride on.
 -- Global on purpose: layer rules can only pick a style, not curve or speed.
+-- Window closes use "exit" too, for the same reason.
 hl.curve("exit", { type = "bezier", points = { { 0.4, 0 }, { 1, 1 } } })
 hl.curve("smooth", { type = "bezier", points = { { 0.4, 0 }, { 0.2, 1 } } })
 
 hl.animation({ leaf = "global", enabled = true, speed = 1, bezier = "default" })
 hl.animation({ leaf = "windows", enabled = true, speed = 2.2, bezier = "snappy" })
 hl.animation({ leaf = "windowsIn", enabled = true, speed = 2.2, bezier = "snappy", style = "slide" })
-hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.5, bezier = "instant", style = "slide" })
+hl.animation({ leaf = "windowsOut", enabled = true, speed = 1.5, bezier = "exit", style = "slide" })
 hl.animation({ leaf = "border", enabled = true, speed = 2, bezier = "instant" })
 hl.animation({ leaf = "fadeIn", enabled = true, speed = 2, bezier = "instant" })
-hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.5, bezier = "instant" })
+hl.animation({ leaf = "fadeOut", enabled = true, speed = 1.5, bezier = "exit" })
 hl.animation({ leaf = "fade", enabled = true, speed = 2, bezier = "instant" })
 hl.animation({ leaf = "layers", enabled = true, speed = 2, bezier = "snappy" })
 hl.animation({ leaf = "layersIn", enabled = true, speed = 2, bezier = "snappy", style = "slide" })
 hl.animation({ leaf = "layersOut", enabled = true, speed = 2, bezier = "exit", style = "slide" })
 hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 2, bezier = "smooth" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 2, bezier = "smooth" })
+-- In and out inherit one curve + speed so both workspaces move as a single
+-- strip; a faster "out" pulled ahead and opened a gap mid-slide.
 hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "slide", style = "slide" })
-hl.animation({ leaf = "workspacesIn", enabled = true, speed = 2.5, bezier = "slide", style = "slide" })
-hl.animation({ leaf = "workspacesOut", enabled = true, speed = 2, bezier = "instant", style = "slide" })
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "snappy" })
 
 local mainMod = "SUPER"
@@ -374,8 +375,8 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.config/hypr/scripts/volume-notify.sh up"), { repeating = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.config/hypr/scripts/volume-notify.sh down"), { repeating = true })
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.config/hypr/scripts/volume-notify.sh mute"), { repeating = true })
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.config/hypr/scripts/volume-notify.sh mute"))
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"))
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("~/.config/hypr/scripts/brightness-notify.sh up"), { repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("~/.config/hypr/scripts/brightness-notify.sh down"),
     { repeating = true })

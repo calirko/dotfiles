@@ -15,7 +15,7 @@ margin=6,6,6,6
 outer-margin=6,6,6,0
 width=340
 font=Geist Mono 12
-format=<b>%s</b>\n%b
+format=<span weight="600">%s</span>\n%b
 
 # ── Icons ────────────────────────────────
 icons=1
@@ -31,7 +31,7 @@ group-by=app-name
 # Repeats from one app still collapse into a single card, but without mako's
 # default "(N)" counter on grouped cards.
 [grouped]
-format=<b>%s</b>\n%b
+format=<span weight="600">%s</span>\n%b
 
 # ── Urgency: low ─────────────────────────
 [urgency=low]
@@ -61,3 +61,12 @@ invisible=1
 
 [app-name=NetworkManager summary~=peer*]
 invisible=1
+
+# ── Do not disturb ───────────────────────
+# Toggled by the quick menu (eww/scripts/toggle-dnd.sh). Without this
+# section the mode switches but nothing is hidden. Critical still gets through.
+[mode=do-not-disturb]
+invisible=1
+
+[mode=do-not-disturb urgency=critical]
+invisible=0

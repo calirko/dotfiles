@@ -30,13 +30,10 @@ get_brightness_data
 
 # Only watch if brightness file exists
 if [[ -r "$BRIGHTNESS_PATH" ]]; then
-    # Watch for file modifications
-    inotifywait -m -e modify "$BRIGHTNESS_PATH" --format '%e %w%f' 2>/dev/null | while read -r event file; do
-        echo "GOT: $event on $file" >&2
+    # Watch for file modifications; drain bursts (slider drags, held keys)
+    # and re-read once, so the slider never replays stale values.
+    inotifywait -m -e modify "$BRIGHTNESS_PATH" 2>/dev/null | while read -r _; do
+        while read -r -t 0.03 _; do :; done
         get_brightness_data
     done
-else
-    echo "No brightness control found, exiting" >&2
 fi
-
-echo "DIED" >&2
