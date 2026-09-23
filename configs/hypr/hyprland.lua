@@ -88,11 +88,26 @@ if hostname == "raccoon" then
         return false
     end
 
+    -- Physical connector state straight from sysfs, not hl.get_monitors():
+    -- this also has to answer correctly while the config is still being
+    -- evaluated, and at that point the backend hasn't come up yet, so
+    -- Hyprland's own monitor list is empty no matter what is plugged in.
     local function external_monitor_connected()
-        for _, m in ipairs(hl.get_monitors()) do
-            if m.name ~= EDP_NAME then return true end
+        local ls = io.popen("ls -1 /sys/class/drm 2>/dev/null")
+        if not ls then return false end
+        local found = false
+        for entry in ls:lines() do
+            local connector = entry:match("^card%d+%-(.+)$")
+            if connector and not connector:match("^eDP") then
+                local status = read_file("/sys/class/drm/" .. entry .. "/status")
+                if status and status:find("^connected") then
+                    found = true
+                    break
+                end
+            end
         end
-        return false
+        ls:close()
+        return found
     end
 
     local function reopen_bar()
@@ -120,8 +135,14 @@ if hostname == "raccoon" then
     end
 
     -- Apply current lid state immediately (handles boot-with-lid-closed).
-    if lid_closed() then
-        handle_lid_close()
+    -- Startup only ever disables eDP-1, it never suspends: booting with the
+    -- lid shut used to land in handle_lid_close's suspend branch (the old
+    -- external-monitor check asked Hyprland for its monitor list, which is
+    -- still empty during config evaluation, so it always answered "none"),
+    -- so the machine went straight back to sleep and the externals stayed
+    -- black until the lid was opened and closed again.
+    if lid_closed() and external_monitor_connected() then
+        hl.monitor({ output = EDP_NAME, disabled = true })
     end
 
     hl.bind("switch:on:Lid Switch", handle_lid_close, { locked = true })
@@ -465,9 +486,15 @@ hl.window_rule({
 })
 
 hl.window_rule({
-    name = "bitwarden-extension-float",
-    match = { title = "Extension: (Bitwarden Password Manager) - Bitwarden — Zen Browser" },
+    -- Every Zen extension popup, not just Bitwarden. Title matches are
+    -- regexes, so the parens around the extension name have to be escaped --
+    -- unescaped they read as a capture group and the rule matches a title
+    -- that has no parens in it at all, i.e. nothing. That's why the old
+    -- Bitwarden-only version of this rule never fired.
+    name = "zen-extension-float",
+    match = { title = "^Extension: \\(.*\\) - .* — Zen Browser$" },
     float = true,
+    center = true,
 })
 
 hl.window_rule({
@@ -490,4 +517,31 @@ hl.window_rule({
     name = "bitwarden",
     match = { class = "Bitwarden" },
     float = true,
+})
+
+-- Auth prompts hold focus until they're answered.
+--
+-- These are spawned *by* another app starting up (open Zed, it asks the
+-- keyring to unlock), so the app's own window maps a moment later and takes
+-- focus off the prompt that's blocking it -- you end up typing a password
+-- into an editor. stay_focused keeps the prompt focused for its whole life,
+-- and dim_around makes it obvious what's waiting on input.
+hl.window_rule({
+    name = "gcr-prompter",
+    match = { class = "gcr-prompter" },
+    float = true,
+    center = true,
+    pin = true,
+    stay_focused = true,
+    dim_around = true,
+})
+
+hl.window_rule({
+    name = "polkit-agent",
+    match = { class = "hyprpolkitagent" },
+    float = true,
+    center = true,
+    pin = true,
+    stay_focused = true,
+    dim_around = true,
 })
