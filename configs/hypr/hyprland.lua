@@ -455,6 +455,16 @@ hl.window_rule({
     center = true,
 })
 
+-- TUIs opened from the quick menu (eww/scripts/open-tui.sh): kitty with
+-- class tui.<command>, e.g. tui.nmtui / tui.bluetui / tui.btop.
+hl.window_rule({
+    name = "tui-float-center",
+    match = { class = "^tui\\..+$" },
+    float = true,
+    size = "960 620",
+    center = true,
+})
+
 hl.window_rule({
     name = "nautilus-float",
     match = { class = "org.gnome.Nautilus" },

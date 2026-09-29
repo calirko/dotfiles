@@ -111,7 +111,7 @@
     (label :class "qm-time" :halign "start" :text {clock-data.time})
     (label :class "qm-date" :halign "start" :text {clock-data.date})))
 
-; ── Action grid: lock / restart / power / screenshot / DND / kb-backlight
+; ── Action grid: lock / restart / power / screenshot / DND
 
 (defwidget qm-actions []
   (box
@@ -130,14 +130,19 @@
       :onclick "systemctl reboot &"
       (image :path "icons/arrow-counter-clockwise.svg" :image-width 15 :image-height 15))
 
+    ; red icon stacked over the gray one; CSS fades it in on hover
     (button :class "qm-action-btn qm-action-power"
       :tooltip "Power off"
       :onclick "shutdown -h now &"
-      (image :path "icons/power.svg" :image-width 15 :image-height 15))
+      (overlay
+        (image :path "icons/power.svg" :image-width 15 :image-height 15)
+        (image :class "qm-action-power-hover" :path "icons/red/power.svg" :image-width 15 :image-height 15)))
 
     (button :class "qm-action-btn"
       :tooltip "Screenshot to clipboard"
-      :onclick "hyprshot -m output --clipboard-only &"
+      ; close the menu first and let the scrim's fade-out (~200ms) finish, or
+      ; the capture has the menu and blur in it
+      :onclick "(scripts/close-menu.sh; sleep 0.4; hyprshot -m output --clipboard-only) &"
       (image :path "icons/camera.svg" :image-width 15 :image-height 15))
 
     (button :class "qm-action-btn ${mako-paused == "1" ? "qm-action-dnd" : ""}"
@@ -145,13 +150,7 @@
       :onclick "scripts/toggle-dnd.sh &"
       (image
         :path {mako-paused == "1" ? "icons/red/bell-simple-slash.svg" : "icons/bell-simple.svg"}
-        :image-width 15 :image-height 15))
-
-    (button :class "qm-action-btn"
-      :visible {has-kb-backlight == "1"}
-      :tooltip "Keyboard backlight"
-      :onclick "~/.config/eww/scripts/cycle-kb-backlight.sh &"
-      (image :path "icons/keyboard.svg" :image-width 15 :image-height 15))))
+        :image-width 15 :image-height 15))))
 
 ; ── Media player
 
@@ -187,6 +186,7 @@
         :truncate true
         :limit-width 30
         :width 268
+        :xalign 0
         :text {media-data.title})
       (label
         :class "qm-media-artist"
@@ -194,6 +194,7 @@
         :truncate true
         :limit-width 30
         :width 268
+        :xalign 0
         :text {media-data.artist}))
 
     ; Controls
@@ -268,29 +269,57 @@
     ; Brightness
     (brightness-slider)))
 
-; ── Connectivity: wifi & bluetooth
+; ── Connectivity: wifi / bluetooth / vpn / keyboard backlight
 
-; One grid cell. limit-width keeps long SSIDs / device names from widening
-; the panel — each column is only ~128px.
-(defwidget qm-conn-item [icon text]
-  (box :orientation "h" :space-evenly false :spacing 8 :hexpand true
-    (image :path icon :image-width 14 :image-height 14)
-    (label
-      :class "qm-connectivity-label"
-      :halign "start"
-      :hexpand true
-      :truncate true
-      :limit-width 13
-      :text text)))
+; One grid cell, a button that opens a TUI (open-tui.sh). limit-width keeps
+; long SSIDs / device names from widening the panel — each column is only
+; ~128px. Cells carry their own padding for the hover background.
+(defwidget qm-conn-item [icon text tooltip onclick]
+  (button
+    :class "qm-conn-item qm-conn-btn"
+    :hexpand true
+    :tooltip tooltip
+    :onclick onclick
+    (box :orientation "h" :space-evenly false :spacing 8
+      (image :path icon :image-width 14 :image-height 14)
+      (label
+        :class "qm-connectivity-label"
+        :halign "start"
+        :hexpand true
+        :truncate true
+        :limit-width 13
+        :text text))))
+
+; Keyboard backlight cell: click cycles the level; one pip per step, lit up
+; to the current level, so the step reads at a glance.
+(defwidget qm-kb-backlight []
+  (button
+    :class "qm-conn-item qm-conn-btn"
+    :hexpand true
+    :tooltip "Keyboard backlight — click to cycle"
+    :onclick "scripts/cycle-kb-backlight.sh &"
+    (box :orientation "h" :space-evenly false :spacing 8
+      (image :path "icons/keyboard.svg" :image-width 14 :image-height 14)
+      (label
+        :class "qm-connectivity-label"
+        :halign "start"
+        :hexpand true
+        :text {kb-backlight.level == 0 ? "Off"
+          : kb-backlight.level == kb-backlight.max ? "High"
+          : kb-backlight.max == 2 ? "Low"
+          : "${kb-backlight.level}/${kb-backlight.max}"})
+      (box :class "qm-kb-pips" :orientation "h" :space-evenly false :spacing 3 :valign "center"
+        (for lit in {kb-backlight.steps}
+          (box :class "qm-kb-pip ${lit ? "qm-kb-pip-on" : ""}"))))))
 
 (defwidget qm-connectivity []
   (box
     :class "qm-section qm-connectivity"
     :orientation "v"
     :space-evenly false
-    :spacing 10
+    :spacing 2
 
-    (box :orientation "h" :space-evenly true :spacing 12
+    (box :orientation "h" :space-evenly true :spacing 4
       (qm-conn-item
         :icon {network-data.connection == "wifi-strength-4" ? "icons/wifi-high.svg"
           : network-data.connection == "wifi-strength-3" ? "icons/wifi-medium.svg"
@@ -301,51 +330,75 @@
           : "icons/wifi-slash.svg"}
         :text {network-data.connection == "ethernet-connected" ? "Ethernet"
           : network-data.connection == "wifi-offline" ? "Offline"
-          : network-data.ssid != "" ? network-data.ssid : "Wi-Fi"})
+          : network-data.ssid != "" ? network-data.ssid : "Wi-Fi"}
+        :tooltip "Network — open nmtui"
+        :onclick "scripts/open-tui.sh nmtui &")
 
       (qm-conn-item
         :icon {bluetooth-data.state == "connected" ? "icons/bluetooth-connected.svg"
           : bluetooth-data.state == "disabled" ? "icons/bluetooth-x.svg"
           : "icons/bluetooth.svg"}
-        :text {bluetooth-data.state == "connected" && bluetooth-data.device != "" ? bluetooth-data.device
-          : bluetooth-data.state == "connected" ? "Connected"
+        :text {bluetooth-data.count > 1 ? "${bluetooth-data.count} devices"
+          : bluetooth-data.count == 1 ? bluetooth-data.devices[0].name
           : bluetooth-data.state == "disabled" ? "Off"
-          : "On"}))
+          : "On"}
+        :tooltip "Bluetooth — open bluetui"
+        :onclick "scripts/open-tui.sh bluetui &"))
 
-    (box :orientation "h" :space-evenly true :spacing 12
+    (box :orientation "h" :space-evenly true :spacing 4
       (qm-conn-item
         :icon {network-data.vpn_active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
-        :text {network-data.vpn_active ? network-data.vpn_name : "VPN off"})
-      ; empty cell keeps VPN in the left column
-      (box))))
+        :text {network-data.vpn_active ? network-data.vpn_name : "VPN off"}
+        :tooltip "VPN — open nmtui"
+        :onclick "scripts/open-tui.sh nmtui &")
+      ; outer box keeps VPN in the left column when there's no backlight
+      (box :hexpand true
+        (box :hexpand true :visible {kb-backlight.present}
+          (qm-kb-backlight))))
 
-; ── System stats: CPU / memory / GPU
+    ; Connected bluetooth devices with battery; "–" when a device doesn't
+    ; report one (see watch-bluetooth.sh).
+    (box :class "qm-bt-devices" :orientation "v" :space-evenly false :spacing 10
+      :visible {bluetooth-data.count > 0}
+      (for dev in {bluetooth-data.devices}
+        (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+          (image :path {dev.icon} :image-width 14 :image-height 14)
+          (label :class "qm-system-label" :halign "start" :hexpand true
+            :truncate true :limit-width 26
+            :text {dev.name})
+          (label :class "qm-system-value" :xalign 1
+            :text {dev.battery >= 0 ? "${dev.battery}%" : "–"}))))))
+
+; ── System stats: CPU / memory / GPU — the whole block opens btop
 
 (defwidget qm-system []
-  (box
-    :class "qm-section qm-system"
-    :orientation "v"
-    :space-evenly false
-    :spacing 10
+  (button
+    :class "qm-section qm-system qm-system-btn"
+    :tooltip "Open btop"
+    :onclick "scripts/open-tui.sh btop &"
+    (box
+      :orientation "v"
+      :space-evenly false
+      :spacing 10
 
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      (image :path "icons/cpu.svg" :image-width 14 :image-height 14)
-      (label :class "qm-system-label" :halign "start" :hexpand true :text "CPU")
-      (label :class "qm-system-value"
-        :visible {sensors-data.cpu_temp > 0}
-        :text "${sensors-data.cpu_temp}°")
-      (label :class "qm-system-value" :text "${sensors-data.cpu}%"))
+      (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+        (image :path "icons/cpu.svg" :image-width 14 :image-height 14)
+        (label :class "qm-system-label" :halign "start" :hexpand true :text "CPU")
+        (label :class "qm-system-value"
+          :visible {sensors-data.cpu_temp > 0}
+          :text "${sensors-data.cpu_temp}°")
+        (label :class "qm-system-value" :text "${sensors-data.cpu}%"))
 
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      (image :path "icons/memory.svg" :image-width 14 :image-height 14)
-      (label :class "qm-system-label" :halign "start" :hexpand true :text "Memory")
-      (label :class "qm-system-value" :text "${sensors-data.ram}%"))
+      (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+        (image :path "icons/memory.svg" :image-width 14 :image-height 14)
+        (label :class "qm-system-label" :halign "start" :hexpand true :text "Memory")
+        (label :class "qm-system-value" :text "${sensors-data.ram}%"))
 
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-      :visible {sensors-data.gpu_temp > 0}
-      (image :path "icons/thermometer-simple.svg" :image-width 14 :image-height 14)
-      (label :class "qm-system-label" :halign "start" :hexpand true :text "GPU")
-      (label :class "qm-system-value" :text "${sensors-data.gpu_temp}°"))))
+      (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+        :visible {sensors-data.gpu_temp > 0}
+        (image :path "icons/graphics-card.svg" :image-width 14 :image-height 14)
+        (label :class "qm-system-label" :halign "start" :hexpand true :text "GPU")
+        (label :class "qm-system-value" :text "${sensors-data.gpu_temp}°")))))
 
 ; ── Calendar
 
