@@ -12,7 +12,7 @@
 
 (deflisten mako-paused :initial "0" `scripts/watch-mako.sh`)
 
-(deflisten has-kb-backlight :initial "0" `scripts/watch-kb-backlight.sh`)
+(deflisten kb-backlight :initial '{"present":false,"level":0,"max":0,"steps":[]}' `scripts/watch-kb-backlight.sh`)
 
 (deflisten kb-layout :initial "" `scripts/watch-kb-layout.sh`)
 
@@ -20,7 +20,7 @@
 
 (deflisten audio-data :initial '{"volume":0,"mute":"true"}' `scripts/watch-audio.sh`)
 
-(deflisten bluetooth-data :initial '{"state":"disabled","device":""}' `scripts/watch-bluetooth.sh`)
+(deflisten bluetooth-data :initial '{"state":"disabled","count":0,"devices":[]}' `scripts/watch-bluetooth.sh`)
 
 (deflisten network-data :initial '{"connection":"wifi-offline","ssid":"","vpn_active":false,"vpn_name":""}' `scripts/watch-network.sh`)
 

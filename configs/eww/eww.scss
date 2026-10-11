@@ -277,13 +277,14 @@
 /* ACTION BUTTONS */
 
 .qm-actions {
-    padding: 12px 16px;
+    padding: 8px 16px;
     /* gap: 4px; */
 }
 
+/* Same height as the connectivity cells (6px padding + 14px icon + label). */
 .qm-action-btn {
     min-width: 36px;
-    min-height: 36px;
+    min-height: 28px;
     border-radius: 4px;
     transition: background-color 150ms ease;
 
@@ -296,6 +297,26 @@
     }
     &:active {
         background: #262626;
+    }
+}
+
+/* Power off: destructive, so on hover it takes the same soft red background
+   as DND with the icon swapped to red (second icon in an overlay, faded in). */
+.qm-action-power {
+    .qm-action-power-hover {
+        opacity: 0;
+        transition: opacity 150ms ease;
+    }
+
+    &:hover {
+        background: rgba(229, 72, 77, 0.14);
+
+        .qm-action-power-hover {
+            opacity: 1;
+        }
+    }
+    &:active {
+        background: rgba(229, 72, 77, 0.22);
     }
 }
 
@@ -376,7 +397,7 @@
 
 .qm-media-title {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #ebebeb;
     letter-spacing: -0.01em;
 }
@@ -389,7 +410,7 @@
 }
 
 .qm-media-btn {
-    min-height: 40px;
+    min-height: 28px;
     border-radius: 4px;
     transition: background-color 150ms ease;
 
@@ -418,13 +439,75 @@
 
 /* CONNECTIVITY */
 
+/* Cells carry 8px of their own padding (for the button hover background),
+   so the section trims its side padding to keep content on the 16px line. */
+.qm-connectivity {
+    padding: 10px 8px 16px;
+}
+
+.qm-conn-item {
+    padding: 6px 8px;
+    border-radius: 4px;
+}
+
+.qm-conn-btn {
+    transition: background-color 150ms ease;
+
+    image {
+        all: unset;
+    }
+
+    &:hover {
+        background: #1a1a1a;
+    }
+    &:active {
+        background: #262626;
+    }
+}
+
 .qm-connectivity-label {
     font-size: 13px;
     font-weight: 400;
     color: #d6d6d6;
 }
 
+/* Keyboard backlight steps: dim pip = unlit step, bright pip = lit. */
+.qm-kb-pip {
+    min-width: 4px;
+    min-height: 10px;
+    border-radius: 1px;
+    background: #2e2e2e;
+}
+
+.qm-kb-pip-on {
+    background: #d6d6d6;
+}
+
+/* Connected bluetooth devices, under the grid */
+.qm-bt-devices {
+    padding: 10px 8px 0;
+    margin-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 /* SYSTEM STATS */
+
+/* The whole section is one button (opens btop); full-bleed hover, same
+   steps as the connectivity cells. */
+.qm-system-btn {
+    transition: background-color 150ms ease;
+
+    image {
+        all: unset;
+    }
+
+    &:hover {
+        background: #1a1a1a;
+    }
+    &:active {
+        background: #262626;
+    }
+}
 
 .qm-system-label {
     font-size: 13px;
@@ -469,44 +552,59 @@
     }
 }
 
-.qm-cal calendar {
+calendar.qm-cal {
     background: transparent;
     color: #d6d6d6;
     font-size: 12px;
 }
 
-.qm-cal calendar header {
+calendar.qm-cal header {
     background: transparent;
     color: #d6d6d6;
 }
 
-.qm-cal calendar.view {
+calendar.qm-cal.view {
     background: transparent;
 }
 
-.qm-cal calendar:selected,
-.qm-cal calendar .day-number:selected {
+calendar.qm-cal:selected,
+calendar.qm-cal .day-number:selected {
     background: #2e2e2e;
     color: #ebebeb;
     border-radius: 4px;
 }
 
-.qm-cal calendar .day-number.today,
-.qm-cal calendar .day-number:selected.today {
+calendar.qm-cal .day-number.today,
+calendar.qm-cal .day-number:selected.today {
     background: #1f1f1f;
     color: #ebebeb;
     border-radius: 4px;
     font-weight: 500;
 }
 
-.qm-cal calendar .day-name {
+calendar.qm-cal .day-name {
     color: #8a8a8a;
     font-size: 11px;
     letter-spacing: 0.04em;
 }
 
-.qm-cal calendar .other-month {
+calendar.qm-cal .other-month {
     color: #2e2e2e;
+}
+
+/* TOOLTIPS */
+
+tooltip,
+tooltip.background {
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 6px;
+}
+
+tooltip label {
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #d6d6d6;
 }
 
 /* SYSTRAY */
