@@ -491,3 +491,39 @@ hl.window_rule({
     match = { class = "Bitwarden" },
     float = true,
 })
+
+-- VR streaming layout (~/Projects/stream-launcher).
+--
+--   1  VR tools     2  TikTok bot + OBS     3  VRChat, fullscreen
+--
+-- The go-live launcher opens these, but the rules hold for manual launches
+-- too. Case-insensitive classes because some of these apps have changed their
+-- app_id between releases.
+
+hl.window_rule({
+    name = "vr-tools",
+    match = { class = "(?i)(slimevr|wivrn|vrcfacetracking|baballonia)" },
+    workspace = "1",
+})
+
+hl.window_rule({
+    name = "stream-tools",
+    match = { class = "^(com\\.calirko\\.TikTokBot|com\\.obsproject\\.Studio|obs)$" },
+    workspace = "2",
+})
+
+hl.window_rule({
+    name = "vrchat",
+    match = { class = "^steam_app_438100$" },
+    workspace = "3",
+    fullscreen = true,
+})
+
+-- While the launcher's flag file exists, workspace 1 tiles as master: SlimeVR
+-- takes a full-height column (its tracker list is long) and the rest stack
+-- beside it. Outside a stream, workspace 1 keeps the normal dwindle layout.
+local streamFlag = io.open((os.getenv("XDG_RUNTIME_DIR") or "/run/user/1000") .. "/stream-launcher.active", "r")
+if streamFlag then
+    streamFlag:close()
+    hl.workspace_rule({ workspace = "1", layout = "master" })
+end
