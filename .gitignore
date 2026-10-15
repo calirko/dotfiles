@@ -1,4 +1,5 @@
-hypr/hyprpaper.conf
+# hyprpaper.conf is generated per-host by wallpaper-apply.sh
+configs/hypr/hyprpaper.conf
 
 # media-rpc: contains personal Discord app_id — keep local, see config.example.json
 configs/hypr/config.json
