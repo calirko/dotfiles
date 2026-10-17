@@ -45,29 +45,50 @@ _signal_monitor() {
 
 _signal_monitor &
 
-nmcli monitor 2>/dev/null | while IFS= read -r line; do
-    dev=$(echo "$line" | awk '{print $1}' | tr -d ':')
-    type=$(_dev_type "$dev")
+# Last known state per device. nmcli monitor reports every transition,
+# including retry loops on devices that never come up (e.g. a Quest
+# headset's USB NCM link failing DHCP every 45s emits "disconnected" each
+# cycle). Only notify when a device actually goes connected <-> disconnected.
+declare -A _state
 
-    case "$type" in
-        wifi)
-            if echo "$line" | grep -q "connected" && ! echo "$line" | grep -q "disconnected"; then
-                ssid=$(_wifi_ssid)
-                notify-send -i "network-wireless" -t "$NOTIFY_TIMEOUT" \
-                    "Network" "Connected to ${ssid:-WiFi}"
-            elif echo "$line" | grep -q "disconnected"; then
-                notify-send -i "network-wireless-disconnected" -t "$NOTIFY_TIMEOUT" \
-                    "Network" "WiFi disconnected"
-            fi
+# Seed with current state so startup doesn't fire spurious notifications.
+while IFS=: read -r dev _ state; do
+    [[ "$state" == "connected" ]] && _state[$dev]="up" || _state[$dev]="down"
+done < <(nmcli -t -f DEVICE,TYPE,STATE dev status 2>/dev/null || true)
+
+nmcli monitor 2>/dev/null | while IFS= read -r line; do
+    dev="${line%%:*}"
+    event="${line#*: }"
+    type=$(_dev_type "$dev")
+    [[ "$type" == "other" ]] && continue
+
+    case "$event" in
+        connected) new="up" ;;
+        disconnected|unavailable|unmanaged|"device removed") new="down" ;;
+        *) continue ;;
+    esac
+
+    old="${_state[$dev]:-down}"
+    _state[$dev]="$new"
+    [[ "$old" == "$new" ]] && continue
+
+    case "$type:$new" in
+        wifi:up)
+            ssid=$(_wifi_ssid)
+            notify-send -i "network-wireless" -t "$NOTIFY_TIMEOUT" \
+                "Network" "Connected to ${ssid:-WiFi}"
             ;;
-        ethernet)
-            if echo "$line" | grep -q "connected" && ! echo "$line" | grep -q "disconnected"; then
-                notify-send -i "network-wired" -t "$NOTIFY_TIMEOUT" \
-                    "Network" "Ethernet connected"
-            elif echo "$line" | grep -q "disconnected"; then
-                notify-send -i "network-wired-unavailable" -t "$NOTIFY_TIMEOUT" \
-                    "Network" "Ethernet disconnected"
-            fi
+        wifi:down)
+            notify-send -i "network-wireless-disconnected" -t "$NOTIFY_TIMEOUT" \
+                "Network" "WiFi disconnected"
+            ;;
+        ethernet:up)
+            notify-send -i "network-wired" -t "$NOTIFY_TIMEOUT" \
+                "Network" "Ethernet connected"
+            ;;
+        ethernet:down)
+            notify-send -i "network-wired-unavailable" -t "$NOTIFY_TIMEOUT" \
+                "Network" "Ethernet disconnected"
             ;;
     esac
 done
