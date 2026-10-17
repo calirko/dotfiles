@@ -323,9 +323,15 @@ hl.config({
 })
 
 
-hl.curve("snappy", { type = "bezier", points = { { 0.18, 1 }, { 0.18, 1 } } })
+-- Window/layer movement and zoom. Was (0.18,1)(0.18,1): ~40% of the move in
+-- the first frame, then a long crawl -- the same jump-then-drag the old
+-- workspace curve had. Same ease-out as "slide" now.
+hl.curve("snappy", { type = "bezier", points = { { 0.22, 0.61 }, { 0.36, 1 } } })
 hl.curve("instant", { type = "bezier", points = { { 0.1, 0.9 }, { 0.1, 1 } } })
-hl.curve("slide", { type = "bezier", points = { { 0.25, 1 }, { 0.25, 1 } } })
+-- Workspace slides. The old (0.25,1)(0.25,1) covered ~half the distance in
+-- the first two frames at 60Hz and crawled the rest, which read as a stutter
+-- followed by drag. Plain ease-out spreads the motion over the whole slide.
+hl.curve("slide", { type = "bezier", points = { { 0.22, 0.61 }, { 0.36, 1 } } })
 -- Layer exits and fades. "instant" front-loads ~90% of the motion into the
 -- first frames, so closing layers (quick menu + blur, wofi, mako, OSD) looked
 -- like a cut. "exit" (ease-in) drives slides out; "smooth" (ease-in-out)
@@ -370,8 +376,9 @@ hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("pgrep -x wofi > /dev/null || " .. me
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + space", hl.dsp.exec_cmd("~/.config/eww/scripts/kb-layout-toggle.sh"))
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("cliphist list | ~/.config/hypr/scripts/wofi.sh --dmenu | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("cliphist list | ~/.config/hypr/scripts/wofi.sh --dmenu --cache-file /dev/null | cliphist decode | wl-copy"))
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-select.sh"))
+hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-toggle-span.sh"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd("~/.config/eww/scripts/toggle-menu.sh"))
@@ -448,6 +455,15 @@ hl.layer_rule({
     no_anim = true,
 })
 
+-- Ignore client maximize requests. kitty (and others) ask for maximized on
+-- map, which Hyprland honours as fullscreen mode 1 -- the new window covers
+-- the workspace instead of tiling.
+hl.window_rule({
+    name = "suppress-maximize",
+    match = { class = ".*" },
+    suppress_event = "maximize",
+})
+
 hl.window_rule({
     name = "discord-float-center",
     match = { class = "discord" },
@@ -462,6 +478,17 @@ hl.window_rule({
     match = { class = "^tui\\..+$" },
     float = true,
     size = "960 620",
+    center = true,
+})
+
+-- Waydroid: full UI is class "Waydroid", multi-window apps are
+-- "waydroid.<package>". Open as a portrait phone (~9:19.5) instead of tiling
+-- into a landscape slot.
+hl.window_rule({
+    name = "waydroid-phone",
+    match = { class = "^[Ww]aydroid.*$" },
+    float = true,
+    size = "420 900",
     center = true,
 })
 
@@ -495,17 +522,26 @@ hl.window_rule({
     float = true,
 })
 
-hl.window_rule({
-    -- Every Zen extension popup, not just Bitwarden. Title matches are
-    -- regexes, so the parens around the extension name have to be escaped --
-    -- unescaped they read as a capture group and the rule matches a title
-    -- that has no parens in it at all, i.e. nothing. That's why the old
-    -- Bitwarden-only version of this rule never fired.
-    name = "zen-extension-float",
-    match = { title = "^Extension: \\(.*\\) - .* — Zen Browser$" },
-    float = true,
-    center = true,
-})
+-- Every Zen extension popup, not just Bitwarden. Zen maps these windows with
+-- the generic title "Zen Browser" and only sets "Extension: (...) - ..."
+-- afterwards, so a static window_rule (evaluated at map time) never matches.
+-- Float on title change instead.
+hl.on("window.title", function(win)
+    if win and win.class == "zen" and not win.floating
+        and win.title:match("^Extension: %(.*%) %- .* — Zen Browser$") then
+        hl.dispatch(hl.dsp.window.float({ action = "enable", window = "address:" .. win.address }))
+        local mon = win.monitor
+        if mon then
+            -- 2/3 of the monitor height, portrait 5:4 (height:width)
+            local h = math.floor(mon.height * 2 / 3)
+            hl.dispatch(hl.dsp.window.resize({
+                x = math.floor(h * 4 / 5), y = h,
+                exact = true, window = "address:" .. win.address,
+            }))
+        end
+        hl.dispatch(hl.dsp.window.center({ window = "address:" .. win.address }))
+    end
+end)
 
 hl.window_rule({
     name = "Calculator",

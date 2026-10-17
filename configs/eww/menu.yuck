@@ -43,12 +43,16 @@
   :namespace "eww-wofi-scrim"
   (scrim :onclick "pkill -x wofi &"))
 
+; Panel-wide, not full-screen: Hyprland's "slide right" moves the whole layer
+; by its own width, so a full-screen layer travelled ~1600px and the 300px panel
+; only came into view during the last fifth of the slide. Clicks beside the
+; panel now land on the scrim, which closes the menu.
 (defwindow menu_overlay
   :monitor 0
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "100%"
+    :width "300px"
     :height "100%"
     :anchor "right center")
   :stacking "fg"
@@ -65,16 +69,6 @@
     :space-evenly false
     :hexpand true
     :vexpand true
-    ; menu_overlay is full-screen and layered in front of the scrim, so its
-    ; empty area swallows clicks meant for the scrim. This spacer fills that
-    ; area (pushing the panel to the edge) and closes the menu itself.
-    (eventbox
-      :onclick "scripts/close-menu.sh &"
-      :onrightclick "scripts/close-menu.sh &"
-      :onmiddleclick "scripts/close-menu.sh &"
-      :hexpand true
-      :vexpand true
-      (box :hexpand true :vexpand true))
     (quick-menu-content)))
 
 ; ── Panel content

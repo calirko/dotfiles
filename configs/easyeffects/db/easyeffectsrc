@@ -2,11 +2,11 @@
 inputDevice=alsa_input.pci-0000_00_1f.3.analog-stereo
 
 [StreamOutputs]
-outputDevice=alsa_output.pci-0000_00_1f.3.analog-stereo
+outputDevice=bluez_output.48_73_CB_5B_22_F8.1
 plugins=equalizer#0
 visiblePage=pluginsPage
 visiblePlugin=equalizer#0
 
 [Window]
-height=1107
-width=1058
+height=1068
+width=929

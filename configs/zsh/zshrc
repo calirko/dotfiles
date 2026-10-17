@@ -1,0 +1,36 @@
+# Shared zsh config, sourced from ~/.zshrc (install.sh adds the source line).
+# Machine-specific bits (aliases, SDK paths) stay in ~/.zshrc itself.
+
+# oh-my-zsh, installed system-wide via the oh-my-zsh-git AUR package.
+if [ -d /usr/share/oh-my-zsh ]; then
+    export ZSH=/usr/share/oh-my-zsh
+    ZSH_THEME="robbyrussell"
+    plugins=(git)
+
+    # Startup speed: skip the compaudit permission scan and update check that
+    # run on every shell (omz is a system package, updated by yay anyway).
+    ZSH_DISABLE_COMPFIX=true
+    DISABLE_AUTO_UPDATE=true
+    zstyle ':omz:update' mode disabled
+
+    source $ZSH/oh-my-zsh.sh
+fi
+
+# nvm, lazy-loaded: sourcing nvm.sh costs ~0.5s per shell. Put the default
+# node on PATH directly so node/npm/npx work instantly; the real nvm is only
+# sourced the first time `nvm` itself is run.
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+    if [ -s "$NVM_DIR/alias/default" ]; then
+        _nvm_default=$(<"$NVM_DIR/alias/default")
+        _nvm_bin=( "$NVM_DIR"/versions/node/v${_nvm_default#v}*/bin(N) )
+        (( ${#_nvm_bin} )) && export PATH="${_nvm_bin[-1]}:$PATH"
+        unset _nvm_default _nvm_bin
+    fi
+    nvm() {
+        unfunction nvm
+        \. "$NVM_DIR/nvm.sh"
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+        nvm "$@"
+    }
+fi

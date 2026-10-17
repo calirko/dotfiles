@@ -21,7 +21,7 @@ echo ""
 echo ""
 
 # Array of config directories to unlink (must match install.sh)
-CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig" "easyeffects")
+CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig" "easyeffects" "zsh")
 
 # Confirm before proceeding
 echo -e "${YELLOW}This will remove symlinks to dotfiles from ~/.config/${NC}"
@@ -64,8 +64,17 @@ if [ -f "$ZSHENV" ] && grep -qF "$LOCAL_BIN_MARKER" "$ZSHENV"; then
     echo -e "${GREEN}✓ Removed PATH block from ~/.zshenv${NC}"
 fi
 
-# Remove oh-my-zsh block from ~/.zshrc (mirror of install.sh)
+# Remove shared zsh config source line from ~/.zshrc (mirror of install.sh).
+# Lines install.sh commented out stay commented; its ~/.zshrc.backup.* has
+# the original.
 ZSHRC="$HOME/.zshrc"
+ZSHRC_MARKER="# dotfiles zshrc (dotfiles-managed)"
+if [ -f "$ZSHRC" ] && grep -qF "$ZSHRC_MARKER" "$ZSHRC"; then
+    sed -i "/^${ZSHRC_MARKER}\$/,+1d" "$ZSHRC"
+    echo -e "${GREEN}✓ Removed shared zsh config from ~/.zshrc${NC}"
+fi
+
+# Older installs appended an oh-my-zsh block instead
 OMZ_MARKER="# oh-my-zsh (dotfiles-managed)"
 if [ -f "$ZSHRC" ] && grep -qF "$OMZ_MARKER" "$ZSHRC"; then
     sed -i "/^${OMZ_MARKER}\$/,/^source \$ZSH\/oh-my-zsh.sh\$/d" "$ZSHRC"

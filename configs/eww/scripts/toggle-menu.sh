@@ -12,9 +12,10 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
     "$SCRIPT_DIR/scrim.sh" close menu
     eww update menu-open=false
   else
-    eww update cal-month="$(date +%-m)" cal-year="$(date +%Y)" menu-open=true
-    local_screen=$("$SCRIPT_DIR/get-screen.sh")
+    # Everything in parallel: the open is what the user is waiting on.
+    eww update cal-month="$(date +%-m)" cal-year="$(date +%Y)" menu-open=true &
     "$SCRIPT_DIR/scrim.sh" open menu &
+    local_screen=$("$SCRIPT_DIR/get-screen.sh")
     eww open menu_overlay --screen "$local_screen" &
     wait
   fi

@@ -8,7 +8,7 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 SKIP_PACKAGES=false
 ICON_THEME_NAME="WhiteSur-grey-dark"
-CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig" "easyeffects")
+CONFIGS=("zed" "btop" "gtk-3.0" "gtk-4.0" "hypr" "kitty" "mako" "eww" "wofi" "fastfetch" "fontconfig" "easyeffects" "zsh")
 
 # Color output
 GREEN='\033[0;32m'
@@ -194,23 +194,32 @@ else
     echo -e "${GREEN}✓ ~/.zshenv already configured for PATH${NC}"
 fi
 
-# oh-my-zsh (installed system-wide via the oh-my-zsh-git AUR package, not
-# the usual per-user curl installer) -- wire it up from ~/.zshrc.
+# Shared zsh config (configs/zsh/zshrc, linked to ~/.config/zsh above) loads
+# oh-my-zsh and nvm -- wire it up from ~/.zshrc.
+#
+# Any oh-my-zsh or nvm loading already in ~/.zshrc gets commented out first:
+# the oh-my-zsh curl installer's template sources omz itself, and the old
+# version of this block appended a second copy on top, so every shell loaded
+# omz twice plus an eager nvm (~1.7s startup instead of ~0.1s).
 ZSHRC="$HOME/.zshrc"
-OMZ_MARKER="# oh-my-zsh (dotfiles-managed)"
-if [ -d /usr/share/oh-my-zsh ] && ! grep -qF "$OMZ_MARKER" "$ZSHRC" 2>/dev/null; then
+ZSHRC_MARKER="# dotfiles zshrc (dotfiles-managed)"
+LEGACY_OMZ_MARKER="# oh-my-zsh (dotfiles-managed)"
+SLOW_LOAD_RE='^[^#]*(oh-my-zsh\.sh|/nvm\.sh|NVM_DIR/bash_completion)'
+touch "$ZSHRC"
+if grep -qF "$LEGACY_OMZ_MARKER" "$ZSHRC" || grep -qE "$SLOW_LOAD_RE" "$ZSHRC"; then
+    cp "$ZSHRC" "$ZSHRC.backup.$(date +%Y%m%d%H%M%S)"
+    sed -i "/^${LEGACY_OMZ_MARKER}\$/,/^source \$ZSH\/oh-my-zsh.sh\$/d" "$ZSHRC"
+    sed -i -E "s@${SLOW_LOAD_RE}.*\$@# & # disabled by dotfiles install.sh@" "$ZSHRC"
+    echo -e "${GREEN}✓ Disabled duplicate oh-my-zsh/nvm loading in ~/.zshrc (backup saved)${NC}"
+fi
+if ! grep -qF "$ZSHRC_MARKER" "$ZSHRC"; then
     {
-        echo "$OMZ_MARKER"
-        echo 'export ZSH=/usr/share/oh-my-zsh'
-        echo 'ZSH_THEME="robbyrussell"'
-        echo 'plugins=(git)'
-        echo 'source $ZSH/oh-my-zsh.sh'
+        echo "$ZSHRC_MARKER"
+        echo '[ -r "$HOME/.config/zsh/zshrc" ] && source "$HOME/.config/zsh/zshrc"'
     } >> "$ZSHRC"
-    echo -e "${GREEN}✓ Added oh-my-zsh to ~/.zshrc${NC}"
-elif [ -d /usr/share/oh-my-zsh ]; then
-    echo -e "${GREEN}✓ ~/.zshrc already configured for oh-my-zsh${NC}"
+    echo -e "${GREEN}✓ Added shared zsh config to ~/.zshrc${NC}"
 else
-    echo -e "${YELLOW}⊘ oh-my-zsh-git not installed, skipping ~/.zshrc setup${NC}"
+    echo -e "${GREEN}✓ ~/.zshrc already sources shared zsh config${NC}"
 fi
 
 # xdg-user-dirs: (re)generate ~/.config/user-dirs.dirs so GIO/Nautilus know
