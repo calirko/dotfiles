@@ -1,6 +1,7 @@
 {
   "packages": [
     "gnome-calculator",
+    "gnome-calendar",
     "libheif",
     "loupe",
     "xdg-user-dirs",

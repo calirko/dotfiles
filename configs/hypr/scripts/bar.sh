@@ -75,18 +75,26 @@ wait_for_monitors_stable() {
   return 0
 }
 
+# Open the bar on --screen $1 and report (via exit status) whether it landed
+# on connector $2.
+try_open() {
+  local screen="$1" target="$2" on_laptop="false"
+  [[ "$target" == eDP-1 ]] && on_laptop="true"
+  eww close bar 2>/dev/null || true
+  sleep 0.3
+  eww open bar --screen "$screen" --arg on_laptop="$on_laptop" 2>/dev/null || true
+  sleep 0.5
+  [[ "$(bar_on_monitor)" == "$target" ]]
+}
+
 reopen_bar() {
   ensure_daemon
   wait_for_monitors_stable
 
-  local target screen onmon attempts=0
-  while [[ $attempts -lt 40 ]]; do  # ~30 s budget
+  local target screen count i attempts=0
+  while [[ $attempts -lt 10 ]]; do
     target=$(get_bar_monitor)
     screen=$(get_bar_screen)
-    echo "$screen" > "$BAR_SCREEN_FILE"
-
-    local on_laptop="false"
-    [[ "$target" == eDP-1 ]] && on_laptop="true"
 
     # No usable monitor info (not on Hyprland / no jq): best-effort open, done.
     if [[ -z "$target" ]]; then
@@ -97,14 +105,18 @@ reopen_bar() {
     # Already on the right monitor — nothing to do.
     [[ "$(bar_on_monitor)" == "$target" ]] && return
 
-    eww close bar 2>/dev/null || true
-    sleep 0.3
-    eww open bar --screen "$screen" --arg on_laptop="$on_laptop" 2>/dev/null || true
-    sleep 0.5
-
-    # Verify it actually landed where we wanted; if so we're done, else retry
-    # (the layout may still be settling — e.g. eDP not disabled yet).
-    [[ "$(bar_on_monitor)" == "$target" ]] && return
+    # eww's screen order follows the Wayland registry, which is reshuffled by
+    # hotplug, so hyprctl's id order is only a first guess. If it lands on the
+    # wrong monitor, probe the other indices. The index that works is recorded
+    # for get-screen.sh so menus/OSD open on the same monitor.
+    count=$(hyprctl monitors -j 2>/dev/null \
+      | jq '[.[] | select((.disabled // false) == false)] | length' 2>/dev/null || echo 1)
+    for i in "$screen" $(seq 0 $((${count:-1} - 1))); do
+      if try_open "$i" "$target"; then
+        echo "$i" > "$BAR_SCREEN_FILE"
+        return
+      fi
+    done
 
     attempts=$((attempts + 1))
     sleep 0.5

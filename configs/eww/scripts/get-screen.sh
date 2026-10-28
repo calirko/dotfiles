@@ -64,5 +64,8 @@ read -r idx name < <(
 if [[ "$MODE" == "name" ]]; then
   echo "${name:-}"
 else
-  echo "${idx:-0}"
+  # bar.sh records the index it verified actually lands on the preferred
+  # monitor; eww's real order can differ from the id-sorted guess after hotplug.
+  verified=$(cat /tmp/eww-bar-screen 2>/dev/null || true)
+  echo "${verified:-${idx:-0}}"
 fi
