@@ -2,7 +2,7 @@
 inputDevice=alsa_input.usb-3142_Fifine_Microphone-00.mono-fallback
 
 [StreamOutputs]
-outputDevice=bluez_output.84_D3_52_7C_A8_38.1
+outputDevice=alsa_output.pci-0000_0a_00.6.analog-stereo
 plugins=equalizer#0
 visiblePage=pluginsPage
 visiblePlugin=equalizer#0

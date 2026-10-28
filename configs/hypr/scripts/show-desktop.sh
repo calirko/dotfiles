@@ -40,6 +40,14 @@ if [[ -s "$STATE_FILE" ]]; then
 
     : > "$STATE_FILE"
 else
+    # Don't hide anything while the focused window is fullscreen (games):
+    # an accidental SUPER+D mid-game shouldn't yank it away. 0 = none,
+    # 1 = maximized, 2+ = real fullscreen.
+    fullscreen=$(hyprctl activewindow -j | jq -r '.fullscreen // 0')
+    if (( fullscreen >= 2 )); then
+        exit 0
+    fi
+
     # Hide: stash every window on a currently-visible workspace.
     visible_workspaces=$(hyprctl monitors -j | jq -c '[.[].activeWorkspace.id]')
 
