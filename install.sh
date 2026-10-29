@@ -161,6 +161,33 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
     fi
 fi
 
+# raccoon: power-mode tile in the quick menu (eww/scripts/power-mode.sh).
+# A sudoers rule for the three `auto-cpufreq --force=…` commands, and a boot
+# unit that drops any forced mode so every boot starts on Auto.
+if [[ "$(uname -n)" == "raccoon" ]] && command -v auto-cpufreq >/dev/null 2>&1; then
+    echo ""
+    echo -e "${YELLOW}raccoon: installing power-mode sudoers rule and boot reset...${NC}"
+
+    if command -v sudo >/dev/null 2>&1; then
+        tmp=$(mktemp)
+        sed "s/^USERNAME /$USER /" "$REPO_DIR/configs/hypr/power-mode.sudoers" > "$tmp"
+        if sudo visudo -cf "$tmp" >/dev/null; then
+            sudo install -m 0440 -o root -g root "$tmp" /etc/sudoers.d/power-mode
+            echo -e "${GREEN}✓ sudoers rule installed${NC}"
+        else
+            echo -e "${YELLOW}⊘ sudoers rule failed visudo check — not installed${NC}"
+        fi
+        rm -f "$tmp"
+
+        sudo install -m 0644 "$REPO_DIR/configs/hypr/power-mode-reset.service" /etc/systemd/system/power-mode-reset.service
+        sudo systemctl daemon-reload
+        sudo systemctl enable power-mode-reset.service >/dev/null 2>&1
+        echo -e "${GREEN}✓ power mode resets to Auto on boot${NC}"
+    else
+        echo -e "${YELLOW}⊘ sudo not available — install configs/hypr/power-mode.sudoers and power-mode-reset.service manually${NC}"
+    fi
+fi
+
 # Auto-start Hyprland on tty1 login
 echo ""
 ZPROFILE="$HOME/.zprofile"

@@ -1,0 +1,5 @@
+# Lets the quick menu's power-mode tile force auto-cpufreq's governor without
+# a password: only these three exact commands. install.sh substitutes
+# USERNAME, checks the result with visudo -c and installs it as
+# /etc/sudoers.d/power-mode (raccoon only).
+USERNAME ALL=(root) NOPASSWD: /usr/bin/auto-cpufreq --force=powersave, /usr/bin/auto-cpufreq --force=performance, /usr/bin/auto-cpufreq --force=reset

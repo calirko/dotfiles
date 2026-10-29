@@ -4,7 +4,7 @@ set -euo pipefail
 # CPU usage (percentage, 0-100)
 cpu_usage() {
   awk '{u=$2+$4; t=$2+$4+$5; if(NR==1){ou=u; ot=t} else printf "%.0f", (u-ou)*100/(t-ot)}' \
-    <(grep 'cpu ' /proc/stat) <(sleep 0.3 && grep 'cpu ' /proc/stat)
+    <(grep 'cpu ' /proc/stat) <(sleep 1 && grep 'cpu ' /proc/stat)
 }
 
 # RAM usage (percentage, 0-100)
@@ -102,10 +102,34 @@ gpu_temp() {
   echo 0
 }
 
-# Output JSON
+# Bucket a value into 0-3 against three ascending thresholds.
+bucket() {
+  local v=$1 a=$2 b=$3 c=$4
+  if (( v < a )); then echo 0
+  elif (( v < b )); then echo 1
+  elif (( v < c )); then echo 2
+  else echo 3; fi
+}
+
+cpu=$(cpu_usage)
+ram=$(ram_usage)
+ct=$(cpu_temp)
+gt=$(gpu_temp)
+temp=$(( ct > gt ? ct : gt ))
+
+# Overall status is whichever of CPU load, memory or heat is worst. The menu
+# shows only the step; the raw numbers go in its tooltip.
+level=0
+for l in "$(bucket "$cpu" 20 60 90)" "$(bucket "$ram" 70 85 95)" "$(bucket "$temp" 70 80 90)"; do
+  (( l > level )) && level=$l
+done
+status=("Idle" "Working" "Heavy load" "Overloaded")
+
 jq -n -c \
-  --argjson cpu "$(cpu_usage)" \
-  --argjson ram "$(ram_usage)" \
-  --argjson cpu_temp "$(cpu_temp)" \
-  --argjson gpu_temp "$(gpu_temp)" \
-  '{cpu: $cpu, ram: $ram, cpu_temp: $cpu_temp, gpu_temp: $gpu_temp}'
+  --argjson cpu "$cpu" \
+  --argjson ram "$ram" \
+  --argjson cpu_temp "$ct" \
+  --argjson gpu_temp "$gt" \
+  --argjson level "$level" \
+  --arg status "${status[$level]}" \
+  '{cpu: $cpu, ram: $ram, cpu_temp: $cpu_temp, gpu_temp: $gpu_temp, level: $level, status: $status}'

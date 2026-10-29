@@ -46,6 +46,18 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
         echo -e "${YELLOW}⊘ sudo not available — remove /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
     fi
     echo ""
+
+    echo -e "${YELLOW}raccoon: removing power-mode sudoers rule and boot reset...${NC}"
+    if command -v sudo >/dev/null 2>&1; then
+        sudo rm -f /etc/sudoers.d/power-mode
+        sudo systemctl disable power-mode-reset.service >/dev/null 2>&1 || true
+        sudo rm -f /etc/systemd/system/power-mode-reset.service
+        sudo systemctl daemon-reload
+        echo -e "${GREEN}✓ power-mode rule and unit removed${NC}"
+    else
+        echo -e "${YELLOW}⊘ sudo not available — remove /etc/sudoers.d/power-mode and power-mode-reset.service manually${NC}"
+    fi
+    echo ""
 fi
 
 # Remove Hyprland autostart block from ~/.zprofile (mirror of install.sh)

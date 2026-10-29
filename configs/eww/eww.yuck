@@ -2,11 +2,11 @@
 ; VARIABLES & LISTENERS
 ; ─────────────────────────────────────────────
 
-(deflisten clock-data :initial '{"time":"00:00","date":""}' `scripts/watch-clock.sh`)
+(deflisten clock-data :initial '{"time":"00:00","date":"","hour":"0","minute":"00","long":""}' `scripts/watch-clock.sh`)
 
 (deflisten workspace-data :initial '{"workspaces":[],"active":1,"special":{"windows":0,"shown":false}}' `scripts/watch-workspaces.sh`)
 
-(deflisten weather-data :initial '{"temperature":"","icon":""}' `scripts/watch-weather.sh`)
+(deflisten weather-data :initial '{"ok":false,"temperature":"","condition":"","high":"","low":"","icon":"icons/cloud.svg"}' `scripts/watch-weather.sh`)
 
 (deflisten brightness-data :initial '{"has_brightness":"0","brightness_raw":0,"brightness_max":100}' `scripts/watch-brightness.sh`)
 
@@ -24,68 +24,84 @@
 
 (deflisten network-data :initial '{"connection":"wifi-offline","ssid":"","vpn_active":false,"vpn_name":""}' `scripts/watch-network.sh`)
 
-(deflisten active-window :initial "" `scripts/watch-active-window.sh`)
-
 (deflisten media-data :initial '{"title":"","artist":"","status":"Stopped","art":""}' `scripts/watch-media.sh`)
 
-(deflisten sensors-data :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0}' `scripts/watch-sensors.sh`)
+(deflisten sensors-data :initial '{"cpu":0,"ram":0,"cpu_temp":0,"gpu_temp":0,"level":0,"status":"Idle"}' `scripts/watch-sensors.sh`)
+
+; Polled rather than read once so a new ~/.face shows up without a restart.
+(defpoll avatar :interval "60s" :initial '{"path":"","fallback":true}' `scripts/avatar.sh`)
+
+; auto-cpufreq power mode (raccoon). power-mode.sh cycle also pushes the new
+; value with eww update, so the poll only catches outside changes.
+(defpoll power-mode :interval "10s" :initial '{"present":false,"mode":"auto"}' `scripts/power-mode.sh get`)
+
+(defpoll whoami :interval "60s" :initial '{"name":"","host":"","uptime":""}' `scripts/whoami.sh`)
 
 (include "menu.yuck")
 (include "osd.yuck")
 
 ; ─────────────────────────────────────────────
+; SHARED
+; ─────────────────────────────────────────────
+
+; User picture, painted as a background so border-radius clips it. The
+; fallback glyph is centred at a smaller size instead of covering the tile.
+(defwidget avatar-tile [size]
+  (box
+    :class "avatar ${avatar.fallback ? "avatar-fallback" : ""}"
+    :width size
+    :height size
+    :style "background-image: url('${avatar.path}');"))
+
+; ─────────────────────────────────────────────
 ; BAR WIDGETS
 ; ─────────────────────────────────────────────
 
-
-
-(defwidget bar-active-window []
-  (label
-    :class "bar-active-window"
-    :angle 90
-    :halign "start"
-    :truncate true
-    :limit-width 28
-    :text {active-window == "" ? "~" : active-window}))
-
+; Workspaces as dots: dim = empty, bright = has windows, tall = active.
+; Scrolling anywhere on the workspace group cycles the bar monitor's stack
+; (wraps, never opens a new workspace).
 (defwidget bar-workspaces []
+  (eventbox
+    :onscroll "~/.config/hypr/scripts/workspace-cycle.sh {} --monitor $(scripts/get-screen.sh name) --no-new &"
   (box
     :class "bar-workspaces"
     :orientation "v"
     :space-evenly false
-    :spacing 0
-    ; SUPER + S special workspace — pinned first so it never moves as
-    ; numbered workspaces come and go. Icon instead of a number: it's not
-    ; part of the regular sequence.
+    :spacing 4
+    ; SUPER + S special workspace, pinned first so it never moves as
+    ; numbered workspaces come and go.
     (button
-      :class "ws-btn ws-special ${workspace-data.special.shown ? "ws-active" : workspace-data.special.windows > 0 ? "ws-occupied" : "ws-empty"}"
+      :class "bar-icon-btn ws-special ${workspace-data.special.shown ? "ws-special-shown" : workspace-data.special.windows > 0 ? "ws-special-occupied" : ""}"
       :tooltip "Special workspace (SUPER + S)"
       :onclick "scripts/goto-workspace.sh special:magic &"
-      (image :path "icons/notches.svg" :image-width 16 :image-height 16))
+      (image :path "icons/stack.svg" :image-width 16 :image-height 16))
     ; the `for` lives in its own box: eww lays out a box's literal children
     ; before loop-generated ones, so a bare sibling button would jump above
     ; the workspace list instead of trailing it.
     (box
+      :class "ws-dots"
       :orientation "v"
       :space-evenly false
       :spacing 0
       (for ws in {workspace-data.workspaces}
         (button
           :class "ws-btn ${ws.id == workspace-data.active ? "ws-active" : ws.windows > 0 ? "ws-occupied" : "ws-empty"}"
+          :tooltip "Workspace ${ws.id}"
           :onclick "scripts/goto-workspace.sh ${ws.id} &"
-          (label :angle 90 :text "${ws.id}"))))
+          (box :class "ws-dot" :halign "center" :valign "center"))))
     (button
-      :class "ws-btn ws-add"
-      :tooltip "Go to the next free workspace"
-      :onclick "scripts/goto-workspace.sh emptym &"
-      (label :angle 90 :text "+"))))
+      :class "bar-icon-btn ws-add"
+      :tooltip "New workspace (SUPER + Down past the last)"
+      :onclick "~/.config/hypr/scripts/workspace-cycle.sh new --monitor $(scripts/get-screen.sh name) &"
+      (image :path "icons/plus.svg" :image-width 14 :image-height 14)))))
 
 (defwidget bar-volume []
   (button
-    :class "bar-icon-btn"
-    :tooltip "Volume: ${audio-data.volume}%  —  click to mute"
+    :class "bar-icon-btn ${audio-data.mute == "true" ? "bar-icon-muted" : ""}"
+    :tooltip "Volume: ${audio-data.volume}%  —  click to mute, scroll to change"
     :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
-    :onscroll "scripts/scroll-volume.sh {} &"
+    ; same script as the volume keys, so it also shows the OSD; {} is up/down
+    :onscroll "~/.config/hypr/scripts/volume-notify.sh {} 2% &"
     (image
       :path {audio-data.mute == "true"
         ? "icons/speaker-simple-x.svg"
@@ -99,92 +115,111 @@
 
 (defwidget bar-battery []
   (box
-    :class "bar-battery"
+    :class "bar-battery ${battery-data.capacity < 20 && battery-data.ac != 1 ? "battery-low" : ""}"
     :orientation "v"
     :visible {battery-data.has_battery == 1}
-    :halign "center"
-    :spacing 4
-    (progress
-      :class "battery-progress ${battery-data.capacity < 20 ? "battery-low" : battery-data.ac == 1 ? "battery-charging" : ""}"
-      :orientation "v"
-      :flipped true
-      :value {battery-data.capacity}
-      :min 0
-      :max 100)
-    (label
-      :class "bar-small-label"
-      :angle 90
-      :text "${battery-data.capacity}%")))
+    :tooltip "Battery: ${battery-data.capacity}%${battery-data.ac == 1 ? " — charging" : ""}"
+    :space-evenly false
+    :spacing 2
+    (image
+      :path {battery-data.ac == 1 ? "icons/battery-charging.svg"
+        : battery-data.capacity < 15 ? "icons/battery-empty.svg"
+        : battery-data.capacity < 40 ? "icons/battery-low.svg"
+        : battery-data.capacity < 65 ? "icons/battery-medium.svg"
+        : battery-data.capacity < 90 ? "icons/battery-high.svg"
+        : "icons/battery-full.svg"}
+      :image-width 16
+      :image-height 16)
+    (label :class "bar-small-label" :text "${battery-data.capacity}")))
 
+; Only shown while a power mode is forced; Auto keeps the bar unchanged.
+(defwidget bar-power-mode []
+  (button
+    :class "bar-icon-btn"
+    :visible {power-mode.present && power-mode.mode != "auto"}
+    :tooltip {power-mode.mode == "powersave" ? "Power saver (forced) — click to change" : "Performance (forced) — click to change"}
+    :onclick "scripts/power-mode.sh cycle &"
+    (image
+      :path {power-mode.mode == "powersave" ? "icons/leaf.svg" : "icons/speedometer.svg"}
+      :image-width 16
+      :image-height 16)))
+
+; Hour over minute, upright: easier to read than a rotated "1:52 PM".
 (defwidget bar-clock []
   (box
     :class "bar-clock"
     :orientation "v"
-    :halign "fill"
-    :spacing 2
     :space-evenly false
-    (label :class "bar-time" :angle 90 :text {clock-data.time})
-    (label :class "bar-day"  :angle 90 :text {substring(clock-data.date, 0, 3)})))
+    :tooltip {clock-data.long}
+    (label :class "bar-clock-h" :text {clock-data.hour})
+    (label :class "bar-clock-m" :text {clock-data.minute})))
 
 (defwidget bar-menu-btn []
   (button
     :class "bar-menu-btn ${menu-open ? "bar-menu-open" : ""}"
+    :tooltip "Quick menu (SUPER + /)"
     :onclick "scripts/toggle-menu.sh &"
-    (image :path "icons/squares-four.svg" :image-width 15 :image-height 15)))
+    (avatar-tile :size 30)))
 
 ; ─────────────────────────────────────────────
 ; BAR LAYOUT
 ; ─────────────────────────────────────────────
 
+; The window is transparent and full-height; the visible rail is .bar-rail,
+; inset by its margin so it floats. (Not "bar": eww classes the GTK window
+; after its name, so a .bar rule would paint the window as well.) Hyprland blurs only the opaque part
+; (ignore_alpha on the eww-bar layer rule).
+
 (defwidget bar [?on_laptop]
   (box
-    :class "bar ${on_laptop == "true" ? "bar-laptop" : ""}"
+    :class "bar-rail ${on_laptop == "true" ? "bar-laptop" : ""}"
     :orientation "v"
     :space-evenly false
     :hexpand false
 
-    ; ── top section: workspaces, then window title. Title goes last so its
-    ; changing length never shifts the workspace buttons. No divider between
-    ; them: the + button's border-bottom already separates the two.
     (box
       :class "bar-top"
       :orientation "v"
       :space-evenly false
       :vexpand true
       :valign "start"
-      (bar-workspaces)
-      (bar-active-window))
+      (bar-workspaces))
 
-    ; ── bottom section: status + menu
+    ; Three groups read by spacing alone: tight inside (tray icons 24px
+    ; apart), wide between (20px): tray, system (volume + battery), clock,
+    ; then the avatar.
     (box
       :class "bar-bottom"
       :orientation "v"
       :space-evenly false
       :valign "end"
-      :spacing 0
+      :spacing 20
       (systray
-            :class "systray"
-            :orientation "v"
-            :space-evenly true
-            :icon-size 17)
-      (box :class "bar-divider")
-      (bar-volume)
-      (bar-battery)
-      (box :class "bar-divider")
+        :class "systray"
+        :orientation "v"
+        :space-evenly false
+        :spacing 0
+        :icon-size 16)
+      (box :orientation "v" :space-evenly false :spacing 0
+        (bar-volume)
+        (bar-battery)
+        (bar-power-mode))
       (bar-clock)
-      (box :class "bar-divider")
       (bar-menu-btn))))
 
 ; ─────────────────────────────────────────────
 ; BAR WINDOW
 ; ─────────────────────────────────────────────
 
+; Width = 8px left margin + rail (48, or 52 on the laptop panel). The rail's
+; right edge sits on the reserved zone; Hyprland's gaps_out (8) puts windows,
+; the menu and the OSD the same distance away.
 (defwindow bar [?on_laptop]
   :monitor 0
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "${on_laptop == "true" ? "52" : "44"}px"
+    :width "${on_laptop == "true" ? "60" : "56"}px"
     :height "100%"
     :anchor "left center")
   :stacking "fg"

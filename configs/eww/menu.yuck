@@ -4,10 +4,15 @@
 
 ; ── Two windows opened/closed together (see toggle-menu.sh / close-menu.sh):
 ; the scrim gets its own blurred layer that just fades in place, while the
-; panel keeps a separate layer so it can still slide in from the edge.
+; panel keeps a separate layer so it can pop in beside the bar.
 
 ; Full-screen click catcher; Hyprland blurs what's behind it (layer rule on
 ; the eww-*-scrim namespaces).
+;
+; Its x is measured from the bar's reserved zone, so at 0 it would stop at
+; the bar and leave the strip under it sharp. The negative offset and 110%
+; width reach back under the bar, and still cover the whole screen on
+; monitors without one.
 (defwidget scrim [onclick]
   (eventbox
     :onclick onclick
@@ -20,9 +25,9 @@
 (defwindow menu_scrim
   :monitor 0
   :geometry (geometry
-    :x "0px"
+    :x "-80px"
     :y "0px"
-    :width "100%"
+    :width "110%"
     :height "100%"
     :anchor "left center")
   :stacking "fg"
@@ -34,185 +39,154 @@
 (defwindow wofi_scrim
   :monitor 0
   :geometry (geometry
-    :x "0px"
+    :x "-80px"
     :y "0px"
-    :width "100%"
+    :width "110%"
     :height "100%"
     :anchor "left center")
   :stacking "fg"
   :namespace "eww-wofi-scrim"
   (scrim :onclick "pkill -x wofi &"))
 
-; Panel-wide, not full-screen: Hyprland's "slide right" moves the whole layer
-; by its own width, so a full-screen layer travelled ~1600px and the 300px panel
-; only came into view during the last fifth of the slide. Clicks beside the
-; panel now land on the scrim, which closes the menu.
+; A full-height card beside the bar. Like the bar, the window is
+; transparent and the card floats inside it on an 8px top/bottom margin.
+; x is measured from the bar's reserved zone, not the screen edge, so 8px
+; (Hyprland's gaps_out) puts it exactly where a tiled window starts. Clicks
+; beside it land on the scrim, which closes the menu.
 (defwindow menu_overlay
   :monitor 0
   :geometry (geometry
-    :x "0px"
+    :x "8px"
     :y "0px"
-    :width "300px"
+    :width "340px"
     :height "100%"
-    :anchor "right center")
+    :anchor "left center")
   :stacking "fg"
   :namespace "eww-menu"
-  (menu-overlay-content))
+  (quick-menu-content))
 
 ; Whether the menu is open — set by toggle-menu.sh / close-menu.sh so the
 ; bar's menu button can show an active state.
 (defvar menu-open false)
 
-(defwidget menu-overlay-content []
-  (box
-    :orientation "h"
-    :space-evenly false
-    :hexpand true
-    :vexpand true
-    (quick-menu-content)))
+(defvar cal-month 1)
+(defvar cal-year 2024)
+(defpoll cal-today :interval "3600s" `date +%-d`)
 
 ; ── Panel content
+;
+; No dividers: sections are separated by the panel's spacing alone.
 
 (defwidget quick-menu-content []
   (box
     :class "quick-menu"
     :orientation "v"
     :space-evenly false
-    :spacing 0
-    (qm-datetime)
-    (box :class "qm-divider")
+    :vexpand true
+    :spacing 22
+    (qm-header)
+    (qm-weather)
     (qm-actions)
-    (box :class "qm-divider")
     (qm-media)
-    (box :class "qm-divider")
     (qm-sliders)
-    (box :class "qm-divider")
     (qm-connectivity)
-    (box :class "qm-divider")
-    (qm-system)
-    (box :class "qm-divider")
-    (qm-calendar)
-    (box :vexpand true)))
+    (qm-status)
+    ; calendar sits at the bottom of the card
+    (box :vexpand true)
+    (qm-calendar)))
 
-; ── Date & time
+; ── Who + when
 
-(defwidget qm-datetime []
-  (box
-    :class "qm-section qm-datetime"
-    :orientation "v"
-    :space-evenly false
-    :spacing 2
-    (label :class "qm-time" :halign "start" :text {clock-data.time})
-    (label :class "qm-date" :halign "start" :text {clock-data.date})))
+(defwidget qm-header []
+  (box :orientation "v" :space-evenly false :spacing 18
+    (box :orientation "h" :space-evenly false :spacing 12
+      (avatar-tile :size 40)
+      (box :orientation "v" :space-evenly false :valign "center" :spacing 1
+        (label :class "qm-name" :halign "start" :text {whoami.name})
+        (label :class "qm-host" :halign "start" :text "${whoami.host} · up ${whoami.uptime}")))
+    ; date on its own label: it must never depend on the weather feed
+    (box :orientation "v" :space-evenly false :spacing 4
+      (label :class "qm-time" :halign "start" :text {clock-data.time})
+      (label :class "qm-date" :halign "start" :text {clock-data.long}))))
 
-; ── Action grid: lock / restart / power / screenshot / DND
+; ── Weather: icon, temperature, condition and today's range. Hidden until
+; the first successful fetch; click opens the forecast in the browser.
+
+(defwidget qm-weather []
+  (button
+    :class "qm-row-btn"
+    :visible {weather-data.ok == true}
+    :tooltip "Open the forecast in the browser"
+    :onclick "(scripts/close-menu.sh; xdg-open 'https://weather.com/weather/today/l/-29.59,-51.16') &"
+    (box :orientation "h" :space-evenly false :spacing 12
+      (image :path {weather-data.icon} :image-width 22 :image-height 22)
+      (label :class "qm-weather-temp" :text {weather-data.temperature})
+      (box :orientation "v" :space-evenly false :spacing 1 :valign "center" :hexpand true
+        (label :class "qm-tile-title" :halign "start" :xalign 0 :text {weather-data.condition})
+        (label :class "qm-tile-sub" :halign "start" :xalign 0
+          :text "High ${weather-data.high} · Low ${weather-data.low}"))
+      (image :class "qm-dim-icon" :path "icons/caret-right.svg" :image-width 13 :image-height 13))))
+
+; ── Actions: lock / restart / power / screenshot (DND is a tile below)
+
+(defwidget qm-action [icon tooltip onclick ?active]
+  (button
+    :class "qm-action-btn ${active == "true" ? "qm-on" : ""}"
+    :hexpand true
+    :tooltip tooltip
+    :onclick onclick
+    (image :path "icons/${active == "true" ? "dark/" : ""}${icon}.svg" :image-width 18 :image-height 18)))
 
 (defwidget qm-actions []
-  (box
-    :class "qm-section qm-actions"
-    :orientation "h"
-    :space-evenly true
-    :spacing 0
+  (box :class "qm-actions" :orientation "h" :space-evenly true :spacing 8
+    (qm-action :icon "lock" :tooltip "Lock screen" :onclick "hyprlock &")
+    (qm-action :icon "arrow-counter-clockwise" :tooltip "Restart" :onclick "systemctl reboot &")
+    (qm-action :icon "power" :tooltip "Power off" :onclick "shutdown -h now &")
+    ; close the menu first and let the scrim's fade-out (~200ms) finish, or
+    ; the capture has the menu and blur in it
+    (qm-action :icon "camera" :tooltip "Screenshot to clipboard"
+      :onclick "(scripts/close-menu.sh; sleep 0.4; hyprshot -m output --clipboard-only) &")))
 
-    (button :class "qm-action-btn"
-      :tooltip "Lock screen"
-      :onclick "hyprlock &"
-      (image :path "icons/lock.svg" :image-width 15 :image-height 15))
-
-    (button :class "qm-action-btn"
-      :tooltip "Restart"
-      :onclick "systemctl reboot &"
-      (image :path "icons/arrow-counter-clockwise.svg" :image-width 15 :image-height 15))
-
-    ; red icon stacked over the gray one; CSS fades it in on hover
-    (button :class "qm-action-btn qm-action-power"
-      :tooltip "Power off"
-      :onclick "shutdown -h now &"
-      (overlay
-        (image :path "icons/power.svg" :image-width 15 :image-height 15)
-        (image :class "qm-action-power-hover" :path "icons/red/power.svg" :image-width 15 :image-height 15)))
-
-    (button :class "qm-action-btn"
-      :tooltip "Screenshot to clipboard"
-      ; close the menu first and let the scrim's fade-out (~200ms) finish, or
-      ; the capture has the menu and blur in it
-      :onclick "(scripts/close-menu.sh; sleep 0.4; hyprshot -m output --clipboard-only) &"
-      (image :path "icons/camera.svg" :image-width 15 :image-height 15))
-
-    (button :class "qm-action-btn ${mako-paused == "1" ? "qm-action-dnd" : ""}"
-      :tooltip {mako-paused == "1" ? "DND on — click to disable" : "DND off — click to enable"}
-      :onclick "scripts/toggle-dnd.sh &"
-      (image
-        :path {mako-paused == "1" ? "icons/red/bell-simple-slash.svg" : "icons/bell-simple.svg"}
-        :image-width 15 :image-height 15))))
-
-; ── Media player
-
-(defvar cal-month 1)
-(defvar cal-year 2024)
-(defpoll cal-today :interval "3600s" `date +%-d`)
+; ── Media player: art, title / artist, controls on one row
 
 (defwidget qm-media []
   (box
-    :class "qm-section qm-media"
-    :orientation "v"
+    :class "qm-media"
+    :orientation "h"
     :space-evenly false
     :spacing 12
     :visible {media-data.title != ""}
 
-    ; Cover art
-    (box :class "qm-media-art-wrap" :halign "fill"
-      ; painted as a background (not an image widget) so border-radius clips it
-      (box
-        :class "qm-media-art"
-        :visible {media-data.art != ""}
-        :style "background-image: url('${media-data.art}');")
-      (box
-        :class "qm-media-art-placeholder"
-        :visible {media-data.art == ""}
-        :hexpand true))
+    ; painted as a background (not an image widget) so border-radius clips it
+    (box
+      :class "qm-media-art ${media-data.art == "" ? "qm-media-art-empty" : ""}"
+      :valign "center"
+      :style {media-data.art != "" ? "background-image: url('${media-data.art}');" : ""})
 
-    ; Info
-    (box :orientation "v" :space-evenly false :spacing 2
-      (label
-        :class "qm-media-title"
-        :halign "start"
-        :truncate true
-        :limit-width 30
-        :width 268
-        :xalign 0
-        :text {media-data.title})
-      (label
-        :class "qm-media-artist"
-        :halign "start"
-        :truncate true
-        :limit-width 30
-        :width 268
-        :xalign 0
-        :text {media-data.artist}))
+    (box :orientation "v" :space-evenly false :spacing 2 :hexpand true :valign "center"
+      (label :class "qm-media-title" :halign "start" :xalign 0
+        :truncate true :limit-width 18 :text {media-data.title})
+      (label :class "qm-media-artist" :halign "start" :xalign 0
+        :truncate true :limit-width 22 :text {media-data.artist}))
 
-    ; Controls
-    (box :orientation "h" :space-evenly false :spacing 4 :halign "fill"
-      (button :class "qm-media-btn" :hexpand true
-        :onclick "playerctl previous &"
+    (box :orientation "h" :space-evenly false :spacing 2 :valign "center"
+      (button :class "qm-media-btn" :onclick "playerctl previous &"
         (image :path "icons/skip-back.svg" :image-width 14 :image-height 14))
-      (button :class "qm-media-btn qm-media-btn-play" :hexpand true
-        :onclick "playerctl play-pause &"
+      (button :class "qm-media-btn qm-media-btn-play" :onclick "playerctl play-pause &"
         (image
-          :path {media-data.status == "Playing" ? "icons/pause.svg" : "icons/play.svg"}
+          :path {media-data.status == "Playing" ? "icons/dark/pause.svg" : "icons/dark/play.svg"}
           :image-width 14 :image-height 14))
-      (button :class "qm-media-btn" :hexpand true
-        :onclick "playerctl next &"
+      (button :class "qm-media-btn" :onclick "playerctl next &"
         (image :path "icons/skip-forward.svg" :image-width 14 :image-height 14)))))
 
-; ── Sliders: volume / brightness / network info
+; ── Sliders: volume / brightness (also used by the OSD windows)
 ;
 ; :max is 101 because eww builds the GtkAdjustment with a page size of 1, so
 ; the top is only reachable at max - 1. :round-digits 0 keeps the value
 ; handed to onchange an integer instead of e.g. 99.6.
 
 (defwidget volume-slider []
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+    (box :class "qm-slider-row" :orientation "h" :space-evenly false :spacing 12 :halign "fill"
       (image
         :path {audio-data.mute == "true"
           ? "icons/speaker-simple-x.svg"
@@ -221,7 +195,7 @@
           : (audio-data.volume ?: 0) < 50
           ? "icons/speaker-simple-low.svg"
           : "icons/speaker-simple-high.svg"}
-        :image-width 14 :image-height 14)
+        :image-width 16 :image-height 16)
       (scale
         :class "qm-slider"
         :min 0 :max 101 :round-digits 0
@@ -229,16 +203,15 @@
         :onchange "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ {}% &"
         :orientation "h"
         :hexpand true)
-      (label :class "qm-slider-value" :text "${audio-data.volume}%"))
-    )
+      (label :class "qm-slider-value" :xalign 1 :text "${audio-data.volume}")))
 
 (defwidget brightness-slider []
-    (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
+    (box :class "qm-slider-row" :orientation "h" :space-evenly false :spacing 12 :halign "fill"
       :visible {brightness-data.has_brightness == "1" && brightness-data.brightness_max > 0}
       (image
         :path {round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0) > 30
           ? "icons/sun.svg" : "icons/moon.svg"}
-        :image-width 14 :image-height 14)
+        :image-width 16 :image-height 16)
       (scale
         :class "qm-slider"
         :min 0 :max 101 :round-digits 0
@@ -246,109 +219,112 @@
         :onchange "brightnessctl set {}% &"
         :orientation "h"
         :hexpand true)
-      (label :class "qm-slider-value"
-        :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}%"))
-    )
+      (label :class "qm-slider-value" :xalign 1
+        :text "${round((brightness-data.brightness_raw * 100.0) / brightness-data.brightness_max, 0)}")))
 
 (defwidget qm-sliders []
-  (box
-    :class "qm-section qm-sliders"
-    :orientation "v"
-    :space-evenly false
-    :spacing 10
-
-    ; Volume
+  (box :class "qm-sliders" :orientation "v" :space-evenly false :spacing 6
     (volume-slider)
-
-    ; Brightness
     (brightness-slider)))
 
 ; ── Connectivity: wifi / bluetooth / vpn / keyboard backlight
+;
+; Two-line tiles. A tile that's on turns white (icons switch to icons/dark/).
+; limit-width keeps long SSIDs / device names from widening the panel.
 
-; One grid cell, a button that opens a TUI (open-tui.sh). limit-width keeps
-; long SSIDs / device names from widening the panel — each column is only
-; ~128px. Cells carry their own padding for the hover background.
-(defwidget qm-conn-item [icon text tooltip onclick]
+(defwidget qm-tile [icon title sub on tooltip onclick]
   (button
-    :class "qm-conn-item qm-conn-btn"
+    :class "qm-tile ${on ? "qm-on" : ""}"
     :hexpand true
     :tooltip tooltip
     :onclick onclick
-    (box :orientation "h" :space-evenly false :spacing 8
-      (image :path icon :image-width 14 :image-height 14)
-      (label
-        :class "qm-connectivity-label"
-        :halign "start"
-        :hexpand true
-        :truncate true
-        :limit-width 13
-        :text text))))
-
-; Keyboard backlight cell: click cycles the level; one pip per step, lit up
-; to the current level, so the step reads at a glance.
-(defwidget qm-kb-backlight []
-  (button
-    :class "qm-conn-item qm-conn-btn"
-    :hexpand true
-    :tooltip "Keyboard backlight — click to cycle"
-    :onclick "scripts/cycle-kb-backlight.sh &"
-    (box :orientation "h" :space-evenly false :spacing 8
-      (image :path "icons/keyboard.svg" :image-width 14 :image-height 14)
-      (label
-        :class "qm-connectivity-label"
-        :halign "start"
-        :hexpand true
-        :text {kb-backlight.level == 0 ? "Off"
-          : kb-backlight.level == kb-backlight.max ? "High"
-          : kb-backlight.max == 2 ? "Low"
-          : "${kb-backlight.level}/${kb-backlight.max}"})
-      (box :class "qm-kb-pips" :orientation "h" :space-evenly false :spacing 3 :valign "center"
-        (for lit in {kb-backlight.steps}
-          (box :class "qm-kb-pip ${lit ? "qm-kb-pip-on" : ""}"))))))
+    (box :orientation "h" :space-evenly false :spacing 10
+      (image :path "icons/${on ? "dark/" : ""}${icon}.svg" :image-width 18 :image-height 18)
+      (box :orientation "v" :space-evenly false :spacing 1 :valign "center"
+        (label :class "qm-tile-title" :halign "start" :xalign 0 :text title)
+        (label :class "qm-tile-sub" :halign "start" :xalign 0
+          :truncate true :limit-width 13 :text sub)))))
 
 (defwidget qm-connectivity []
-  (box
-    :class "qm-section qm-connectivity"
-    :orientation "v"
-    :space-evenly false
-    :spacing 2
+  (box :orientation "v" :space-evenly false :spacing 8
 
-    (box :orientation "h" :space-evenly true :spacing 4
-      (qm-conn-item
-        :icon {network-data.connection == "wifi-strength-4" ? "icons/wifi-high.svg"
-          : network-data.connection == "wifi-strength-3" ? "icons/wifi-medium.svg"
-          : network-data.connection == "wifi-strength-2" ? "icons/wifi-low.svg"
-          : network-data.connection == "wifi-strength-1" ? "icons/wifi-none.svg"
-          : network-data.connection == "wifi-strength-0" ? "icons/wifi-none.svg"
-          : network-data.connection == "ethernet-connected" ? "icons/network.svg"
-          : "icons/wifi-slash.svg"}
-        :text {network-data.connection == "ethernet-connected" ? "Ethernet"
+    (box :orientation "h" :space-evenly true :spacing 8
+      (qm-tile
+        :icon {network-data.connection == "wifi-strength-4" ? "wifi-high"
+          : network-data.connection == "wifi-strength-3" ? "wifi-medium"
+          : network-data.connection == "wifi-strength-2" ? "wifi-low"
+          : network-data.connection == "wifi-strength-1" ? "wifi-none"
+          : network-data.connection == "wifi-strength-0" ? "wifi-none"
+          : network-data.connection == "ethernet-connected" ? "network"
+          : "wifi-slash"}
+        :title {network-data.connection == "ethernet-connected" ? "Ethernet" : "Wi-Fi"}
+        :sub {network-data.connection == "ethernet-connected" ? "Connected"
           : network-data.connection == "wifi-offline" ? "Offline"
-          : network-data.ssid != "" ? network-data.ssid : "Wi-Fi"}
+          : network-data.ssid != "" ? network-data.ssid : "On"}
+        :on {network-data.connection != "wifi-offline"}
         :tooltip "Network — open nmtui"
         :onclick "scripts/open-tui.sh nmtui &")
 
-      (qm-conn-item
-        :icon {bluetooth-data.state == "connected" ? "icons/bluetooth-connected.svg"
-          : bluetooth-data.state == "disabled" ? "icons/bluetooth-x.svg"
-          : "icons/bluetooth.svg"}
-        :text {bluetooth-data.count > 1 ? "${bluetooth-data.count} devices"
+      (qm-tile
+        :icon {bluetooth-data.state == "connected" ? "bluetooth-connected"
+          : bluetooth-data.state == "disabled" ? "bluetooth-x"
+          : "bluetooth"}
+        :title "Bluetooth"
+        :sub {bluetooth-data.count > 1 ? "${bluetooth-data.count} devices"
           : bluetooth-data.count == 1 ? bluetooth-data.devices[0].name
           : bluetooth-data.state == "disabled" ? "Off"
           : "On"}
+        :on {bluetooth-data.state != "disabled"}
         :tooltip "Bluetooth — open bluetui"
         :onclick "scripts/open-tui.sh bluetui &"))
 
-    (box :orientation "h" :space-evenly true :spacing 4
-      (qm-conn-item
-        :icon {network-data.vpn_active ? "icons/shield-check.svg" : "icons/shield-slash.svg"}
-        :text {network-data.vpn_active ? network-data.vpn_name : "VPN off"}
+    ; VPN and DND exist everywhere; backlight and power mode are laptop-only
+    ; and share the last row, so on shark that row disappears whole.
+    (box :orientation "h" :space-evenly true :spacing 8
+      (qm-tile
+        :icon {network-data.vpn_active ? "shield-check" : "shield-slash"}
+        :title "VPN"
+        :sub {network-data.vpn_active ? network-data.vpn_name : "Off"}
+        :on {network-data.vpn_active}
         :tooltip "VPN — open nmtui"
         :onclick "scripts/open-tui.sh nmtui &")
-      ; outer box keeps VPN in the left column when there's no backlight
+      (qm-tile
+        :icon {mako-paused == "1" ? "bell-simple-slash" : "bell-simple"}
+        :title "Do Not Disturb"
+        :sub {mako-paused == "1" ? "On" : "Off"}
+        :on {mako-paused == "1"}
+        :tooltip "Silence notifications (critical ones still show)"
+        :onclick "scripts/toggle-dnd.sh &"))
+
+    (box :orientation "h" :space-evenly true :spacing 8
+      :visible {kb-backlight.present || power-mode.present}
+      ; outer boxes keep each tile in its column when the other is missing
       (box :hexpand true
         (box :hexpand true :visible {kb-backlight.present}
-          (qm-kb-backlight))))
+          (qm-tile
+            :icon "keyboard"
+            :title "Backlight"
+            :sub {kb-backlight.level == 0 ? "Off"
+              : kb-backlight.level == kb-backlight.max ? "High"
+              : kb-backlight.max == 2 ? "Low"
+              : "${kb-backlight.level} of ${kb-backlight.max}"}
+            :on {kb-backlight.level > 0}
+            :tooltip "Keyboard backlight — click to cycle"
+            :onclick "scripts/cycle-kb-backlight.sh &")))
+      ; Auto = auto-cpufreq's charger/battery switching; white = forced
+      (box :hexpand true
+        (box :hexpand true :visible {power-mode.present}
+          (qm-tile
+            :icon {power-mode.mode == "powersave" ? "leaf"
+              : power-mode.mode == "performance" ? "speedometer"
+              : "scales"}
+            :title "Power mode"
+            :sub {power-mode.mode == "powersave" ? "Power saver"
+              : power-mode.mode == "performance" ? "Performance"
+              : "Auto"}
+            :on {power-mode.mode != "auto"}
+            :tooltip "Click to cycle: Auto → Power saver → Performance. Back to Auto on reboot."
+            :onclick "scripts/power-mode.sh cycle &"))))
 
     ; Connected bluetooth devices with battery; "–" when a device doesn't
     ; report one (see watch-bluetooth.sh).
@@ -356,43 +332,25 @@
       :visible {bluetooth-data.count > 0}
       (for dev in {bluetooth-data.devices}
         (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-          (image :path {dev.icon} :image-width 14 :image-height 14)
-          (label :class "qm-system-label" :halign "start" :hexpand true
+          (image :class "qm-dim-icon" :path {dev.icon} :image-width 16 :image-height 16)
+          (label :class "qm-row-label" :halign "start" :hexpand true
             :truncate true :limit-width 26
             :text {dev.name})
-          (label :class "qm-system-value" :xalign 1
+          (label :class "qm-row-value" :xalign 1
             :text {dev.battery >= 0 ? "${dev.battery}%" : "–"}))))))
 
-; ── System stats: CPU / memory / GPU — the whole block opens btop
+; ── System status: one dot and one word (Idle → Overloaded, from
+; sensors.sh). The numbers live in the tooltip; click opens btop.
 
-(defwidget qm-system []
+(defwidget qm-status []
   (button
-    :class "qm-section qm-system qm-system-btn"
-    :tooltip "Open btop"
+    :class "qm-status qm-status-${sensors-data.level}"
+    :tooltip "CPU ${sensors-data.cpu}% · Memory ${sensors-data.ram}%${sensors-data.cpu_temp > 0 ? " · CPU ${sensors-data.cpu_temp}°" : ""}${sensors-data.gpu_temp > 0 ? " · GPU ${sensors-data.gpu_temp}°" : ""}"
     :onclick "scripts/open-tui.sh btop &"
-    (box
-      :orientation "v"
-      :space-evenly false
-      :spacing 10
-
-      (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-        (image :path "icons/cpu.svg" :image-width 14 :image-height 14)
-        (label :class "qm-system-label" :halign "start" :hexpand true :text "CPU")
-        (label :class "qm-system-value"
-          :visible {sensors-data.cpu_temp > 0}
-          :text "${sensors-data.cpu_temp}°")
-        (label :class "qm-system-value" :text "${sensors-data.cpu}%"))
-
-      (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-        (image :path "icons/memory.svg" :image-width 14 :image-height 14)
-        (label :class "qm-system-label" :halign "start" :hexpand true :text "Memory")
-        (label :class "qm-system-value" :text "${sensors-data.ram}%"))
-
-      (box :orientation "h" :space-evenly false :spacing 10 :halign "fill"
-        :visible {sensors-data.gpu_temp > 0}
-        (image :path "icons/graphics-card.svg" :image-width 14 :image-height 14)
-        (label :class "qm-system-label" :halign "start" :hexpand true :text "GPU")
-        (label :class "qm-system-value" :text "${sensors-data.gpu_temp}°")))))
+    (box :orientation "h" :space-evenly false :spacing 10
+      (box :class "qm-status-dot" :valign "center")
+      (label :class "qm-status-label" :halign "start" :hexpand true :text {sensors-data.status})
+      (image :class "qm-dim-icon" :path "icons/caret-right.svg" :image-width 13 :image-height 13))))
 
 ; ── Calendar
 
@@ -406,7 +364,7 @@
     (box :orientation "h" :space-evenly false :halign "fill" :spacing 0
       (button :class "qm-cal-nav"
         :onclick "scripts/cal-nav.sh prev ${cal-month} ${cal-year} &"
-        (image :path "icons/caret-left.svg" :image-width 12 :image-height 12))
+        (image :path "icons/caret-left.svg" :image-width 13 :image-height 13))
       (label :class "qm-cal-header" :hexpand true :halign "center"
         :text {(cal-month == 1  ? "January"
               : cal-month == 2  ? "February"
@@ -422,7 +380,7 @@
               : "December") + " " + cal-year})
       (button :class "qm-cal-nav"
         :onclick "scripts/cal-nav.sh next ${cal-month} ${cal-year} &"
-        (image :path "icons/caret-right.svg" :image-width 12 :image-height 12)))
+        (image :path "icons/caret-right.svg" :image-width 13 :image-height 13)))
 
     (calendar
       :class "qm-cal"

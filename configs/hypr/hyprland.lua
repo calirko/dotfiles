@@ -148,29 +148,6 @@ if hostname == "raccoon" then
     hl.bind("switch:on:Lid Switch", handle_lid_close, { locked = true })
     hl.bind("switch:off:Lid Switch", handle_lid_open, { locked = true })
 
-    -- Workspaces 1-8 are statically bound to the external monitors. That
-    -- binding holds even while those monitors are disconnected, so on a
-    -- laptop-only boot (no DP-1/HDMI-A-1) Hyprland can't place anything on
-    -- 1-8 and falls through to the next free id (observed: workspace 9).
-    -- Give eDP-1 its own bound range only when no external monitor is
-    -- present, so a laptop-only session starts on workspace 1 instead.
-    if external_monitor_connected() then
-        hl.workspace_rule({ monitor = "DP-1", workspace = "1", default = true })
-        hl.workspace_rule({ monitor = "DP-1", workspace = "2" })
-        hl.workspace_rule({ monitor = "DP-1", workspace = "3" })
-        hl.workspace_rule({ monitor = "DP-1", workspace = "4" })
-        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "5", default = true })
-        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "6" })
-        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "7" })
-        hl.workspace_rule({ monitor = "HDMI-A-1", workspace = "8" })
-    else
-        hl.workspace_rule({ monitor = "eDP-1", workspace = "1", default = true })
-        hl.workspace_rule({ monitor = "eDP-1", workspace = "2" })
-        hl.workspace_rule({ monitor = "eDP-1", workspace = "3" })
-        hl.workspace_rule({ monitor = "eDP-1", workspace = "4" })
-    end
-
-
     hl.config({
         input = {
             touchpad = {
@@ -208,17 +185,6 @@ elseif hostname == "shark" then
         mode     = "1920x1080@75",
         position = "0x0",
         scale    = "1",
-    })
-
-    hl.workspace_rule({
-        monitor = "HDMI-A-1",
-        workspace = "1",
-        default = true,
-    })
-
-    hl.workspace_rule({
-        monitor = "HDMI-A-1",
-        workspace = "2",
     })
 
     hl.config({
@@ -276,8 +242,8 @@ hl.env("GTK_THEME", "adw-gtk3-dark")
 
 hl.config({
     general = {
-        gaps_in = 3,
-        gaps_out = 6,
+        gaps_in = 4,
+        gaps_out = 8, -- matches the eww bar's 8px float margin
         border_size = 0,
         resize_on_border = false,
         allow_tearing = false,
@@ -298,7 +264,7 @@ hl.config({
         inactive_opacity = 0.95,
         dim_inactive = true,
         dim_strength = 0.1,
-        rounding = 9,
+        rounding = 16, -- same as the eww rail and mako cards ($r-xl)
     },
 
     dwindle = {
@@ -356,8 +322,9 @@ hl.animation({ leaf = "layersOut", enabled = true, speed = 2, bezier = "exit", s
 hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 2, bezier = "smooth" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 2, bezier = "smooth" })
 -- In and out inherit one curve + speed so both workspaces move as a single
--- strip; a faster "out" pulled ahead and opened a gap mid-slide.
-hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "slide", style = "slide" })
+-- strip; a faster "out" pulled ahead and opened a gap mid-slide. Vertical to
+-- match the bar: workspaces are stacked top to bottom there.
+hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "slide", style = "slidevert" })
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 3, bezier = "snappy" })
 
 local mainMod = "SUPER"
@@ -385,10 +352,26 @@ hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"))
 hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd("~/.config/eww/scripts/toggle-menu.sh"))
 hl.bind("escape", hl.dsp.exec_cmd("~/.config/eww/scripts/close-menu.sh"), { non_consuming = true })
 
-hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "left" }))
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
-hl.bind(mainMod .. " + up", hl.dsp.focus({ direction = "up" }))
-hl.bind(mainMod .. " + down", hl.dsp.focus({ direction = "down" }))
+-- Arrows: Left / Right switch monitors, Up / Down switch workspaces on the
+-- focused monitor. SHIFT takes the focused window along; ALT moves focus
+-- between windows instead.
+hl.bind(mainMod .. " + left", hl.dsp.focus({ monitor = "l" }))
+hl.bind(mainMod .. " + right", hl.dsp.focus({ monitor = "r" }))
+hl.bind(mainMod .. " + SHIFT + left", hl.dsp.window.move({ monitor = "l" }))
+hl.bind(mainMod .. " + SHIFT + right", hl.dsp.window.move({ monitor = "r" }))
+
+hl.bind(mainMod .. " + ALT + left", hl.dsp.focus({ direction = "left" }))
+hl.bind(mainMod .. " + ALT + right", hl.dsp.focus({ direction = "right" }))
+hl.bind(mainMod .. " + ALT + up", hl.dsp.focus({ direction = "up" }))
+hl.bind(mainMod .. " + ALT + down", hl.dsp.focus({ direction = "down" }))
+
+-- Workspaces aren't pinned to monitors: each monitor keeps its own stack,
+-- shown top to bottom as dots on the bar. Up / Down move through the focused
+-- monitor's stack; Down past the last opens a new one (scripts/workspace-cycle.sh).
+hl.bind(mainMod .. " + up", hl.dsp.exec_cmd("~/.config/hypr/scripts/workspace-cycle.sh prev"))
+hl.bind(mainMod .. " + down", hl.dsp.exec_cmd("~/.config/hypr/scripts/workspace-cycle.sh next"))
+hl.bind(mainMod .. " + SHIFT + up", hl.dsp.exec_cmd("~/.config/hypr/scripts/workspace-cycle.sh prev move"))
+hl.bind(mainMod .. " + SHIFT + down", hl.dsp.exec_cmd("~/.config/hypr/scripts/workspace-cycle.sh next move"))
 
 for i = 1, 10 do
     local key = i % 10
@@ -396,8 +379,8 @@ for i = 1, 10 do
     hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
 end
 
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
+hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "m+1" }))
+hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "m-1" }))
 
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
@@ -432,20 +415,43 @@ hl.layer_rule({
     order = 3,
 })
 
+-- Glass panels (eww.scss): blur what's behind them. ignore_alpha keeps the
+-- blur to the visible card; the transparent window margins stay sharp.
 hl.layer_rule({
-    match = { namespace = "eww-menu" },
-    animation = "slide right",
+    match = { namespace = "^eww-menu$" },
+    animation = "popin 94%",
+    blur = true,
+    ignore_alpha = 0.2,
     order = 1,
 })
 
--- wofi in front of its blur scrim (hypr/scripts/wofi.sh), same as the panel.
+hl.layer_rule({
+    match = { namespace = "^eww-osd$" },
+    animation = "fade",
+    blur = true,
+    ignore_alpha = 0.2,
+})
+
+-- wofi in front of its blur scrim (hypr/scripts/wofi.sh), same as the panel,
+-- and glass like it: blur only the card, not the transparent corners.
 hl.layer_rule({
     match = { namespace = "^wofi$" },
+    blur = true,
+    ignore_alpha = 0.2,
     order = 1,
 })
 
+-- mako's cards are glass too (mako/config).
 hl.layer_rule({
-    match = { namespace = "eww-bar" },
+    match = { namespace = "^notifications$" },
+    blur = true,
+    ignore_alpha = 0.2,
+})
+
+hl.layer_rule({
+    match = { namespace = "^eww-bar$" },
+    blur = true,
+    ignore_alpha = 0.2, -- blur the rail only, not the transparent margin
     order = 2,
 })
 

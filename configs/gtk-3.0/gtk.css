@@ -133,6 +133,23 @@ entry placeholder {
     color: #6b6b6b;
 }
 
+/* wofi's search field. This file loads at user priority, above wofi's own
+   style.css, so the entry rules above would win there; these ids only exist
+   in wofi. Same values as wofi/style.css. */
+#outer-box #input {
+    background-color: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+#outer-box #input:focus-within {
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+#outer-box #input placeholder {
+    color: rgba(255, 255, 255, 0.46);
+}
+
 /* ── Selection ────────────────────────────── */
 
 *:selected {

@@ -1,21 +1,26 @@
+; Volume / brightness OSD: a small glass card at the bottom of the screen,
+; beside the bar. x is measured from the bar's reserved zone, like the menu.
+
 (defwindow osd-volume
   :monitor 0
   :geometry (geometry
-    :x "6px" :y "6px"
-    :width "260px"
+    :x "8px" :y "8px"
+    :width "280px"
     :anchor "bottom left")
   :stacking "overlay"
   :exclusive false
   :focusable false
-  (volume-slider))
+  :namespace "eww-osd"
+  (box :class "osd" (volume-slider)))
 
 (defwindow osd-brightness
   :monitor 0
   :geometry (geometry
-    :x "6px" :y "6px"
-    :width "260px"
+    :x "8px" :y "8px"
+    :width "280px"
     :anchor "bottom left")
   :stacking "overlay"
   :exclusive false
   :focusable false
-  (brightness-slider))
+  :namespace "eww-osd"
+  (box :class "osd" (brightness-slider)))

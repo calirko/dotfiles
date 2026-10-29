@@ -1,643 +1,638 @@
+/* ---------------------------------------------
+   Glass, grayscale.
+
+   Panels are translucent black over Hyprland's blur (layer rules in
+   hyprland.lua), so the wallpaper decides how they read. All foreground and
+   fill colors are white at fixed alphas: they keep the same contrast whatever
+   the blur shows through. Groups are separated by spacing, not lines.
+   Rounded rectangles only, never full circles, except the status and
+   workspace dots.
+
+   Icons are white SVGs (icons/), dimmed with opacity. icons/dark/ holds
+   copies for white "on" surfaces.
+   --------------------------------------------- */
+
+// panel glass: dark enough that white text stays readable over a bright
+// wallpaper patch
+$glass-bar:   rgba(10, 10, 10, 0.74);
+$glass-panel: rgba(14, 14, 14, 0.78);
+$glass-edge:  rgba(255, 255, 255, 0.08);
+
+// foreground
+$fg:   rgba(255, 255, 255, 0.95);  // primary text, active icons
+$fg-2: rgba(255, 255, 255, 0.68);  // secondary text
+$fg-3: rgba(255, 255, 255, 0.46);  // hints, empty states
+
+// fills on glass
+$fill:        rgba(255, 255, 255, 0.08);
+$fill-hover:  rgba(255, 255, 255, 0.13);
+$fill-active: rgba(255, 255, 255, 0.19);
+
+// "on" surfaces: near-white with dark text
+$on:     rgba(255, 255, 255, 0.92);
+$on-hov: rgba(255, 255, 255, 0.84);
+$ink:    #161616;
+$ink-2:  rgba(22, 22, 22, 0.62);
+
+// radii
+$r-sm: 6px;
+$r-md: 8px;
+$r-lg: 12px;
+$r-xl: 16px;
+$r-2x: 20px;
+
+$ease: 160ms ease;
+
 * {
     all: unset;
     font-family: "Geist", sans-serif;
     font-weight: 400;
     font-size: 14px;
-    color: #d6d6d6;
+    color: $fg;
 }
 
-.osd-volume {
-    background: #1f1f1f;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 10px;
+/* eww windows are transparent; only the cards inside them are painted.
+   Without this the GTK theme gives every window a faint background and a
+   rounded shadow, visible in the bar's margin. */
+window,
+window.background,
+decoration {
+    background: transparent;
+    box-shadow: none;
+    border: none;
 }
 
-.osd-brightness {
-    background: #1f1f1f;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 10px;
+image {
+    opacity: 0.9;
 }
 
-.bar {
-    background: #000000;
-    /* border-right: 1px solid rgba(255, 255, 255, 0.06); */
-    min-width: 44px;
-    font-family: "Geist Mono", monospace;
+/* ---------------------------------------------
+   BAR
+   --------------------------------------------- */
+
+.bar-rail {
+    background: $glass-bar;
+    border: 1px solid $glass-edge;
+    border-radius: $r-xl;
+    margin: 8px 0 8px 8px;
+    padding: 8px 0 10px;
+    min-width: 48px;
 }
 
-.bar-top {
-    padding-bottom: 0;
-}
-
-.bar-divider {
-    min-height: 1px;
-    min-width: 30px;
-    background: rgba(255, 255, 255, 0.10);
-}
-
-/* LAPTOP PANEL: bar renders a bit small at eDP-1's native scale, so bump
-   the sidebar width slightly when the bar is on the laptop screen. */
-
-.bar-laptop,
-.bar-laptop .bar-active-window,
-.bar-laptop .ws-btn,
-.bar-laptop .bar-icon-btn,
-.bar-laptop .bar-menu-btn {
+/* LAPTOP PANEL: the bar renders small at eDP-1's native scale, so widen the
+   rail a little there. */
+.bar-laptop {
     min-width: 52px;
 }
 
-.bar-active-window {
-    font-size: 13px;
-    font-weight: 400;
-    color: #8a8a8a;
-    letter-spacing: 0.05em;
-    padding: 12px 0 10px;
-    min-width: 44px;
-}
-
-/* WORKSPACES */
-
-.ws-btn {
-    all: unset;
-    border-radius: 0px;
-    min-width: 44px;
-    min-height: 40px;
-    font-size: 13px;
-    font-weight: 400;
-    color: #6b6b6b;
-    letter-spacing: 0.04em;
-    transition: background-color 150ms ease;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
-    label {
-        font-size: 13px;
-        color: #6b6b6b;
-    }
-
-    &:hover {
-        background: #0d0d0d;
-
-        label {
-            color: #8a8a8a;
-        }
-    }
-}
-
-.ws-occupied {
-    label {
-        color: #8a8a8a;
-    }
-}
-
-.ws-active {
-    background: #1f1f1f;
-
-    label {
-        color: #ebebeb;
-    }
-
-    &:hover {
-        background: #262626;
-    }
-}
-
-/* "+" - always-visible jump to the next free workspace */
-
-.ws-add {
-    label {
-        color: #4a4a4a;
-        font-size: 15px;
-    }
-
-    &:hover label {
-        color: #8a8a8a;
-    }
-}
-
-/* SUPER + S special workspace: state comes from the shared ws-btn
-   hover / ws-active backgrounds; the icon itself is a baked #8a8a8a svg. */
-
-.ws-special image {
-    all: unset;
-}
-
-/* STATUS ICON BUTTONS */
-
+/* Square-ish icon buttons, centred in the rail. */
 .bar-icon-btn {
-    min-width: 44px;
-    min-height: 40px;
-    transition: background-color 150ms ease;
+    min-width: 34px;
+    min-height: 34px;
+    margin: 0 7px;
+    border-radius: $r-md;
+    transition: background-color $ease;
 
     image {
-        all: unset;
+        opacity: 0.86;
     }
 
     &:hover {
-        background: #0d0d0d;
-    }
-}
+        background: $fill-hover;
 
-/* BATTERY */
-
-.bar-battery {
-    min-width: 44px;
-    padding-top: 10px;
-    padding-bottom: 5px;
-}
-
-.battery-progress {
-    padding-right: 20px;
-}
-
-.battery-progress trough {
-    min-width: 2px;
-    min-height: 37px;
-    background: #1a1a1a;
-    border-radius: 1px;
-}
-
-.battery-progress progress {
-    min-width: 2px;
-    background: #4a4a4a;
-    transition: all 1s ease;
-    border-radius: 1px;
-}
-
-.battery-low progress {
-    background: #f5f5f5;
-}
-.battery-charging progress {
-    background: #8a8a8a;
-}
-
-.bar-small-label {
-    font-size: 12px;
-    font-weight: 400;
-    color: #8a8a8a;
-    letter-spacing: 0.04em;
-}
-
-/* CLOCK */
-
-/* One surface step up from the bar (g-000 -> g-100) so the clock block
-   reads as its own panel instead of floating on the bar background.
-   Full-bleed: no radius or side margin, so it spans the bar edge to edge. */
-.bar-clock {
-    background: #0d0d0d;
-    border-radius: 0;
-    margin: 0;
-}
-
-.bar-time {
-    font-size: 14px;
-    font-weight: 400;
-    color: #8a8a8a;
-    letter-spacing: 0.08em;
-    margin: 5px 0;
-    margin-top: 12px;
-}
-
-.bar-day {
-    font-size: 13px;
-    font-weight: 400;
-    color: #8a8a8a;
-    letter-spacing: 0.08em;
-    margin-bottom: 12px;
-}
-
-/* MENU BUTTON */
-
-.bar-menu-btn {
-    min-width: 44px;
-    min-height: 40px;
-    transition: background-color 150ms ease;
-
-    image {
-        all: unset;
-    }
-
-    &:hover {
-        background: #0d0d0d;
-    }
-    &:active {
-        background: #1a1a1a;
-    }
-
-    /* quick menu open: same step as the active workspace button */
-    &.bar-menu-open {
-        background: #1f1f1f;
-
-        &:hover {
-            background: #262626;
-        }
-    }
-}
-
-/* SCRIM */
-
-.scrim-box {
-    background: transparent;
-}
-
-/* QUICK MENU */
-
-.quick-menu {
-    background: #0d0d0d;
-    border-left: 1px solid rgba(255, 255, 255, 0.06);
-    min-width: 300px;
-}
-
-.qm-section {
-    padding: 16px;
-}
-
-.qm-divider {
-    min-height: 1px;
-    background: rgba(255, 255, 255, 0.06);
-    margin: 0;
-}
-
-.qm-time {
-    font-size: 32px;
-    font-weight: 600;
-    color: #ebebeb;
-    letter-spacing: -0.02em;
-}
-
-.qm-date {
-    font-size: 13px;
-    font-weight: 400;
-    color: #8a8a8a;
-    letter-spacing: 0.02em;
-    margin-top: 3px;
-}
-
-/* ACTION BUTTONS */
-
-.qm-actions {
-    padding: 8px 16px;
-    /* gap: 4px; */
-}
-
-/* Same height as the connectivity cells (6px padding + 14px icon + label). */
-.qm-action-btn {
-    min-width: 36px;
-    min-height: 28px;
-    border-radius: 4px;
-    transition: background-color 150ms ease;
-
-    image {
-        all: unset;
-    }
-
-    &:hover {
-        background: #1a1a1a;
-    }
-    &:active {
-        background: #262626;
-    }
-}
-
-/* Power off: destructive, so on hover it takes the same soft red background
-   as DND with the icon swapped to red (second icon in an overlay, faded in). */
-.qm-action-power {
-    .qm-action-power-hover {
-        opacity: 0;
-        transition: opacity 150ms ease;
-    }
-
-    &:hover {
-        background: rgba(229, 72, 77, 0.14);
-
-        .qm-action-power-hover {
+        image {
             opacity: 1;
         }
     }
     &:active {
-        background: rgba(229, 72, 77, 0.22);
+        background: $fill-active;
     }
 }
 
-/* Do Not Disturb on: the one deliberate color exception to THEME.md, so a
-   silenced desktop can't be missed. The icon swaps to icons/red/, a subfolder
-   so set-color.sh (which recolors only top-level svgs) leaves it alone. */
-.qm-action-dnd {
-    background: rgba(229, 72, 77, 0.14);
+.bar-icon-muted image {
+    opacity: 0.46;
+}
+
+/* WORKSPACES */
+
+.ws-special image {
+    opacity: 0.46;
+}
+.ws-special-occupied image {
+    opacity: 0.86;
+}
+.ws-special-shown {
+    background: $fill-active;
+
+    image {
+        opacity: 1;
+    }
+}
+
+.ws-add image {
+    opacity: 0.46;
+}
+
+/* Each dot sits in a 34x22 hit area; the dot itself carries the state. */
+.ws-btn {
+    min-height: 22px;
+    margin: 0 7px;
+    border-radius: $r-sm;
+    transition: background-color $ease;
 
     &:hover {
-        background: rgba(229, 72, 77, 0.20);
-    }
-    &:active {
-        background: rgba(229, 72, 77, 0.26);
+        background: $fill;
     }
 }
 
-/* SLIDERS */
-
-.qm-sliders {
-    padding: 16px;
+.ws-dot {
+    min-width: 6px;
+    min-height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.28);
+    transition: min-height 200ms ease, background-color 200ms ease;
 }
 
-.qm-slider {
-    trough {
-        background: #1a1a1a;
-        min-height: 2px;
-        border-radius: 0;
-    }
-    highlight {
-        background: #d6d6d6;
-        border-radius: 0;
-    }
-    slider {
-        background: #d6d6d6;
-        min-width: 8px;
-        min-height: 8px;
-        border-radius: 0;
-        margin: -3px 0;
-        box-shadow: none;
+.ws-occupied .ws-dot {
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.ws-active {
+    min-height: 30px;
+
+    .ws-dot {
+        min-height: 18px;
+        background: $fg;
     }
 }
 
-.qm-slider-value {
+/* STATUS */
+
+.bar-battery {
+    padding: 2px 0 0;
+}
+
+.battery-low image,
+.battery-low label {
+    opacity: 1;
+    font-weight: 600;
+}
+
+.bar-small-label {
     font-family: "Geist Mono", monospace;
     font-size: 11px;
+    color: $fg-2;
+}
+
+/* CLOCK: hour over minute, upright */
+
+.bar-clock {
+    padding: 2px 0;
+}
+
+.bar-clock-h,
+.bar-clock-m {
+    font-family: "Geist Mono", monospace;
+    font-size: 15px;
     font-weight: 500;
-    color: #d6d6d6;
-    min-width: 30px;
-    letter-spacing: 0.04em;
+    color: $fg;
 }
 
-/* MEDIA */
-
-/* Art spans the full content width: 300px panel - 2x16px section padding.
-   GTK3 has no aspect-ratio, so the square is sized explicitly. */
-.qm-media-art-wrap {
-    min-height: 268px;
+.bar-clock-m {
+    color: $fg-2;
 }
 
-/* Cover art is a background image: GTK3 won't clip an image widget to
-   border-radius, but it does clip backgrounds. */
-.qm-media-art {
-    min-width: 268px;
-    min-height: 268px;
-    border-radius: 4px;
+/* AVATAR: menu button */
+
+.avatar {
+    border-radius: $r-md;
+    background-color: $fill-hover;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 }
 
-.qm-media-art-placeholder {
-    min-width: 268px;
-    min-height: 268px;
-    background: #1a1a1a;
+.avatar-fallback {
+    background-size: 55%;
+}
+
+.bar-menu-btn {
+    padding: 2px;
+    margin: 0 7px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: border-color $ease, background-color $ease;
+
+    &:hover {
+        border-color: rgba(255, 255, 255, 0.24);
+    }
+
+    &.bar-menu-open {
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* SYSTRAY */
+
+.systray {
+    margin: 0 7px;
+}
+
+.systray image {
+    padding: 4px 9px;
+    border-radius: $r-sm;
+
+    &:hover {
+        background-color: $fill-hover;
+    }
+}
+
+.systray menu {
+    background-color: #1c1c1c;
+    border: 1px solid $glass-edge;
+    border-radius: $r-md;
+    padding: 4px;
+}
+
+.systray menuitem {
+    font-size: 13px;
+    padding: 6px 10px;
     border-radius: 4px;
+    color: $fg-2;
+
+    &:hover {
+        background-color: $fill-hover;
+        color: $fg;
+    }
+}
+
+/* ---------------------------------------------
+   SCRIM
+   --------------------------------------------- */
+
+/* Dims what's behind the menu / wofi, under the blur. */
+.scrim-box {
+    background: rgba(0, 0, 0, 0.22);
+}
+
+/* ---------------------------------------------
+   QUICK MENU
+   --------------------------------------------- */
+
+.quick-menu {
+    background: $glass-panel;
+    border: 1px solid $glass-edge;
+    border-radius: $r-2x;
+    margin: 8px 0;
+    padding: 20px;
+}
+
+/* HEADER */
+
+.qm-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: $fg;
+}
+
+.qm-host {
+    font-size: 13px;
+    color: $fg-2;
+}
+
+.qm-time {
+    font-size: 38px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: $fg;
+}
+
+.qm-date {
+    font-size: 14px;
+    color: $fg-2;
+}
+
+/* ACTIONS */
+
+.qm-action-btn {
+    min-height: 44px;
+    border-radius: $r-lg;
+    background: $fill;
+    transition: background-color $ease;
+
+    &:hover {
+        background: $fill-hover;
+    }
+    &:active {
+        background: $fill-active;
+    }
+}
+
+/* Shared "on" state: action buttons (DND) and tiles. */
+.qm-on {
+    background: $on;
+
+    &:hover {
+        background: $on-hov;
+    }
+    &:active {
+        background: $on;
+    }
+
+    image {
+        opacity: 1;
+    }
+}
+
+/* MEDIA */
+
+/* Cover art is a background: GTK3 won't clip an image widget to
+   border-radius, but it does clip backgrounds. */
+.qm-media-art {
+    min-width: 52px;
+    min-height: 52px;
+    border-radius: $r-md;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.qm-media-art-empty {
+    background: $fill;
 }
 
 .qm-media-title {
     font-size: 14px;
-    font-weight: 600;
-    color: #ebebeb;
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    color: $fg;
 }
 
 .qm-media-artist {
     font-size: 13px;
-    font-weight: 400;
-    color: #8a8a8a;
-    letter-spacing: 0;
+    color: $fg-2;
 }
 
 .qm-media-btn {
-    min-height: 28px;
-    border-radius: 4px;
-    transition: background-color 150ms ease;
-
-    image {
-        all: unset;
-    }
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: $r-md;
+    transition: background-color $ease;
 
     &:hover {
-        background: #1a1a1a;
+        background: $fill-hover;
     }
     &:active {
-        background: #262626;
+        background: $fill-active;
     }
 }
 
 .qm-media-btn-play {
-    /* background: #262626; */
-
-    &:hover {
-        background: #2e2e2e;
-    }
-    &:active {
-        background: #383838;
-    }
-}
-
-/* CONNECTIVITY */
-
-/* Cells carry 8px of their own padding (for the button hover background),
-   so the section trims its side padding to keep content on the 16px line. */
-.qm-connectivity {
-    padding: 10px 8px 16px;
-}
-
-.qm-conn-item {
-    padding: 6px 8px;
-    border-radius: 4px;
-}
-
-.qm-conn-btn {
-    transition: background-color 150ms ease;
+    background: $on;
 
     image {
-        all: unset;
+        opacity: 1;
     }
 
     &:hover {
-        background: #1a1a1a;
-    }
-    &:active {
-        background: #262626;
+        background: $on-hov;
     }
 }
 
-.qm-connectivity-label {
-    font-size: 13px;
-    font-weight: 400;
-    color: #d6d6d6;
+/* SLIDERS (menu + OSD) */
+
+.qm-slider-row {
+    padding: 4px 2px;
 }
 
-/* Keyboard backlight steps: dim pip = unlit step, bright pip = lit. */
-.qm-kb-pip {
-    min-width: 4px;
-    min-height: 10px;
-    border-radius: 1px;
-    background: #2e2e2e;
-}
-
-.qm-kb-pip-on {
-    background: #d6d6d6;
-}
-
-/* Connected bluetooth devices, under the grid */
-.qm-bt-devices {
-    padding: 10px 8px 0;
-    margin-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-/* SYSTEM STATS */
-
-/* The whole section is one button (opens btop); full-bleed hover, same
-   steps as the connectivity cells. */
-.qm-system-btn {
-    transition: background-color 150ms ease;
-
-    image {
-        all: unset;
+.qm-slider {
+    trough {
+        min-height: 6px;
+        border-radius: 3px;
+        background: $fill-hover;
     }
-
-    &:hover {
-        background: #1a1a1a;
+    highlight {
+        border-radius: 3px;
+        background: $fg;
     }
-    &:active {
-        background: #262626;
+    slider {
+        min-width: 16px;
+        min-height: 16px;
+        margin: -5px 0;
+        border-radius: 3px;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }
 }
 
-.qm-system-label {
-    font-size: 13px;
-    font-weight: 400;
-    color: #d6d6d6;
-}
-
-.qm-system-value {
+.qm-slider-value {
     font-family: "Geist Mono", monospace;
     font-size: 12px;
+    color: $fg-2;
+    min-width: 24px;
+}
+
+/* TILES */
+
+.qm-tile {
+    padding: 10px 12px;
+    border-radius: $r-lg;
+    background: $fill;
+    transition: background-color $ease;
+
+    &:hover {
+        background: $fill-hover;
+    }
+    &:active {
+        background: $fill-active;
+    }
+
+    &.qm-on {
+        background: $on;
+
+        &:hover {
+            background: $on-hov;
+        }
+    }
+}
+
+.qm-tile-title {
+    font-size: 13px;
     font-weight: 500;
-    color: #d6d6d6;
+    color: $fg;
+}
+
+.qm-tile-sub {
+    font-size: 12px;
+    color: $fg-2;
+}
+
+.qm-on .qm-tile-title {
+    color: $ink;
+}
+
+.qm-on .qm-tile-sub {
+    color: $ink-2;
+}
+
+/* Connected bluetooth devices, under the tiles */
+.qm-bt-devices {
+    padding: 6px 4px 0;
+}
+
+.qm-row-label {
+    font-size: 13px;
+    color: $fg;
+}
+
+.qm-row-value {
+    font-family: "Geist Mono", monospace;
+    font-size: 12px;
+    color: $fg-2;
     min-width: 36px;
-    margin-left: 4px;
-    letter-spacing: 0.02em;
+}
+
+.qm-dim-icon {
+    opacity: 0.6;
+}
+
+/* WEATHER */
+
+.qm-weather-temp {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: $fg;
+    min-width: 40px;
+}
+
+/* SYSTEM STATUS: one dot, brighter as load rises */
+
+/* Full-width row buttons: weather and system status */
+.qm-row-btn,
+.qm-status {
+    padding: 10px 12px;
+    border-radius: $r-lg;
+    background: $fill;
+    transition: background-color $ease;
+
+    &:hover {
+        background: $fill-hover;
+    }
+    &:active {
+        background: $fill-active;
+    }
+}
+
+.qm-status-dot {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.34);
+}
+
+.qm-status-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: $fg;
+}
+
+.qm-status-1 .qm-status-dot {
+    background: rgba(255, 255, 255, 0.62);
+}
+
+.qm-status-2 .qm-status-dot {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Overloaded: solid white dot with a soft halo, so it stands out. */
+.qm-status-3 .qm-status-dot {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22);
 }
 
 /* CALENDAR */
 
 .qm-cal-header {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
-    color: #d6d6d6;
-    letter-spacing: 0.02em;
+    color: $fg;
 }
 
 .qm-cal-nav {
-    min-width: 24px;
-    min-height: 24px;
-    border-radius: 4px;
-    transition: background-color 150ms ease;
-
-    image {
-        all: unset;
-    }
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: $r-sm;
+    transition: background-color $ease;
 
     &:hover {
-        background: #1a1a1a;
+        background: $fill-hover;
     }
     &:active {
-        background: #262626;
+        background: $fill-active;
     }
 }
 
 calendar.qm-cal {
     background: transparent;
-    color: #d6d6d6;
-    font-size: 12px;
+    color: $fg;
+    font-size: 13px;
+    padding: 2px;
 }
 
 calendar.qm-cal header {
     background: transparent;
-    color: #d6d6d6;
+    color: $fg;
 }
 
 calendar.qm-cal.view {
     background: transparent;
 }
 
+/* The menu passes today as :day, so the selected day is today. */
+/* :backdrop too: the menu is a layer that never takes focus. */
 calendar.qm-cal:selected,
-calendar.qm-cal .day-number:selected {
-    background: #2e2e2e;
-    color: #ebebeb;
-    border-radius: 4px;
-}
-
-calendar.qm-cal .day-number.today,
-calendar.qm-cal .day-number:selected.today {
-    background: #1f1f1f;
-    color: #ebebeb;
-    border-radius: 4px;
-    font-weight: 500;
+calendar.qm-cal:selected:backdrop {
+    background: $on;
+    color: $ink;
+    border-radius: $r-sm;
+    font-weight: 600;
 }
 
 calendar.qm-cal .day-name {
-    color: #8a8a8a;
+    color: $fg-3;
     font-size: 11px;
-    letter-spacing: 0.04em;
 }
 
-calendar.qm-cal .other-month {
-    color: #2e2e2e;
+/* days from the neighbouring months */
+calendar.qm-cal:indeterminate,
+calendar.qm-cal:indeterminate:backdrop {
+    color: rgba(255, 255, 255, 0.24);
 }
 
-/* TOOLTIPS */
+/* ---------------------------------------------
+   OSD
+   --------------------------------------------- */
+
+.osd {
+    background: $glass-panel;
+    border: 1px solid $glass-edge;
+    border-radius: $r-xl;
+    padding: 10px 14px;
+}
+
+/* ---------------------------------------------
+   TOOLTIPS: popups aren't blurred, so these stay nearly opaque.
+   --------------------------------------------- */
 
 tooltip,
 tooltip.background {
-    background: #1f1f1f;
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 6px;
+    background: rgba(24, 24, 24, 0.96);
+    border: 1px solid $glass-edge;
+    border-radius: $r-md;
 }
 
 tooltip label {
     padding: 6px 10px;
     font-size: 12px;
-    color: #d6d6d6;
-}
-
-/* SYSTRAY */
-
-.systray {
-    padding-top: 12px;
-    margin-bottom: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.systray image {
-    padding: 0 12px;
-
-    &:hover {
-        background-color: #0d0d0d;
-    }
-}
-
-.systray menu {
-    background-color: #1a1a1a;
-    color: #d6d6d6;
-    margin: 0;
-    padding: 0;
-}
-
-.systray menuitem {
-    font-size: 10px;
-    font-weight: 300;
-    padding: 5px;
-    color: #8a8a8a;
-
-    &:hover {
-        background-color: #262626;
-        color: #ebebeb;
-    }
+    color: $fg;
 }

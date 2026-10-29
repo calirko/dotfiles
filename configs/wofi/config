@@ -1,8 +1,9 @@
 show=drun
-width=450
-height=400
-prompt=Search...
-allow_images=false
+width=560
+height=440
+prompt=Search
+allow_images=true
+image_size=22
 insensitive=true
 no_actions=true
 hide_scroll=true

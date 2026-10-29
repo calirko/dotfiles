@@ -1,0 +1,13 @@
+# Back to Auto on every boot: drop auto-cpufreq's forced-governor override
+# (set from the quick menu's power-mode tile) before the daemon starts.
+# Installed to /etc/systemd/system/ by install.sh (raccoon only).
+[Unit]
+Description=Reset auto-cpufreq power mode to automatic
+Before=auto-cpufreq.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rm -f /opt/auto-cpufreq/override.pickle
+
+[Install]
+WantedBy=multi-user.target

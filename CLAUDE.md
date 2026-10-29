@@ -30,14 +30,16 @@ eww kill && eww daemon && ~/.config/hypr/scripts/bar.sh
 ### Hyprland config (`configs/hypr/hyprland.lua`)
 The Hyprland config is written in **Lua** using the `hl` global API (from `hypr-lua` / hyprland's Lua bindings). The `.luarc.json` at the root configures the Lua LSP to recognize `hl` as a global and points stubs to `/usr/share/hypr/stubs`.
 
-The file is host-aware: it branches on `/etc/hostname` to apply machine-specific monitor layouts and workspace rules. Shared config (keybinds, animations, window rules, env vars, autostart) lives after the hostname block.
+The file is host-aware: it branches on `/etc/hostname` to apply machine-specific monitor layouts. Shared config (keybinds, animations, window rules, env vars, autostart) lives after the hostname block.
+
+**Workspaces** aren't pinned to monitors: each monitor keeps its own stack, ordered by id and shown as dots on the bar (bar's monitor only). `SUPER + Left/Right` switches monitors and `SUPER + Up/Down` cycles the focused monitor's stack (add `SHIFT` to take the window along, `ALT` + arrows moves focus between windows); Down past the last opens a new workspace at the bottom (`configs/hypr/scripts/workspace-cycle.sh`). Workspace switches slide vertically.
 
 **Machines:**
 - `raccoon` — triple monitor desktop (DP-1 primary, HDMI-A-1 secondary, laptop panel)
 - `shark` — single HDMI monitor desktop
 
 ### Bar (`configs/eww/`)
-The bar is built with **eww** (Elkowar's Wacky Widgets). It's a 36px vertical bar pinned to the left edge.
+The bar is built with **eww** (Elkowar's Wacky Widgets). It's a floating 48px glass rail on the left edge (8px margin), with the quick menu as a glass card beside it.
 
 - `eww.yuck` — main widget definitions and bar window declaration
 - `menu.yuck` — popup menu panel (toggled by `SUPER + /`)
@@ -58,15 +60,12 @@ Lists all packages installed via `yay`. The installer reads this with `jq` and r
 
 ## Theme system
 
-All visual configs follow the **grayscale-only** design system documented in `THEME.md`. The key rules:
+Glass, grayscale. The tokens live at the top of `configs/eww/eww.scss`; wofi (`style.css`), mako (`config`, `#RRGGBBAA`) and hyprlock use the same values. Each glass layer needs a Hyprland `blur` + `ignore_alpha` layer rule. Note `configs/gtk-3.0/gtk.css` loads above wofi's own stylesheet, so wofi's search field is also styled there.
 
-- **Zero color.** Every value is `R=G=B` — no blue tints, no warm tones, no accent colors.
-- **16-step gray ladder:** `g-000` (#000000) through `g-999` (#f5f5f5). Always use the nearest step; don't invent intermediates.
-- **Surface stacking:** surfaces get lighter as they nest deeper (desktop → app shell → sidebar → panel → elevated panel).
-- **Hover = one step up; active = two steps up** on the ladder.
-- **Borders:** 1px only, using `rgba(255,255,255,0.06/0.10/0.16)` — never solid color borders on dark surfaces.
-- **Fonts:** Geist (sans) for UI, Geist Mono for terminal/bar/timestamps.
-- **Radii:** 4px (r-sm), 6px (r-md), 10px (r-lg max). Hyprland window rounding is 6px.
-- **No shadows** on windows (`drop_shadow = false`). Shadows only on truly floating layers (launcher, notifications).
-
-When editing any config file's colors, cross-reference `THEME.md` section 14 ("Quick Cross-App Mapping") for the canonical per-app values.
+- **Glass panels:** bar, quick menu and OSD are translucent black (`rgba(…, 0.74–0.78)`) over Hyprland blur (`blur` + `ignore_alpha` layer rules). The wallpaper decides the tint; the UI itself adds no color.
+- **White-alpha foreground:** text, icons and fills are white at fixed alphas (`$fg` .95, `$fg-2` .68, `$fg-3` .46; fills .08/.13/.19). Don't use dark grays for text on glass.
+- **"On" = inverted:** active tiles and buttons turn near-white with dark text. They use the dark icon copies in `icons/dark/`.
+- **Icons:** Phosphor SVGs baked white (`icons/set-color.sh "#ffffff"`), dimmed with CSS `opacity`. When adding an icon, also put a `#161616` copy in `icons/dark/`.
+- **Spacing, not lines:** no dividers between groups.
+- **Shapes:** rounded rectangles (6/8/12/16/20px). No full circles except the workspace and status dots. Hyprland window rounding is 16px (same as the rail), gaps 4/8.
+- **Fonts:** Geist for UI, Geist Mono for numbers (clock, values).
