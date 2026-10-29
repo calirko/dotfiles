@@ -35,11 +35,11 @@ $ink:    #161616;
 $ink-2:  rgba(22, 22, 22, 0.62);
 
 // radii
-$r-sm: 6px;
-$r-md: 8px;
-$r-lg: 12px;
-$r-xl: 16px;
-$r-2x: 20px;
+$r-sm: 7px;
+$r-md: 9px;
+$r-lg: 13px;
+$r-xl: 15px;
+$r-2x: 19px;
 
 $ease: 160ms ease;
 
@@ -74,7 +74,7 @@ image {
     background: $glass-bar;
     border: 1px solid $glass-edge;
     border-radius: $r-xl;
-    margin: 8px 0 8px 8px;
+    margin: 7px 0 7px 7px;
     padding: 8px 0 10px;
     min-width: 48px;
 }
@@ -219,7 +219,7 @@ image {
 .bar-menu-btn {
     padding: 2px;
     margin: 0 7px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid transparent;
     transition: border-color $ease, background-color $ease;
 
@@ -257,7 +257,7 @@ image {
 .systray menuitem {
     font-size: 13px;
     padding: 6px 10px;
-    border-radius: 4px;
+    border-radius: 5px;
     color: $fg-2;
 
     &:hover {
@@ -283,7 +283,7 @@ image {
     background: $glass-panel;
     border: 1px solid $glass-edge;
     border-radius: $r-2x;
-    margin: 8px 0;
+    margin: 7px 0;
     padding: 20px;
 }
 
@@ -418,7 +418,7 @@ image {
         min-width: 16px;
         min-height: 16px;
         margin: -5px 0;
-        border-radius: 3px;
+        border-radius: 5px;
         background: #ffffff;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }

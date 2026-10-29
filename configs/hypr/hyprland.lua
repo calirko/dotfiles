@@ -111,7 +111,7 @@ if hostname == "raccoon" then
     end
 
     local function reopen_bar()
-        hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
+        hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/monitors-changed.sh"))
     end
 
     local function handle_lid_close()
@@ -195,15 +195,15 @@ elseif hostname == "shark" then
 end
 
 
--- Reopen the bar whenever a monitor is physically connected or disconnected.
--- Lid-close/open (software disable) is handled by the native switch bindings
--- in the raccoon block above.
+-- Reopen the bar and re-apply the wallpaper whenever a monitor is physically
+-- connected or disconnected. Lid-close/open (software disable) is handled by
+-- the native switch bindings in the raccoon block above.
 hl.on("monitor.added", function()
-    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/monitors-changed.sh"))
 end)
 
 hl.on("monitor.removed", function()
-    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/bar.sh"))
+    hl.dispatch(hl.dsp.exec_cmd("/home/calirko/.config/hypr/scripts/monitors-changed.sh"))
 end)
 
 hl.on("hyprland.start", function()
@@ -243,7 +243,7 @@ hl.env("GTK_THEME", "adw-gtk3-dark")
 hl.config({
     general = {
         gaps_in = 4,
-        gaps_out = 8, -- matches the eww bar's 8px float margin
+        gaps_out = 7, -- matches the eww bar's 7px float margin
         border_size = 0,
         resize_on_border = false,
         allow_tearing = false,
@@ -264,7 +264,7 @@ hl.config({
         inactive_opacity = 0.95,
         dim_inactive = true,
         dim_strength = 0.1,
-        rounding = 16, -- same as the eww rail and mako cards ($r-xl)
+        rounding = 15, -- same as the eww rail and mako cards ($r-xl)
     },
 
     dwindle = {
@@ -344,12 +344,12 @@ hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("pgrep -x wofi > /dev/null || " .. me
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + space", hl.dsp.exec_cmd("~/.config/eww/scripts/kb-layout-toggle.sh"))
-hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("cliphist list | ~/.config/hypr/scripts/wofi.sh --dmenu --cache-file /dev/null | cliphist decode | wl-copy"))
+hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh"))
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-select.sh"))
 hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd("~/.config/hypr/scripts/wallpaper-toggle-span.sh"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"))
-hl.bind(mainMod .. " + slash", hl.dsp.exec_cmd("~/.config/eww/scripts/toggle-menu.sh"))
+hl.bind(mainMod .. " + X", hl.dsp.exec_cmd("~/.config/eww/scripts/toggle-menu.sh"))
 hl.bind("escape", hl.dsp.exec_cmd("~/.config/eww/scripts/close-menu.sh"), { non_consuming = true })
 
 -- Arrows: Left / Right switch monitors, Up / Down switch workspaces on the

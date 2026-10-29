@@ -3,15 +3,15 @@ set -euo pipefail
 
 # Open the eww bar on the preferred monitor (DP-1 first; see get-screen.sh).
 #
-# The hard part is boot. Hyprland starts with every monitor — including the
-# laptop panel (eDP-1) — enabled, and ~2 s later lid-handler.sh disables eDP
+# Boot is tricky. Hyprland starts with every monitor enabled, including
+# the laptop panel (eDP-1), and ~2 s later lid-handler.sh disables eDP
 # (lid closed + AC + external monitor). If we open the bar during that window
 # we either land on a monitor that's about to vanish (and the bar disappears
 # with it) or compute an index eww hasn't caught up to yet (open errors out).
 #
-# So we don't trust a single open: we open, then VERIFY via `hyprctl layers`
-# that the bar actually landed on the intended connector, and keep retrying —
-# re-deriving the target each pass — until it does or we hit the time cap.
+# So we don't trust a single open: we open, then check with `hyprctl layers`
+# that the bar actually landed on the intended connector. If not, we
+# work out the target again and retry, until it lands or we hit the time cap.
 #
 # Serialized via a lockfile so rapid monitor-change events don't race.
 
@@ -23,6 +23,9 @@ get_bar_screen() { "$EWW_SCREEN_SCRIPT" index 2>/dev/null || echo 0; }
 
 # Connector name of the preferred monitor (e.g. DP-1), or empty.
 get_bar_monitor() { "$EWW_SCREEN_SCRIPT" name 2>/dev/null || echo ""; }
+
+# Enabled connectors, sorted and comma-joined (tags the recorded index).
+get_monitor_set() { "$EWW_SCREEN_SCRIPT" set 2>/dev/null || echo ""; }
 
 # Connector the eww bar layer-surface is currently on, or empty if not mapped.
 bar_on_monitor() {
@@ -49,7 +52,7 @@ ensure_daemon() {
   return 0
 }
 
-# Poll until the enabled-monitor set hasn't changed for 1.5 s (3 × 0.5 s).
+# Poll until the enabled-monitor set hasn't changed for 0.9 s (3 × 0.3 s).
 # On raccoon this rides out the lid-handler disabling eDP shortly after start.
 wait_for_monitors_stable() {
   [[ "$(uname -n)" != "raccoon" ]] && return
@@ -65,33 +68,56 @@ wait_for_monitors_stable() {
       stable=0
     fi
     prev="$cur"
-    sleep 0.5
+    sleep 0.3
     attempts=$((attempts + 1))
-    [[ $attempts -ge 30 ]] && break  # 15 s hard cap
+    [[ $attempts -ge 50 ]] && break  # 15 s hard cap
   done
-  # IMPORTANT: return success. The loop's last body command is a failing
+  # Return success on purpose. The loop's last body command is a failing
   # `[[ ... ]] &&` test, so without this the function returns 1 and `set -e`
-  # would abort bar.sh here — before the bar is ever opened.
+  # would abort bar.sh here, before the bar is ever opened.
   return 0
 }
 
+# eww's monitor list as "INDEX MODEL" lines. eww has no command for this, but
+# a failed open prints the list, so ask for a screen that can't exist.
+eww_monitors() {
+  eww open bar --id monitor-probe --screen 99 --arg on_laptop=false 2>&1 | sed -nE 's/^[[:space:]]*\[([0-9]+)\] (.*)$/\1 \2/p'
+}
+
+# eww indices that could be connector $1: the ones whose model matches its
+# EDID model. Unique models (the laptop panel) give exactly one index, so no
+# probing; identical monitors (the two Samsungs) give one index each.
+candidate_screens() {
+  local model
+  model=$(hyprctl monitors -j 2>/dev/null \
+    | jq -r --arg n "$1" '.[] | select(.name == $n) | .model' 2>/dev/null)
+  eww_monitors | awk -v m="$model" '{ i = $1; $1 = ""; sub(/^ /, ""); if ($0 == m) print i }'
+}
+
 # Open the bar on --screen $1 and report (via exit status) whether it landed
-# on connector $2.
+# on connector $2. Polls instead of sleeping a fixed time so a correct guess
+# shows up right away.
 try_open() {
-  local screen="$1" target="$2" on_laptop="false"
+  local screen="$1" target="$2" on_laptop="false" on="" n=0
   [[ "$target" == eDP-1 ]] && on_laptop="true"
   eww close bar 2>/dev/null || true
-  sleep 0.3
   eww open bar --screen "$screen" --arg on_laptop="$on_laptop" 2>/dev/null || true
-  sleep 0.5
-  [[ "$(bar_on_monitor)" == "$target" ]]
+  until [[ -n "$on" || $n -ge 10 ]]; do
+    sleep 0.1
+    on=$(bar_on_monitor)
+    n=$((n + 1))
+  done
+  [[ "$on" == "$target" ]]
 }
+
+record_screen() { echo "$1 $(get_monitor_set)" > "$BAR_SCREEN_FILE"; }
 
 reopen_bar() {
   ensure_daemon
   wait_for_monitors_stable
 
-  local target screen count i attempts=0
+  local target screen set i attempts=0
+  local -a cands
   while [[ $attempts -lt 10 ]]; do
     target=$(get_bar_monitor)
     screen=$(get_bar_screen)
@@ -102,24 +128,38 @@ reopen_bar() {
       return
     fi
 
-    # Already on the right monitor — nothing to do.
-    [[ "$(bar_on_monitor)" == "$target" ]] && return
+    mapfile -t cands < <(candidate_screens "$target")
+    # eww hasn't caught up with the monitor change yet: wait for it.
+    if [[ ${#cands[@]} -eq 0 ]]; then
+      attempts=$((attempts + 1))
+      sleep 0.3
+      continue
+    fi
 
-    # eww's screen order follows the Wayland registry, which is reshuffled by
-    # hotplug, so hyprctl's id order is only a first guess. If it lands on the
-    # wrong monitor, probe the other indices. The index that works is recorded
-    # for get-screen.sh so menus/OSD open on the same monitor.
-    count=$(hyprctl monitors -j 2>/dev/null \
-      | jq '[.[] | select((.disabled // false) == false)] | length' 2>/dev/null || echo 1)
-    for i in "$screen" $(seq 0 $((${count:-1} - 1))); do
+    # Already on the right monitor: keep it there (no blink) and just make
+    # sure the recorded index matches the current monitor set, so menus/OSD
+    # follow it. If the index is ambiguous and stale, fall through and reopen.
+    if [[ "$(bar_on_monitor)" == "$target" ]]; then
+      if [[ ${#cands[@]} -eq 1 ]]; then
+        record_screen "${cands[0]}"
+        return
+      fi
+      set=$(get_monitor_set)
+      [[ "$(cut -d' ' -f2 "$BAR_SCREEN_FILE" 2>/dev/null)" == "$set" ]] && return
+    fi
+
+    # Try the id-sorted guess first if it's a candidate, then the rest. Only
+    # identical monitors are ever probed, so at most one wrong landing.
+    for i in "$screen" "${cands[@]}"; do
+      [[ " ${cands[*]} " == *" $i "* ]] || continue
       if try_open "$i" "$target"; then
-        echo "$i" > "$BAR_SCREEN_FILE"
+        record_screen "$i"
         return
       fi
     done
 
     attempts=$((attempts + 1))
-    sleep 0.5
+    sleep 0.3
   done
 }
 

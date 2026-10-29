@@ -34,7 +34,7 @@ get_service_resources() {
         cpu_s=$(awk "BEGIN {printf \"%.1f\", $cpu_ns / 1e9}")
     fi
 
-    local mem_h="—"
+    local mem_h="-"
     if [[ "$mem_bytes" =~ ^[0-9]+$ ]] && (( mem_bytes > 0 )); then
         mem_h=$(numfmt --to=iec-i --suffix=B "$mem_bytes" 2>/dev/null || echo "${mem_bytes}B")
     fi
@@ -47,7 +47,7 @@ get_service_resources() {
 export -f get_service_resources
 
 echo
-printf "${BOLD}  System Services — Resource Usage${RESET}\n"
+printf "${BOLD}  System Services: Resource Usage${RESET}\n"
 printf "${DIM}  Sorted by memory. CPU shown as cumulative seconds since start.${RESET}\n"
 echo
 
@@ -92,7 +92,7 @@ if [[ -n "$user_units" ]]; then
         cpu_s=0
         [[ "$cpu_ns" =~ ^[0-9]+$ ]] && (( cpu_ns > 0 )) && \
             cpu_s=$(awk "BEGIN {printf \"%.1f\", $cpu_ns / 1e9}")
-        mem_h="—"
+        mem_h="-"
         [[ "$mem" =~ ^[0-9]+$ ]] && (( mem > 0 )) && \
             mem_h=$(numfmt --to=iec-i --suffix=B "$mem" 2>/dev/null || echo "${mem}B")
         printf "  %-43s ${DIM}%8s${RESET} %10s\n" "${u%.service}" "${cpu_s}s" "$mem_h"

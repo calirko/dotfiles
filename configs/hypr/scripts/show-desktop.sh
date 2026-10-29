@@ -8,14 +8,14 @@ set -uo pipefail
 # CLI syntax no longer works on this Lua-config fork (`hyprctl dispatch`
 # now evaluates its argument as Lua and expects an HL.Dispatcher
 # expression, e.g. `hl.dsp.window.move({...})`, not the old two-arg
-# dispatcher/args string, and there's no "silent" option on window.move —
+# dispatcher/args string, and there's no "silent" option on window.move:
 # moving a window always follows/shows its destination). So this drives
 # window moves through `hyprctl repl`, calling hl.dsp.window.move()
-# directly, and works *with* the follow behavior instead of around it:
+# directly, and works with the follow behavior instead of around it:
 #
 # - Hide: every window visible on any monitor's active workspace gets
 #   moved into a shared special workspace. Hyprland auto-opens a special
-#   workspace as an overlay on whichever monitor last received a window —
+#   workspace as an overlay on whichever monitor last received a window,
 #   so right after stashing everything, toggle_special closes that
 #   overlay again, leaving the windows parked out of sight (a special
 #   workspace isn't rendered anywhere while closed).

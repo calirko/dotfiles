@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lucide-color.sh — set fill color of all SVGs in the same folder
+# lucide-color.sh: set fill color of all SVGs in the same folder
 # Usage: ./lucide-color.sh <#hexcolor>
 set -euo pipefail
 
@@ -29,4 +29,4 @@ for svg in "${svgs[@]}"; do
   printf "Colored %s\n" "$(basename "$svg")"
 done
 
-echo "Done — ${#svgs[@]} file(s) set to ${COLOR}"
+echo "Done: ${#svgs[@]} file(s) set to ${COLOR}"

@@ -98,7 +98,7 @@
 (defwidget bar-volume []
   (button
     :class "bar-icon-btn ${audio-data.mute == "true" ? "bar-icon-muted" : ""}"
-    :tooltip "Volume: ${audio-data.volume}%  —  click to mute, scroll to change"
+    :tooltip "Volume: ${audio-data.volume}%. Click to mute, scroll to change"
     :onclick "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle &"
     ; same script as the volume keys, so it also shows the OSD; {} is up/down
     :onscroll "~/.config/hypr/scripts/volume-notify.sh {} 2% &"
@@ -118,7 +118,7 @@
     :class "bar-battery ${battery-data.capacity < 20 && battery-data.ac != 1 ? "battery-low" : ""}"
     :orientation "v"
     :visible {battery-data.has_battery == 1}
-    :tooltip "Battery: ${battery-data.capacity}%${battery-data.ac == 1 ? " — charging" : ""}"
+    :tooltip "Battery: ${battery-data.capacity}%${battery-data.ac == 1 ? ", charging" : ""}"
     :space-evenly false
     :spacing 2
     (image
@@ -137,7 +137,7 @@
   (button
     :class "bar-icon-btn"
     :visible {power-mode.present && power-mode.mode != "auto"}
-    :tooltip {power-mode.mode == "powersave" ? "Power saver (forced) — click to change" : "Performance (forced) — click to change"}
+    :tooltip {power-mode.mode == "powersave" ? "Power saver (forced). Click to change" : "Performance (forced). Click to change"}
     :onclick "scripts/power-mode.sh cycle &"
     (image
       :path {power-mode.mode == "powersave" ? "icons/leaf.svg" : "icons/speedometer.svg"}
@@ -157,7 +157,7 @@
 (defwidget bar-menu-btn []
   (button
     :class "bar-menu-btn ${menu-open ? "bar-menu-open" : ""}"
-    :tooltip "Quick menu (SUPER + /)"
+    :tooltip "Quick menu (SUPER + X)"
     :onclick "scripts/toggle-menu.sh &"
     (avatar-tile :size 30)))
 
@@ -211,15 +211,15 @@
 ; BAR WINDOW
 ; ─────────────────────────────────────────────
 
-; Width = 8px left margin + rail (48, or 52 on the laptop panel). The rail's
-; right edge sits on the reserved zone; Hyprland's gaps_out (8) puts windows,
+; Width = 7px left margin + rail (48, or 52 on the laptop panel). The rail's
+; right edge sits on the reserved zone; Hyprland's gaps_out (7) puts windows,
 ; the menu and the OSD the same distance away.
 (defwindow bar [?on_laptop]
   :monitor 0
   :geometry (geometry
     :x "0px"
     :y "0px"
-    :width "${on_laptop == "true" ? "60" : "56"}px"
+    :width "${on_laptop == "true" ? "59" : "55"}px"
     :height "100%"
     :anchor "left center")
   :stacking "fg"

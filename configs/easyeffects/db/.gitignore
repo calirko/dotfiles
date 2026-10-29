@@ -1,5 +1,5 @@
 easyeffectsrc.lock
 equalizerrc
 equalizerrc.lock
-# easyeffectsrc is tracked but updated at runtime by EasyEffects — commit intentionally
+# easyeffectsrc is tracked but updated at runtime by EasyEffects, so commit it on purpose
 *.rmlock

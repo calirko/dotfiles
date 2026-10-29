@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Power-mode tweaks — toggles Hyprland eye-candy based on AC vs battery.
+# Power-mode tweaks: toggles Hyprland eye-candy based on AC vs battery.
 #
 # On AC      : blur enabled
 # On battery : blur disabled (cheaper compositing, better battery life)
@@ -16,7 +16,7 @@ get_ac_online() {
               /sys/class/power_supply/ADP1/online; do
         [[ -f "$_p" ]] && cat "$_p" && return
     done
-    # No AC device (e.g. desktop) — treat as always plugged in.
+    # No AC device (e.g. desktop), so treat it as always plugged in.
     echo "1"
 }
 

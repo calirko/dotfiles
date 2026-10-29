@@ -40,7 +40,7 @@ cpu_color() {
 total_mem_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 
 echo
-printf "${BOLD}  Top Processes — CPU${RESET}\n"
+printf "${BOLD}  Top Processes: CPU${RESET}\n"
 echo
 printf "${BOLD}${CYAN}  %-7s %-7s %-8s %-8s %s${RESET}\n" "PID" "CPU%" "MEM%" "MEM" "COMMAND"
 divider
@@ -59,7 +59,7 @@ ps -eo pid,pcpu,pmem,rss,comm --sort=-%cpu --no-headers \
 echo
 divider
 echo
-printf "${BOLD}  Top Processes — Memory${RESET}\n"
+printf "${BOLD}  Top Processes: Memory${RESET}\n"
 echo
 printf "${BOLD}${CYAN}  %-7s %-7s %-8s %-8s %s${RESET}\n" "PID" "MEM%" "MEM" "CPU%" "COMMAND"
 divider

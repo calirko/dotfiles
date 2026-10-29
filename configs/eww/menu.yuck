@@ -1,5 +1,5 @@
 ; ─────────────────────────────────────────────
-; QUICK MENU — menu.yuck
+; QUICK MENU (menu.yuck)
 ; ─────────────────────────────────────────────
 
 ; ── Two windows opened/closed together (see toggle-menu.sh / close-menu.sh):
@@ -34,7 +34,7 @@
   :namespace "eww-menu-scrim"
   (scrim :onclick "scripts/close-menu.sh &"))
 
-; Same scrim behind wofi — opened/closed by hypr/scripts/wofi.sh. A click
+; Same scrim behind wofi, opened/closed by hypr/scripts/wofi.sh. A click
 ; kills wofi, and the wrapper closes the scrim once wofi is gone.
 (defwindow wofi_scrim
   :monitor 0
@@ -49,14 +49,14 @@
   (scrim :onclick "pkill -x wofi &"))
 
 ; A full-height card beside the bar. Like the bar, the window is
-; transparent and the card floats inside it on an 8px top/bottom margin.
-; x is measured from the bar's reserved zone, not the screen edge, so 8px
+; transparent and the card floats inside it on a 7px top/bottom margin.
+; x is measured from the bar's reserved zone, not the screen edge, so 7px
 ; (Hyprland's gaps_out) puts it exactly where a tiled window starts. Clicks
 ; beside it land on the scrim, which closes the menu.
 (defwindow menu_overlay
   :monitor 0
   :geometry (geometry
-    :x "8px"
+    :x "7px"
     :y "0px"
     :width "340px"
     :height "100%"
@@ -65,7 +65,7 @@
   :namespace "eww-menu"
   (quick-menu-content))
 
-; Whether the menu is open — set by toggle-menu.sh / close-menu.sh so the
+; Whether the menu is open. Set by toggle-menu.sh / close-menu.sh so the
 ; bar's menu button can show an active state.
 (defvar menu-open false)
 
@@ -262,7 +262,7 @@
           : network-data.connection == "wifi-offline" ? "Offline"
           : network-data.ssid != "" ? network-data.ssid : "On"}
         :on {network-data.connection != "wifi-offline"}
-        :tooltip "Network — open nmtui"
+        :tooltip "Network: open nmtui"
         :onclick "scripts/open-tui.sh nmtui &")
 
       (qm-tile
@@ -275,7 +275,7 @@
           : bluetooth-data.state == "disabled" ? "Off"
           : "On"}
         :on {bluetooth-data.state != "disabled"}
-        :tooltip "Bluetooth — open bluetui"
+        :tooltip "Bluetooth: open bluetui"
         :onclick "scripts/open-tui.sh bluetui &"))
 
     ; VPN and DND exist everywhere; backlight and power mode are laptop-only
@@ -286,7 +286,7 @@
         :title "VPN"
         :sub {network-data.vpn_active ? network-data.vpn_name : "Off"}
         :on {network-data.vpn_active}
-        :tooltip "VPN — open nmtui"
+        :tooltip "VPN: open nmtui"
         :onclick "scripts/open-tui.sh nmtui &")
       (qm-tile
         :icon {mako-paused == "1" ? "bell-simple-slash" : "bell-simple"}
@@ -309,7 +309,7 @@
               : kb-backlight.max == 2 ? "Low"
               : "${kb-backlight.level} of ${kb-backlight.max}"}
             :on {kb-backlight.level > 0}
-            :tooltip "Keyboard backlight — click to cycle"
+            :tooltip "Keyboard backlight. Click to cycle"
             :onclick "scripts/cycle-kb-backlight.sh &")))
       ; Auto = auto-cpufreq's charger/battery switching; white = forced
       (box :hexpand true
@@ -326,7 +326,7 @@
             :tooltip "Click to cycle: Auto → Power saver → Performance. Back to Auto on reboot."
             :onclick "scripts/power-mode.sh cycle &"))))
 
-    ; Connected bluetooth devices with battery; "–" when a device doesn't
+    ; Connected bluetooth devices with battery; "-" when a device doesn't
     ; report one (see watch-bluetooth.sh).
     (box :class "qm-bt-devices" :orientation "v" :space-evenly false :spacing 10
       :visible {bluetooth-data.count > 0}
@@ -337,7 +337,7 @@
             :truncate true :limit-width 26
             :text {dev.name})
           (label :class "qm-row-value" :xalign 1
-            :text {dev.battery >= 0 ? "${dev.battery}%" : "–"}))))))
+            :text {dev.battery >= 0 ? "${dev.battery}%" : "-"}))))))
 
 ; ── System status: one dot and one word (Idle → Overloaded, from
 ; sensors.sh). The numbers live in the tooltip; click opens btop.

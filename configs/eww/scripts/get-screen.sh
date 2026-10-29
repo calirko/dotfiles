@@ -8,10 +8,11 @@ set -euo pipefail
 #   get-screen.sh          # (default) eww --screen *index* of the preferred monitor
 #   get-screen.sh index    # same as above
 #   get-screen.sh name     # connector name of the preferred monitor (e.g. DP-1)
+#   get-screen.sh set      # enabled connectors, sorted and comma-joined
 #
 # eww enumerates monitors in Wayland-registry order, which corresponds to
 # hyprctl's monitor `id` ascending (NOT the order hyprctl returns them in its
-# JSON array, and NOT by connector name — eww names monitors by EDID model,
+# JSON array, and NOT by connector name: eww names monitors by EDID model,
 # which is ambiguous when two identical displays are attached, so the numeric
 # index is the only thing we can target reliably).
 #
@@ -46,10 +47,11 @@ lid_open() {
 EDP_FIRST=false
 lid_open && EDP_FIRST=true
 
-# Emit "INDEX NAME" for the preferred enabled monitor, or empty if none.
-read -r idx name < <(
+# Emit "INDEX NAME SET" for the preferred enabled monitor, or empty if none.
+read -r idx name set < <(
   hyprctl monitors -j 2>/dev/null | jq -r --argjson edp_first "$EDP_FIRST" '
     ([.[] | select((.disabled // false) == false)] | sort_by(.id) | to_entries) as $m
+    | ($m | map(.value.name) | sort | join(",")) as $set
     | ($m | map(select(.value.name | test("^eDP"; "i")))) as $edp
     | ( (if $edp_first then $edp else [] end)
         + ($m | map(select(.value.name == "DP-1")))
@@ -57,15 +59,21 @@ read -r idx name < <(
         + $edp
         + $m )
     | .[0] // empty
-    | "\(.key) \(.value.name)"
+    | "\(.key) \(.value.name) \($set)"
   ' 2>/dev/null
 ) || true
 
 if [[ "$MODE" == "name" ]]; then
   echo "${name:-}"
+elif [[ "$MODE" == "set" ]]; then
+  echo "${set:-}"
 else
-  # bar.sh records the index it verified actually lands on the preferred
-  # monitor; eww's real order can differ from the id-sorted guess after hotplug.
-  verified=$(cat /tmp/eww-bar-screen 2>/dev/null || true)
+  # bar.sh records "INDEX SET": the index it verified actually lands on the
+  # preferred monitor, and the monitor set it was verified for. eww's real
+  # order can differ from the id-sorted guess after hotplug, but once the set
+  # changes (monitors unplugged, lid closed) the recorded index is stale.
+  verified=""
+  read -r v_idx v_set < /tmp/eww-bar-screen 2>/dev/null || true
+  [[ -n "${v_idx:-}" && "${v_set:-}" == "${set:-}" ]] && verified="$v_idx"
   echo "${verified:-${idx:-0}}"
 fi

@@ -43,7 +43,7 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
         sudo systemctl kill -s HUP systemd-logind 2>/dev/null || true
         echo -e "${GREEN}✓ logind lid drop-in removed${NC}"
     else
-        echo -e "${YELLOW}⊘ sudo not available — remove /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
+        echo -e "${YELLOW}⊘ sudo not available, remove /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
     fi
     echo ""
 
@@ -55,7 +55,7 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
         sudo systemctl daemon-reload
         echo -e "${GREEN}✓ power-mode rule and unit removed${NC}"
     else
-        echo -e "${YELLOW}⊘ sudo not available — remove /etc/sudoers.d/power-mode and power-mode-reset.service manually${NC}"
+        echo -e "${YELLOW}⊘ sudo not available, remove /etc/sudoers.d/power-mode and power-mode-reset.service manually${NC}"
     fi
     echo ""
 fi

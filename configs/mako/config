@@ -15,14 +15,14 @@ border-size=1
 # white border (like eww's) falls under the layer rule's ignore_alpha and
 # leaves a 1px unblurred ring around the card
 border-color=#262626c7
-border-radius=16
+border-radius=15
 padding=14,16
-# 8px from the bar (x is measured from its reserved zone), from the screen
+# 7px from the bar (x is measured from its reserved zone), from the screen
 # bottom and between cards, like windows. mako gives each card only its top
 # margin when stacking, so the bottom gap comes from outer-margin; a plain
-# margin=8 left the lowest card flush with the screen edge.
-margin=8,0,0,8
-outer-margin=0,0,8,0
+# margin=7 left the lowest card flush with the screen edge.
+margin=7,0,0,7
+outer-margin=0,0,7,0
 width=360
 font=Geist 12
 format=<span weight="600">%s</span>\n<span alpha="70%%">%b</span>
@@ -30,7 +30,7 @@ format=<span weight="600">%s</span>\n<span alpha="70%%">%b</span>
 # ── Icons ────────────────────────────────
 icons=1
 max-icon-size=32
-icon-border-radius=6
+icon-border-radius=5
 icon-location=left
 icon-path=/home/calirko/.local/share/icons/WhiteSur-grey-dark:/usr/share/icons/Adwaita:/usr/share/icons/hicolor
 

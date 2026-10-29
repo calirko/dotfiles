@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Low-battery warning — no upower daemon is running (see power-tweaks.sh for
+# Low-battery warning. No upower daemon is running (see power-tweaks.sh for
 # the udev-driven pattern this follows), so nothing else warns on low charge.
 #
 # Fires once when capacity drops to/below WARN_THRESHOLD while discharging,
@@ -22,7 +22,7 @@ check() {
     if [[ "$status" == "Discharging" && "$capacity" -le "$WARN_THRESHOLD" ]]; then
         if [[ -z "$_warned" ]]; then
             notify-send -i "battery-low" -u critical -t 8000 \
-                "Battery low" "${capacity}% remaining — plug in soon"
+                "Battery low" "${capacity}% remaining, plug in soon"
             _warned="1"
         fi
     elif [[ "$status" != "Discharging" || "$capacity" -ge "$RESET_THRESHOLD" ]]; then

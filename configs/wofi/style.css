@@ -9,7 +9,7 @@
 window {
     background: rgba(14, 14, 14, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
+    border-radius: 19px;
     color: rgba(255, 255, 255, 0.95);
 }
 
@@ -27,7 +27,7 @@ window #outer-box #input {
     caret-color: rgba(255, 255, 255, 0.95);
     background-image: none;
     border: none;
-    border-radius: 12px;
+    border-radius: 13px;
     box-shadow: none;
     font-size: 15px;
 }
@@ -50,7 +50,7 @@ window #outer-box #input:focus {
 
 #entry {
     padding: 8px 12px;
-    border-radius: 10px;
+    border-radius: 11px;
     background: transparent;
     outline: none;
 }

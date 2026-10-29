@@ -11,7 +11,7 @@ YELLOW='\033[33m'
 RED='\033[31m'
 GREEN='\033[32m'
 
-SLOW_THRESHOLD="${1:-3000}"  # ms — units slower than this are flagged
+SLOW_THRESHOLD="${1:-3000}"  # ms; units slower than this are flagged
 
 section() { echo; printf "${BOLD}${CYAN}▸ %s${RESET}\n" "$1"; printf "${DIM}%s${RESET}\n" "$(printf '─%.0s' {1..70})"; }
 warn() { printf "  ${YELLOW}⚠  %s${RESET}\n" "$1"; }
@@ -92,7 +92,7 @@ warn_count=$(journalctl -b -p warning --no-pager -q 2>/dev/null \
 if (( warn_count == 0 )); then
     ok "No warnings"
 elif (( warn_count > 100 )); then
-    warn "${warn_count} warnings — too many to list. Run: journalctl -b -p warning"
+    warn "${warn_count} warnings, too many to list. Run: journalctl -b -p warning"
 else
     warn "${warn_count} warning(s):"
     echo

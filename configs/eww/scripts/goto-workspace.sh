@@ -4,7 +4,7 @@ set -uo pipefail
 # Switch to a workspace from the bar.
 #
 # `hyprctl dispatch` on this Lua-config fork evaluates its argument as Lua
-# and expects an HL.Dispatcher expression — the old CLI form
+# and expects an HL.Dispatcher expression. The old CLI form
 # (`hyprctl dispatch workspace 3`) is a Lua syntax error and silently does
 # nothing, which is why the bar's workspace buttons stopped working.
 #

@@ -15,7 +15,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 if ! command -v sudo &>/dev/null; then
-    echo -e "${RED}sudo not available — run this as root manually.${NC}"
+    echo -e "${RED}sudo not available. Run this as root manually.${NC}"
     exit 1
 fi
 
@@ -52,7 +52,7 @@ if [ -d /boot/loader ]; then
     set_loader_key "editor" "no"
     echo -e "${GREEN}✓ loader.conf: timeout 0, editor disabled${NC}"
 else
-    echo -e "${YELLOW}⊘ /boot/loader not found — not using systemd-boot, skipping${NC}"
+    echo -e "${YELLOW}⊘ /boot/loader not found, not using systemd-boot. Skipping${NC}"
 fi
 
 # ── Disable NetworkManager-wait-online (known multi-second boot stall) ──

@@ -45,7 +45,7 @@ echo ""
 # Install packages from woof.json
 if [ "$SKIP_PACKAGES" = false ]; then
     # jq is required to parse woof.json below, and is itself one of the
-    # packages woof.json lists — bootstrap it directly via pacman so a
+    # packages woof.json lists, so bootstrap it directly via pacman so a
     # jq-less machine isn't stuck permanently skipping package installation.
     if ! command -v jq &> /dev/null && command -v sudo &> /dev/null; then
         echo -e "${YELLOW}Bootstrapping jq (required to read woof.json)...${NC}"
@@ -139,13 +139,13 @@ else
     if chsh -s "$ZSH_PATH"; then
         echo -e "${GREEN}✓ Default shell set to zsh (takes effect next login)${NC}"
     else
-        echo -e "${YELLOW}⊘ Failed to switch shell — run 'chsh -s $ZSH_PATH' manually${NC}"
+        echo -e "${YELLOW}⊘ Failed to switch shell, run 'chsh -s $ZSH_PATH' manually${NC}"
     fi
 fi
 
 # raccoon: lid switch handling (laptop-only, requires sudo for logind drop-in)
 # Lid close/open itself is handled natively inside hyprland.lua via switch
-# bindings — this just stops systemd-logind from also acting on the lid
+# bindings. This just stops systemd-logind from also acting on the lid
 # (suspending, etc.) so Hyprland is the sole owner of the event.
 if [[ "$(uname -n)" == "raccoon" ]]; then
     echo ""
@@ -157,7 +157,7 @@ if [[ "$(uname -n)" == "raccoon" ]]; then
         sudo systemctl kill -s HUP systemd-logind
         echo -e "${GREEN}✓ logind lid switch handling disabled${NC}"
     else
-        echo -e "${YELLOW}⊘ sudo not available — copy configs/hypr/logind-lid.conf to /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
+        echo -e "${YELLOW}⊘ sudo not available, copy configs/hypr/logind-lid.conf to /etc/systemd/logind.conf.d/raccoon-lid.conf manually${NC}"
     fi
 fi
 
@@ -175,7 +175,7 @@ if [[ "$(uname -n)" == "raccoon" ]] && command -v auto-cpufreq >/dev/null 2>&1; 
             sudo install -m 0440 -o root -g root "$tmp" /etc/sudoers.d/power-mode
             echo -e "${GREEN}✓ sudoers rule installed${NC}"
         else
-            echo -e "${YELLOW}⊘ sudoers rule failed visudo check — not installed${NC}"
+            echo -e "${YELLOW}⊘ sudoers rule failed visudo check, not installed${NC}"
         fi
         rm -f "$tmp"
 
@@ -184,7 +184,7 @@ if [[ "$(uname -n)" == "raccoon" ]] && command -v auto-cpufreq >/dev/null 2>&1; 
         sudo systemctl enable power-mode-reset.service >/dev/null 2>&1
         echo -e "${GREEN}✓ power mode resets to Auto on boot${NC}"
     else
-        echo -e "${YELLOW}⊘ sudo not available — install configs/hypr/power-mode.sudoers and power-mode-reset.service manually${NC}"
+        echo -e "${YELLOW}⊘ sudo not available, install configs/hypr/power-mode.sudoers and power-mode-reset.service manually${NC}"
     fi
 fi
 

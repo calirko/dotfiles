@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# phosphor-get.sh — download Phosphor SVG icons by name (bold weight by
+# phosphor-get.sh: download Phosphor SVG icons by name (bold weight by
 # default: regular's 1px strokes smear to gray at the bar's 16px size)
 # Usage: ./phosphor-get.sh <icon-name> [icon-name ...]
 #        WEIGHT=regular ./phosphor-get.sh <icon-name>
@@ -31,6 +31,6 @@ for icon in "$@"; do
     echo "OK"
   else
     rm -f "$out"
-    echo "FAILED (HTTP $http_code) — check icon name at https://phosphoricons.com"
+    echo "FAILED (HTTP $http_code). Check the icon name at https://phosphoricons.com"
   fi
 done

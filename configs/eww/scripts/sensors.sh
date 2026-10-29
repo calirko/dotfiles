@@ -12,7 +12,7 @@ ram_usage() {
   free | awk '/Mem:/ {printf "%.0f", $3/$2 * 100}'
 }
 
-# CPU temp (°C) — adjust thermal zone if needed
+# CPU temp (°C). Adjust the thermal zone if needed
 cpu_temp() {
   local temp
 
@@ -67,7 +67,7 @@ cpu_temp() {
   echo 0
 }
 
-# GPU temp — tries AMD (amdgpu), then NVIDIA, then Intel
+# GPU temp: tries AMD (amdgpu), then NVIDIA, then Intel
 gpu_temp() {
   # AMD
   local amd_hwmon
