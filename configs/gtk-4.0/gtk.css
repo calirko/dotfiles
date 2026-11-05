@@ -1,141 +1,196 @@
-/* ~/.config/gtk-4.0/gtk.css */
+/* ~/.config/gtk-4.0/gtk.css
 
-/* ── Surfaces ─────────────────────────────── */
+   Glass, grayscale: the same tokens as configs/eww/eww.scss (names in the
+   comments). The window is translucent black over Hyprland's window blur, so
+   GTK apps read like the bar and quick menu. Every other surface is
+   transparent or a white-alpha fill on top of it, so layers don't stack into
+   an opaque slab. "On" (accent) is inverted: near-white with dark ink.
 
-@define-color window_bg_color       #0d0d0d;
-@define-color window_fg_color       #d6d6d6;
+   libadwaita maps these @define-color names onto its --variables
+   (--window-bg-color: @window_bg_color), so overriding the names is enough.
+   Keep the palette block in sync with gtk-3.0/gtk.css. */
 
-@define-color view_bg_color         #0d0d0d;
-@define-color view_fg_color         #d6d6d6;
+/* ── Palette ──────────────────────────────── */
 
-@define-color headerbar_bg_color    #141414;
-@define-color headerbar_fg_color    #d6d6d6;
-@define-color headerbar_border_color rgba(255,255,255,0.06);
-@define-color headerbar_backdrop_color #0d0d0d;
-@define-color headerbar_shade_color rgba(0,0,0,0.4);
+/* denser than the rail ($glass-bar .74): windows sit over other windows,
+   and blurred kitty text behind them lifts .78 glass to a light gray */
+@define-color glass     rgba(10, 10, 10, 0.88);
+@define-color fg        rgba(255, 255, 255, 0.95); /* $fg */
+@define-color fill      rgba(255, 255, 255, 0.08); /* $fill */
+@define-color on        rgba(255, 255, 255, 0.92); /* $on */
+@define-color ink       #161616;                   /* $ink */
 
-@define-color sidebar_bg_color      #141414;
-@define-color sidebar_fg_color      #d6d6d6;
-@define-color sidebar_border_color  rgba(255,255,255,0.06);
-@define-color sidebar_backdrop_color #0d0d0d;
+@define-color window_bg_color              rgba(10, 10, 10, 0.88);
+@define-color window_fg_color              rgba(255, 255, 255, 0.95);
+@define-color view_bg_color                transparent;
+@define-color view_fg_color                rgba(255, 255, 255, 0.95);
+@define-color headerbar_bg_color           transparent;
+@define-color headerbar_fg_color           rgba(255, 255, 255, 0.95);
+@define-color headerbar_border_color       transparent;
+@define-color headerbar_backdrop_color     transparent;
+@define-color headerbar_shade_color        transparent;
+@define-color headerbar_darker_shade_color transparent;
+@define-color sidebar_bg_color             transparent;
+@define-color sidebar_fg_color             rgba(255, 255, 255, 0.95);
+@define-color sidebar_backdrop_color       transparent;
+@define-color sidebar_border_color         transparent;
+@define-color sidebar_shade_color          transparent;
+@define-color secondary_sidebar_bg_color       transparent;
+@define-color secondary_sidebar_fg_color       rgba(255, 255, 255, 0.95);
+@define-color secondary_sidebar_backdrop_color transparent;
+@define-color secondary_sidebar_border_color   transparent;
+@define-color secondary_sidebar_shade_color    transparent;
+@define-color card_bg_color                rgba(255, 255, 255, 0.08);
+@define-color card_fg_color                rgba(255, 255, 255, 0.95);
+@define-color card_shade_color             transparent;
+@define-color dialog_bg_color              rgba(10, 10, 10, 0.88);
+@define-color dialog_fg_color              rgba(255, 255, 255, 0.95);
+@define-color popover_bg_color             rgba(10, 10, 10, 0.88);
+@define-color popover_fg_color             rgba(255, 255, 255, 0.95);
+@define-color popover_shade_color          transparent;
+@define-color thumbnail_bg_color           rgba(255, 255, 255, 0.08);
+@define-color thumbnail_fg_color           rgba(255, 255, 255, 0.95);
+@define-color shade_color                  transparent;
 
-@define-color card_bg_color         #1a1a1a;
-@define-color card_fg_color         #d6d6d6;
-@define-color card_shade_color      rgba(0,0,0,0.4);
+/* "on": no hue anywhere, severity is left to the label/icon */
+@define-color accent_color          rgba(255, 255, 255, 0.95);
+@define-color accent_bg_color       rgba(255, 255, 255, 0.92);
+@define-color accent_fg_color       #161616;
+@define-color destructive_color     rgba(255, 255, 255, 0.95);
+@define-color destructive_bg_color  rgba(255, 255, 255, 0.92);
+@define-color destructive_fg_color  #161616;
+@define-color success_color         rgba(255, 255, 255, 0.95);
+@define-color success_bg_color      rgba(255, 255, 255, 0.92);
+@define-color success_fg_color      #161616;
+@define-color warning_color         rgba(255, 255, 255, 0.95);
+@define-color warning_bg_color      rgba(255, 255, 255, 0.92);
+@define-color warning_fg_color      #161616;
+@define-color error_color           rgba(255, 255, 255, 0.95);
+@define-color error_bg_color        rgba(255, 255, 255, 0.92);
+@define-color error_fg_color        #161616;
 
-@define-color popover_bg_color      #1f1f1f;
-@define-color popover_fg_color      #d6d6d6;
-@define-color popover_shade_color   rgba(0,0,0,0.4);
+:root {
+    /* libadwaita's system-accent provider sets these from gsettings'
+       accent-color (blue) over the @define-color above */
+    --accent-bg-color: rgba(255, 255, 255, 0.92);
+    --accent-fg-color: #161616;
+    --accent-color: rgba(255, 255, 255, 0.95);
+    --window-radius: 15px; /* Hyprland rounding, same as the rail ($r-xl) */
+}
 
-@define-color dialog_bg_color       #1a1a1a;
-@define-color dialog_fg_color       #d6d6d6;
+/* GTK 4.24 asks the compositor for blur itself (ext-background-effect) and
+   Hyprland 0.57 honours it, so a window with no backdrop-filter gets no
+   blur at all. Request it wherever the glass is painted. */
+window,
+popover > contents {
+    backdrop-filter: blur(10px);
+}
 
-@define-color thumbnail_bg_color    #141414;
-@define-color thumbnail_fg_color    #d6d6d6;
+/* Windows that carry the .view class paint view_bg_color, which is
+   transparent above so views don't stack on the glass. Nautilus 51 is one
+   (<style><class name="view"/> on its window); give them the glass back. */
+window.view {
+    background-color: rgba(10, 10, 10, 0.88);
+}
 
-/* ── Accent ───────────────────────────────── */
+/* ── Shapes: 7/9/13/15, no full circles ───── */
 
-@define-color accent_color          #ebebeb;
-@define-color accent_bg_color       #ebebeb;
-@define-color accent_fg_color       #000000;
-
-/* ── States (no hue, severity via lightness only) ── */
-
-@define-color destructive_color     #f5f5f5;
-@define-color destructive_bg_color  #f5f5f5;
-@define-color destructive_fg_color  #000000;
-
-@define-color success_color         #8a8a8a;
-@define-color success_bg_color      #8a8a8a;
-@define-color success_fg_color      #0d0d0d;
-
-@define-color warning_color         #d6d6d6;
-@define-color warning_bg_color      #d6d6d6;
-@define-color warning_fg_color      #0d0d0d;
-
-@define-color error_color           #f5f5f5;
-@define-color error_bg_color        #f5f5f5;
-@define-color error_fg_color        #000000;
-
-/* ── Border radius ────────────────────────── */
-
-/*button,
+button,
 entry,
 spinbutton,
-.chip,
-tag {
-    border-radius: 4px;
-}*/
+dropdown > button,
+combobox > button {
+    border-radius: 9px;
+}
+
+button.pill,
+menubutton.pill > button {
+    border-radius: 13px;
+}
+
+/* round icon buttons (eject in Nautilus' sidebar, header toggles) */
+button.circular,
+menubutton.circular > button,
+button.sidebar-button {
+    border-radius: 9px;
+}
 
 .card,
-popover,
+list.boxed-list,
 popover > contents,
 dialog,
 tooltip {
-    border-radius: 6px;
+    border-radius: 13px;
 }
 
-/* ── Buttons ──────────────────────────────── */
-
-button {
-    /*padding: 7px 14px;*/
-    /*background-color: #1a1a1a;*/
-    color: #d6d6d6;
-    /*border: 1px solid rgba(255, 255, 255, 0.1);*/
+/* items inside a 13px card/popover with a 6px inset */
+popover.menu modelbutton,
+popover.menu listview > row,
+popover > contents listview > row {
+    border-radius: 7px;
 }
 
-button:hover {
-    /*background-color: #262626;*/
-    color: #ebebeb;
+/* window close/minimize: libadwaita draws a circle on the image */
+windowcontrols > button > image {
+    border-radius: 7px;
 }
 
-button:active,
-button:checked {
-    /*background-color: #2e2e2e;*/
-    color: #ebebeb;
+/* ── Spacing, not lines ───────────────────── */
+
+.navigation-sidebar > separator,
+.navigation-sidebar > .header > separator {
+    background: none;
+    min-height: 0;
+    margin: 6px;
 }
 
-button.suggested-action {
-    background-color: #ebebeb;
-    color: #000000;
-    border: none;
+paned > separator {
+    background: none;
 }
 
-button.suggested-action:hover {
-    background-color: #f5f5f5;
+/* ── Sidebar rows ─────────────────────────── */
+
+.navigation-sidebar > row,
+.navigation-sidebar > child {
+    border-radius: 9px;
 }
 
-button.destructive-action {
-    background-color: #f5f5f5;
-    color: #000000;
-    border: none;
+.navigation-sidebar row:selected,
+.navigation-sidebar child:selected {
+    background-color: rgba(255, 255, 255, 0.13); /* $fill-hover */
 }
 
-button:disabled {
-    background-color: #1a1a1a;
-    color: #4a4a4a;
-    border-color: rgba(255, 255, 255, 0.06);
+.navigation-sidebar row.activatable:selected:hover,
+.navigation-sidebar child.activatable:selected:hover {
+    background-color: rgba(255, 255, 255, 0.19); /* $fill-active */
 }
 
-/* ── Inputs ───────────────────────────────── */
+/* ── "On" details ─────────────────────────── */
 
-entry {
-    background-color: #0d0d0d;
-    color: #d6d6d6;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+/* the default slider is white, invisible on the white "on" track */
+switch:checked > slider,
+switch:checked:hover > slider,
+switch:checked:active > slider {
+    background-color: @ink;
+    box-shadow: none;
 }
 
-entry:focus-within {
-    border-color: #4a4a4a;
+/* ── Unfocused windows ────────────────────── */
+
+/* libadwaita fades unfocused headerbars to 0.5, which on glass leaves the
+   header unreadable; Hyprland's dim_inactive already marks focus */
+headerbar:backdrop > windowhandle {
+    filter: opacity(0.8);
 }
 
-entry placeholder {
-    color: #6b6b6b;
-}
+/* ── Text Editor ──────────────────────────── */
 
-/* ── Selection ────────────────────────────── */
-
-*:selected {
-    background-color: #2e2e2e;
-    color: #ebebeb;
+/* the source style scheme paints an opaque text background (and its
+   recolor-window setting, turned off in hyprland.lua, the whole window);
+   let the glass through and keep only the scheme's syntax colors */
+window.org-gnome-TextEditor textview,
+window.org-gnome-TextEditor textview > text,
+window.org-gnome-TextEditor textview > border,
+window.org-gnome-TextEditor textview gutter {
+    background-color: transparent;
 }

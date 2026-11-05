@@ -211,6 +211,9 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface font-name 'Geist 11'"))
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"))
     hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'"))
+    -- Text Editor repaints its window from the source style scheme, over the
+    -- glass palette in gtk-4.0/gtk.css
+    hl.dispatch(hl.dsp.exec_cmd("gsettings set org.gnome.TextEditor recolor-window false"))
     hl.dispatch(hl.dsp.exec_cmd("gnome-keyring-daemon --start --components=secrets"))
     hl.dispatch(hl.dsp.exec_cmd("systemctl --user start hyprpolkitagent"))
     hl.dispatch(hl.dsp.exec_cmd("systemctl --user start evolution-alarm-notify"))
@@ -260,6 +263,9 @@ hl.config({
             size = 10,
             passes = 3,
             new_optimizations = true,
+            -- GTK menus/popovers are glass too (gtk-4.0/gtk.css)
+            popups = true,
+            popups_ignorealpha = 0.2,
         },
         inactive_opacity = 0.95,
         dim_inactive = true,
@@ -497,6 +503,16 @@ hl.window_rule({
     float = true,
     size = "420 900",
     center = true,
+})
+
+-- GTK system apps and kitty paint their own glass (gtk.css, kitty.conf:
+-- translucent window over the global window blur). The 1px edge is the rail's
+-- $glass-edge; libadwaita drops its own outline whenever the window is tiled.
+hl.window_rule({
+    name = "system-apps-glass",
+    match = { class = "^(org\\.gnome\\.(Nautilus|TextEditor|Calculator|Calendar|Loupe)|gnome-calculator|com\\.github\\.wwmm\\.easyeffects|xdg-desktop-portal-gtk|gcr-prompter|kitty|tui\\..+)$" },
+    border_size = 1,
+    border_color = "rgba(ffffff14)",
 })
 
 hl.window_rule({

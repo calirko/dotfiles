@@ -1,140 +1,130 @@
-/* ~/.config/gtk-4.0/gtk.css */
+/* ~/.config/gtk-3.0/gtk.css
 
-/* ── Surfaces ─────────────────────────────── */
+   Glass, grayscale, for GTK3 apps on adw-gtk3 (which reads the libadwaita
+   color names). Same palette block as gtk-4.0/gtk.css; see the notes there.
+   eww and wofi load this file too; see the .csd note below. */
 
-@define-color window_bg_color       #0d0d0d;
-@define-color window_fg_color       #d6d6d6;
+/* ── Palette ──────────────────────────────── */
 
-@define-color view_bg_color         #0d0d0d;
-@define-color view_fg_color         #d6d6d6;
+/* denser than the rail ($glass-bar .74): windows sit over other windows,
+   and blurred kitty text behind them lifts .78 glass to a light gray */
+@define-color glass     rgba(10, 10, 10, 0.88);
+@define-color fg        rgba(255, 255, 255, 0.95); /* $fg */
+@define-color fill      rgba(255, 255, 255, 0.08); /* $fill */
+@define-color on        rgba(255, 255, 255, 0.92); /* $on */
+@define-color ink       #161616;                   /* $ink */
 
-@define-color headerbar_bg_color    #141414;
-@define-color headerbar_fg_color    #d6d6d6;
-@define-color headerbar_border_color rgba(255,255,255,0.06);
-@define-color headerbar_backdrop_color #0d0d0d;
-@define-color headerbar_shade_color rgba(0,0,0,0.4);
+@define-color window_bg_color              rgba(10, 10, 10, 0.88);
+@define-color window_fg_color              rgba(255, 255, 255, 0.95);
+@define-color view_bg_color                transparent;
+@define-color view_fg_color                rgba(255, 255, 255, 0.95);
+@define-color headerbar_bg_color           transparent;
+@define-color headerbar_fg_color           rgba(255, 255, 255, 0.95);
+@define-color headerbar_border_color       transparent;
+@define-color headerbar_backdrop_color     transparent;
+@define-color headerbar_shade_color        transparent;
+@define-color headerbar_darker_shade_color transparent;
+@define-color sidebar_bg_color             transparent;
+@define-color sidebar_fg_color             rgba(255, 255, 255, 0.95);
+@define-color sidebar_backdrop_color       transparent;
+@define-color sidebar_border_color         transparent;
+@define-color sidebar_shade_color          transparent;
+@define-color secondary_sidebar_bg_color       transparent;
+@define-color secondary_sidebar_fg_color       rgba(255, 255, 255, 0.95);
+@define-color secondary_sidebar_backdrop_color transparent;
+@define-color secondary_sidebar_border_color   transparent;
+@define-color secondary_sidebar_shade_color    transparent;
+@define-color card_bg_color                rgba(255, 255, 255, 0.08);
+@define-color card_fg_color                rgba(255, 255, 255, 0.95);
+@define-color card_shade_color             transparent;
+@define-color dialog_bg_color              rgba(10, 10, 10, 0.88);
+@define-color dialog_fg_color              rgba(255, 255, 255, 0.95);
+@define-color popover_bg_color             rgba(10, 10, 10, 0.88);
+@define-color popover_fg_color             rgba(255, 255, 255, 0.95);
+@define-color popover_shade_color          transparent;
+@define-color thumbnail_bg_color           rgba(255, 255, 255, 0.08);
+@define-color thumbnail_fg_color           rgba(255, 255, 255, 0.95);
+@define-color shade_color                  transparent;
 
-@define-color sidebar_bg_color      #141414;
-@define-color sidebar_fg_color      #d6d6d6;
-@define-color sidebar_border_color  rgba(255,255,255,0.06);
-@define-color sidebar_backdrop_color #0d0d0d;
+/* "on": no hue anywhere, severity is left to the label/icon */
+@define-color accent_color          rgba(255, 255, 255, 0.95);
+@define-color accent_bg_color       rgba(255, 255, 255, 0.92);
+@define-color accent_fg_color       #161616;
+@define-color destructive_color     rgba(255, 255, 255, 0.95);
+@define-color destructive_bg_color  rgba(255, 255, 255, 0.92);
+@define-color destructive_fg_color  #161616;
+@define-color success_color         rgba(255, 255, 255, 0.95);
+@define-color success_bg_color      rgba(255, 255, 255, 0.92);
+@define-color success_fg_color      #161616;
+@define-color warning_color         rgba(255, 255, 255, 0.95);
+@define-color warning_bg_color      rgba(255, 255, 255, 0.92);
+@define-color warning_fg_color      #161616;
+@define-color error_color           rgba(255, 255, 255, 0.95);
+@define-color error_bg_color        rgba(255, 255, 255, 0.92);
+@define-color error_fg_color        #161616;
 
-@define-color card_bg_color         #1a1a1a;
-@define-color card_fg_color         #d6d6d6;
-@define-color card_shade_color      rgba(0,0,0,0.4);
+/* Widget rules are scoped to .csd (app toplevels: the portal file chooser,
+   gcr-prompter). This file sits at user priority, above an app's own CSS
+   whatever the specificity, so a bare `button` rule would also restyle the
+   eww bar and wofi, which are layer-shell surfaces without .csd. */
 
-@define-color popover_bg_color      #1f1f1f;
-@define-color popover_fg_color      #d6d6d6;
-@define-color popover_shade_color   rgba(0,0,0,0.4);
+/* ── Shapes: 7/9/13/15, no full circles ───── */
 
-@define-color dialog_bg_color       #1a1a1a;
-@define-color dialog_fg_color       #d6d6d6;
-
-@define-color thumbnail_bg_color    #141414;
-@define-color thumbnail_fg_color    #d6d6d6;
-
-/* ── Accent ───────────────────────────────── */
-
-@define-color accent_color          #ebebeb;
-@define-color accent_bg_color       #ebebeb;
-@define-color accent_fg_color       #000000;
-
-/* ── States (no hue, severity via lightness only) ── */
-
-@define-color destructive_color     #f5f5f5;
-@define-color destructive_bg_color  #f5f5f5;
-@define-color destructive_fg_color  #000000;
-
-@define-color success_color         #8a8a8a;
-@define-color success_bg_color      #8a8a8a;
-@define-color success_fg_color      #0d0d0d;
-
-@define-color warning_color         #d6d6d6;
-@define-color warning_bg_color      #d6d6d6;
-@define-color warning_fg_color      #0d0d0d;
-
-@define-color error_color           #f5f5f5;
-@define-color error_bg_color        #f5f5f5;
-@define-color error_fg_color        #000000;
-
-/* ── Border radius ────────────────────────── */
-
-/*button,
-entry,
-spinbutton,
-.chip,
-tag {
-    border-radius: 4px;
-}*/
-
-.card,
-popover,
-popover > contents,
-dialog,
-tooltip {
+.csd button,
+.csd entry,
+.csd spinbutton {
     border-radius: 9px;
 }
 
-/* ── Buttons ──────────────────────────────── */
-
-button {
-    /*padding: 7px 14px;*/
-    /*background-color: #1a1a1a;*/
-    color: #d6d6d6;
-    /*border: 1px solid rgba(255, 255, 255, 0.1);*/
+.csd button.circular,
+.csd button.sidebar-button,
+.csd headerbar button.titlebutton {
+    border-radius: 7px;
 }
 
-button:hover {
-    /*background-color: #262626;*/
-    color: #ebebeb;
+.csd popover,
+.csd menu,
+.csd list.boxed-list,
+.csd .card {
+    border-radius: 13px;
 }
 
-button:active,
-button:checked {
-    /*background-color: #2e2e2e;*/
-    color: #ebebeb;
+.csd popover modelbutton,
+.csd menu menuitem {
+    border-radius: 7px;
 }
 
-button.suggested-action {
-    background-color: #ebebeb;
-    color: #000000;
-    border: none;
+/* ── Spacing, not lines ───────────────────── */
+
+.csd .sidebar separator,
+.csd placessidebar separator,
+.csd paned > separator {
+    background: none;
 }
 
-button.suggested-action:hover {
-    background-color: #f5f5f5;
+/* ── Sidebar rows ─────────────────────────── */
+
+.csd placessidebar row,
+.csd .navigation-sidebar row {
+    border-radius: 9px;
 }
 
-button.destructive-action {
-    background-color: #f5f5f5;
-    color: #000000;
-    border: none;
+.csd placessidebar row:selected,
+.csd .navigation-sidebar row:selected {
+    background-color: rgba(255, 255, 255, 0.13); /* $fill-hover */
+    color: @fg;
 }
 
-button:disabled {
-    background-color: #1a1a1a;
-    color: #4a4a4a;
-    border-color: rgba(255, 255, 255, 0.06);
-}
+/* ── "On" details ─────────────────────────── */
 
-/* ── Inputs ───────────────────────────────── */
-
-entry {
-    background-color: #0d0d0d;
-    color: #d6d6d6;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-entry:focus-within {
-    border-color: #4a4a4a;
-}
-
-entry placeholder {
-    color: #6b6b6b;
+/* the default slider is white, invisible on the white "on" track */
+.csd switch:checked slider {
+    background-color: @ink;
+    box-shadow: none;
 }
 
 /* wofi's search field. This file loads at user priority, above wofi's own
-   style.css, so the entry rules above would win there; these ids only exist
+   style.css, so theme entry styles would win there; these ids only exist
    in wofi. Same values as wofi/style.css. */
 #outer-box #input {
     background-color: rgba(255, 255, 255, 0.08);
@@ -148,11 +138,4 @@ entry placeholder {
 
 #outer-box #input placeholder {
     color: rgba(255, 255, 255, 0.46);
-}
-
-/* ── Selection ────────────────────────────── */
-
-*:selected {
-    background-color: #2e2e2e;
-    color: #ebebeb;
 }
